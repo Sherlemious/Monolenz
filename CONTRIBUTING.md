@@ -33,6 +33,7 @@
 - `hotfix` - Critical production fixes
 - `docs` - Documentation changes
 - `config` - Configuration changes
+- `experimental` - Proof of concepts, research, and experimental features
 
 ### Examples
 ```bash
