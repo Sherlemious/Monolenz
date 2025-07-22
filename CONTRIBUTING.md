@@ -1,4 +1,4 @@
-# Git Conventions
+# Contributing
 
 ## Branch Naming
 
@@ -34,6 +34,8 @@
 - `docs` - Documentation changes
 - `config` - Configuration changes
 - `experimental` - Proof of concepts, research, and experimental features
+- `refactor` - Restructuring/Improving existing code without changing functionality
+- `chore` - Configuration updates, etc.
 
 ### Examples
 ```bash
