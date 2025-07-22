@@ -2,12 +2,14 @@
 
 ## Branch Naming
 
-### Format
-```
+### Branch Naming Format
+
+```text
 <component>/<type>/[ticket-id/]<description>
 ```
 
-### Components
+### Branch Naming Components
+
 - `frontend` - Next.js pages, components, styles, client-side logic
 - `backend` - API routes, server-side logic, database operations
 - `mobile` - Mobile app (if using React Native or PWA)
@@ -27,7 +29,8 @@
 - `config` - Configuration, deployment, CI/CD, environment setup
 - `deps` - Dependency updates, package management
 
-### Types
+### Branch Naming Types
+
 - `feature` - New functionality
 - `bugfix` - Bug fixes
 - `hotfix` - Critical production fixes
@@ -37,7 +40,8 @@
 - `refactor` - Restructuring/Improving existing code without changing functionality
 - `chore` - Configuration updates, etc.
 
-### Examples
+### Branch Naming Examples
+
 ```bash
 # Frontend features
 frontend/feature/123/user-dashboard
@@ -78,27 +82,31 @@ docs/bugfix/installation-steps
 ```
 
 ### Main Branches
+
 - `main` - Production ready code
 - `stage` - Staging environment for testing
 - `dev` - Development integration branch
 
 ## Component Guidelines
 
-### When to use each component:
+### When to use each component
 
 **Frontend/UI Components:**
+
 - `frontend` - Pages, layouts, client-side components
 - `ui` - Reusable design system components, shared UI elements
 - `mobile` - Mobile-specific features, React Native code
 - `web` - PWA features, web-specific functionality
 
 **Backend/API Components:**
+
 - `backend` - Server-side logic, middleware, internal APIs
 - `api` - External API integrations (Stripe, SendGrid, etc.)
 - `auth` - Authentication, authorization, security features
 - `database` - Schema changes, migrations, database utilities
 
 **Feature-Specific Components:**
+
 - `payments` - Billing, subscriptions, payment processing
 - `email` - Email templates, notification systems
 - `admin` - Admin dashboard, management interfaces
@@ -106,6 +114,7 @@ docs/bugfix/installation-steps
 - `seo` - SEO optimizations, meta tags, sitemap generation
 
 **Development Components:**
+
 - `tests` - Test files, testing utilities, test configuration
 - `utils` - Helper functions, shared utilities, common logic
 - `config` - Environment setup, deployment, CI/CD pipelines
@@ -114,8 +123,9 @@ docs/bugfix/installation-steps
 
 ## Commit Messages
 
-### Format
-```
+### Commit Messages Format
+
+```text
 <type>[optional scope]: <description>
 
 [optional body]
@@ -123,9 +133,10 @@ docs/bugfix/installation-steps
 [optional footer(s)]
 ```
 
-### Types
+### Commit Messages Types
+
 - `feat` - New feature for the user
-- `fix` - Bug fix for the user  
+- `fix` - Bug fix for the user
 - `docs` - Documentation changes
 - `style` - Code formatting, missing semicolons, etc (no code change)
 - `refactor` - Code refactoring (no functionality change)
@@ -137,8 +148,10 @@ docs/bugfix/installation-steps
 - `revert` - Reverts a previous commit
 
 ### Scopes (Optional)
+
 Use scopes to specify which part of the codebase was changed:
-```
+
+```text
 feat(auth): add OAuth login
 fix(payment): resolve charge calculation
 docs(api): update endpoint documentation
@@ -150,8 +163,9 @@ ci(github): add automated testing workflow
 ```
 
 ### Rules
+
 - Use **lowercase** for type and description
-- Use **present tense** ("add feature" not "added feature")  
+- Use **present tense** ("add feature" not "added feature")
 - Use **imperative mood** ("change" not "changes")
 - **First line max 50 characters**
 - **Capitalize first letter** of description
@@ -160,9 +174,10 @@ ci(github): add automated testing workflow
 - **Wrap body at 72 characters**
 - Use body to explain **what and why**, not only how
 
-### Examples
+### Commit Messages Examples
 
 #### Simple commits
+
 ```bash
 feat: Add user profile page
 fix: Resolve login redirect issue
@@ -175,6 +190,7 @@ chore: Update dependencies to latest versions
 ```
 
 #### With scopes
+
 ```bash
 feat(auth): Add social login with Google
 fix(api): Handle null values in user endpoint
@@ -187,6 +203,7 @@ build(docker): Optimize production image size
 ```
 
 #### With body and footer
+
 ```bash
 feat(payments): Add subscription billing system
 
@@ -203,6 +220,7 @@ Refs #124, #125
 ```
 
 #### Breaking changes
+
 ```bash
 feat!: Remove legacy authentication API
 
@@ -211,6 +229,7 @@ Use /api/auth/v2 instead. See migration guide in docs/MIGRATION.md
 ```
 
 #### Bug fixes with details
+
 ```bash
 fix(database): Prevent duplicate user registrations
 
@@ -222,6 +241,7 @@ Fixes #456
 ```
 
 #### Multiple changes
+
 ```bash
 feat(admin): Add user management dashboard
 
@@ -237,9 +257,10 @@ Closes #789
 ```
 
 ### Bad Examples
+
 ```bash
 Fixed stuff                           # Too vague
-Add new feature for users            # Not specific enough  
+Add new feature for users            # Not specific enough
 FEAT: Add authentication             # Wrong case
 feat: Added authentication           # Wrong tense
 feat: add authentication.            # Unnecessary period
@@ -247,6 +268,7 @@ This is a really long commit message that goes way over the 50 character limit a
 ```
 
 ### Linking Issues/Tickets
+
 ```bash
 # GitHub Issues
 feat: Add dark mode toggle
@@ -268,6 +290,7 @@ Refs #125
 ## Workflow
 
 ### Creating Branches
+
 ```bash
 # Create from dev branch
 git checkout dev
@@ -281,6 +304,7 @@ git push -u origin frontend/feature/user-profile
 ```
 
 ### Pull Request Flow
+
 1. **Create branch** from `dev`
 2. **Make changes** and commit following conventions
 3. **Push branch** and open PR to `dev`
@@ -290,6 +314,7 @@ git push -u origin frontend/feature/user-profile
 7. **Deploy flow**: `dev` → `stage` → `main`
 
 ### Branch Cleanup
+
 ```bash
 # After PR is merged
 git checkout dev
@@ -301,6 +326,7 @@ git remote prune origin
 ```
 
 ### Hotfix Workflow
+
 ```bash
 # For critical production fixes
 git checkout main
@@ -316,6 +342,7 @@ git push -u origin frontend/hotfix/critical-security-patch
 ```
 
 ### Working with Large Features
+
 ```bash
 # For big features, create a feature branch from dev
 git checkout -b frontend/feature/user-management
@@ -334,6 +361,7 @@ git checkout -b frontend/feature/user-edit
 ## Rules & Best Practices
 
 ### Branch Rules
+
 - **Never push directly** to `main`, `stage`, or `dev`
 - **Always use Pull Requests** for code review
 - **Delete branches** after merging
@@ -341,7 +369,8 @@ git checkout -b frontend/feature/user-edit
 - **Use descriptive names** - avoid generic terms like "fix", "update"
 - **Branch from `dev`** for features, from `main` for hotfixes
 
-### Commit Rules  
+### Commit Rules
+
 - **Make atomic commits** - one logical change per commit
 - **Commit frequently** - don't wait until feature is complete
 - **Write meaningful messages** - explain what and why, not how
@@ -349,6 +378,7 @@ git checkout -b frontend/feature/user-edit
 - **Use conventional format** - follow the type(scope): description pattern
 
 ### Code Review Guidelines
+
 - **Review within 24 hours** when possible
 - **Check for convention compliance** in branch names and commits
 - **Test the changes** locally if needed
@@ -356,6 +386,7 @@ git checkout -b frontend/feature/user-edit
 - **Approve only when confident** in the changes
 
 ### Emergency Procedures
+
 ```bash
 # Revert a problematic commit on main
 git revert <commit-hash>
