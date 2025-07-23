@@ -5,6 +5,18 @@ CREATE SCHEMA public;
 -- Set the search path to the schema
 SET search_path TO public;
 
+-- Create reusable updated_at trigger function
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Mutable tables (have both created_at and updated_at)
+
 CREATE TABLE profiles
 (
     id                  UUID REFERENCES auth.users (id) PRIMARY KEY,
@@ -17,22 +29,15 @@ CREATE TABLE profiles
     github_url          VARCHAR(500),
     portfolio_url       VARCHAR(500),
 
-    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at          timestamptz DEFAULT CURRENT_TIMESTAMP,
+    updated_at          timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Separate table for all other social links
-CREATE TABLE profile_links
-(
-    id          SERIAL PRIMARY KEY,
-    profile_id  UUID REFERENCES profiles (id) ON DELETE CASCADE,
-    platform_id INTEGER      REFERENCES link_platforms (id) ON DELETE SET NULL,
-    url         VARCHAR(500) NOT NULL,
-    category    VARCHAR(100), -- 'social', 'development', 'design', 'entertainment'
-    is_public   BOOLEAN                  DEFAULT TRUE,
-    sort_order  INTEGER                  DEFAULT 0,
-    created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+CREATE TRIGGER set_timestamp_profiles
+    BEFORE UPDATE
+    ON profiles
+    FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
 
 -- Platform definitions for consistency
 CREATE TABLE link_platforms
@@ -44,8 +49,58 @@ CREATE TABLE link_platforms
     icon         VARCHAR(100),                 -- icon identifier
     base_url     VARCHAR(255),                 -- 'https://letterboxd.com/'
     url_pattern  VARCHAR(255),                 -- 'https://letterboxd.com/user/{username}/'
-    is_active    BOOLEAN DEFAULT TRUE
+    is_active    BOOLEAN     DEFAULT TRUE,
+    created_at   timestamptz DEFAULT CURRENT_TIMESTAMP,
+    updated_at   timestamptz DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TRIGGER set_timestamp_link_platforms
+    BEFORE UPDATE
+    ON link_platforms
+    FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+-- Separate table for all other social links
+CREATE TABLE profile_links
+(
+    id          SERIAL PRIMARY KEY,
+    profile_id  UUID REFERENCES profiles (id) ON DELETE CASCADE,
+    platform_id INTEGER      REFERENCES link_platforms (id) ON DELETE SET NULL,
+    url         VARCHAR(500) NOT NULL,
+    category    VARCHAR(100), -- 'social', 'development', 'design', 'entertainment'
+    is_public   BOOLEAN     DEFAULT TRUE,
+    sort_order  INTEGER     DEFAULT 0,
+    created_at  timestamptz DEFAULT CURRENT_TIMESTAMP,
+    updated_at  timestamptz DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER set_timestamp_profile_links
+    BEFORE UPDATE
+    ON profile_links
+    FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+CREATE TABLE block_types
+(
+    id           SERIAL PRIMARY KEY,
+    name         VARCHAR(100) UNIQUE NOT NULL,
+    display_name VARCHAR(255)        NOT NULL,
+    description  TEXT,
+    category     VARCHAR(100),
+    sort_order   INTEGER     DEFAULT 0,
+    icon         VARCHAR(100),
+    is_active    BOOLEAN     DEFAULT TRUE,
+    created_at   timestamptz DEFAULT CURRENT_TIMESTAMP,
+    updated_at   timestamptz DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER set_timestamp_block_types
+    BEFORE UPDATE
+    ON block_types
+    FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+-- Immutable tables (created_at only)
 
 -- Core versioning tables
 CREATE TABLE versions
@@ -55,21 +110,8 @@ CREATE TABLE versions
     profile_id        UUID REFERENCES profiles (id) ON DELETE CASCADE,
     name              VARCHAR(255),
     description       TEXT,
-    metadata          JSONB                    DEFAULT '{}',
-    created_at        TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE block_types
-(
-    id           SERIAL PRIMARY KEY,
-    name         VARCHAR(100) UNIQUE NOT NULL,
-    display_name VARCHAR(255)        NOT NULL,
-    description  TEXT,
-    category     VARCHAR(100),
-    sort_order   INTEGER                  DEFAULT 0,
-    icon         VARCHAR(100),
-    is_active    BOOLEAN                  DEFAULT TRUE,
-    created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    metadata          JSONB       DEFAULT '{}',
+    created_at        timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE blocks
@@ -77,7 +119,7 @@ CREATE TABLE blocks
     id            SERIAL PRIMARY KEY,
     block_type_id INTEGER            NOT NULL REFERENCES block_types (id) ON DELETE RESTRICT,
     content_hash  VARCHAR(64) UNIQUE NOT NULL,
-    created_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at    timestamptz DEFAULT CURRENT_TIMESTAMP,
 
     -- Ensure hash format
     CONSTRAINT chk_content_hash_format CHECK (content_hash ~ '^[a-f0-9]{64}$')
@@ -90,13 +132,13 @@ CREATE TABLE version_blocks
     block_id            INTEGER REFERENCES blocks (id) ON DELETE CASCADE,
     previous_version_id INTEGER REFERENCES versions (id) ON DELETE SET NULL,
     previous_block_id   INTEGER REFERENCES blocks (id) ON DELETE SET NULL,
-    is_visible          BOOLEAN                  DEFAULT TRUE,
+    is_visible          BOOLEAN     DEFAULT TRUE,
     section_name        VARCHAR(255),
-    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at          timestamptz DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (version_id, block_id)
 );
 
--- Work Experience blocks
+-- Work Experience blocks (immutable)
 CREATE TABLE work_experiences
 (
     block_id         INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -111,7 +153,7 @@ CREATE TABLE work_experiences
     location_type    VARCHAR(50),  -- 'on-site', 'remote', 'hybrid'
     start_date       DATE         NOT NULL,
     end_date         DATE,
-    is_current       BOOLEAN                  DEFAULT FALSE,
+    is_current       BOOLEAN     DEFAULT FALSE,
     description      TEXT,
     achievements     TEXT[],       -- array of achievement bullets
     responsibilities TEXT[],       -- array of responsibility bullets
@@ -125,10 +167,15 @@ CREATE TABLE work_experiences
     skills_gained    TEXT[],       -- skills developed in this role
     key_projects     TEXT[],       -- major projects worked on
     recognition      TEXT[],       -- awards, recognitions received
-    created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at       timestamptz DEFAULT CURRENT_TIMESTAMP,
+
+    -- Validation constraints
+    CONSTRAINT chk_work_dates CHECK (start_date <= COALESCE(end_date, CURRENT_DATE)),
+    CONSTRAINT chk_current_no_end_date CHECK (NOT (is_current = TRUE AND end_date IS NOT NULL)),
+    CONSTRAINT chk_salary_positive CHECK (salary_amount IS NULL OR salary_amount > 0)
 );
 
--- Education blocks
+-- Education blocks (immutable)
 CREATE TABLE education
 (
     block_id             INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -141,9 +188,9 @@ CREATE TABLE education
     minor_fields         TEXT[],       -- array of minors/concentrations
     start_date           DATE,
     end_date             DATE,
-    is_current           BOOLEAN                  DEFAULT FALSE,
+    is_current           BOOLEAN       DEFAULT FALSE,
     gpa                  DECIMAL(4, 3),
-    gpa_scale            DECIMAL(4, 3)            DEFAULT 4.0,
+    gpa_scale            DECIMAL(4, 3) DEFAULT 4.0,
     honors               TEXT[],       -- 'Magna Cum Laude', 'Dean's List', etc.
     relevant_coursework  TEXT[],
     thesis_title         VARCHAR(500),
@@ -152,10 +199,14 @@ CREATE TABLE education
     activities           TEXT[],       -- extracurricular activities
     location             VARCHAR(255),
     accreditation        VARCHAR(255),
-    created_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at           timestamptz   DEFAULT CURRENT_TIMESTAMP,
+
+    -- Validation constraints
+    CONSTRAINT chk_education_dates CHECK (start_date <= COALESCE(end_date, CURRENT_DATE)),
+    CONSTRAINT chk_gpa_range CHECK (gpa IS NULL OR (gpa >= 0 AND gpa <= gpa_scale))
 );
 
--- Project blocks
+-- Project blocks (immutable)
 CREATE TABLE projects
 (
     block_id              INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -188,10 +239,13 @@ CREATE TABLE projects
     budget_range          VARCHAR(100), -- '$1K-5K', '$10K+', etc.
     client_name           VARCHAR(255), -- if client work
     industry              VARCHAR(255),
-    created_at            TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at            timestamptz DEFAULT CURRENT_TIMESTAMP,
+
+    -- Validation constraints
+    CONSTRAINT chk_project_dates CHECK (start_date <= COALESCE(end_date, CURRENT_DATE))
 );
 
--- Skills blocks
+-- Skills blocks (immutable)
 CREATE TABLE skills
 (
     block_id               INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -203,17 +257,20 @@ CREATE TABLE skills
     years_experience       DECIMAL(3, 1),
     months_since_last_used INTEGER,
     learning_status        VARCHAR(50),           -- 'learning', 'maintaining', 'expert', 'rusty'
-    endorsements_count     INTEGER                  DEFAULT 0,
+    endorsements_count     INTEGER     DEFAULT 0,
     verified_by            TEXT[],                -- who can verify this skill
     certifications         TEXT[],                -- related certifications
     projects_used_in       TEXT[],                -- projects where this skill was applied
     how_learned            VARCHAR(255),          -- 'self-taught', 'bootcamp', 'university', 'work'
     resources_used         TEXT[],                -- books, courses, etc.
     related_skills         TEXT[],                -- complementary skills
-    created_at             TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at             timestamptz DEFAULT CURRENT_TIMESTAMP,
+
+    -- Validation constraints
+    CONSTRAINT chk_years_experience_positive CHECK (years_experience IS NULL OR years_experience >= 0)
 );
 
--- Certifications blocks
+-- Certifications blocks (immutable)
 CREATE TABLE certifications
 (
     block_id                      INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -224,7 +281,7 @@ CREATE TABLE certifications
     credential_url                VARCHAR(500),
     issue_date                    DATE,
     expiration_date               DATE,
-    does_not_expire               BOOLEAN                  DEFAULT FALSE,
+    does_not_expire               BOOLEAN     DEFAULT FALSE,
     verification_url              VARCHAR(500),
     badge_url                     VARCHAR(500),
     description                   TEXT,
@@ -233,16 +290,16 @@ CREATE TABLE certifications
     preparation_time_hours        INTEGER,
     cost_amount                   DECIMAL(10, 2),
     cost_currency                 VARCHAR(3),
-    renewal_required              BOOLEAN                  DEFAULT FALSE,
+    renewal_required              BOOLEAN     DEFAULT FALSE,
     renewal_period_months         INTEGER,
-    continuing_education_required BOOLEAN                  DEFAULT FALSE,
+    continuing_education_required BOOLEAN     DEFAULT FALSE,
     related_certifications        TEXT[],
     industry_recognition          VARCHAR(100), -- 'globally-recognized', 'industry-standard'
     difficulty_level              VARCHAR(50),  -- 'entry', 'intermediate', 'advanced', 'expert'
-    created_at                    TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at                    timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Publications blocks
+-- Publications blocks (immutable)
 CREATE TABLE publications
 (
     block_id            INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -260,20 +317,20 @@ CREATE TABLE publications
     pages               VARCHAR(50),  -- '123-145' or '15 pages'
     volume              VARCHAR(50),
     issue               VARCHAR(50),
-    citation_count      INTEGER                  DEFAULT 0,
-    peer_reviewed       BOOLEAN                  DEFAULT FALSE,
-    open_access         BOOLEAN                  DEFAULT FALSE,
-    language            VARCHAR(50)              DEFAULT 'English',
+    citation_count      INTEGER     DEFAULT 0,
+    peer_reviewed       BOOLEAN     DEFAULT FALSE,
+    open_access         BOOLEAN     DEFAULT FALSE,
+    language            VARCHAR(50) DEFAULT 'English',
     research_areas      TEXT[],
     methodology         VARCHAR(255),
     funding_sources     TEXT[],
     conference_location VARCHAR(255),
     presentation_type   VARCHAR(100), -- 'oral', 'poster', 'keynote'
     awards              TEXT[],       -- 'Best Paper Award', etc.
-    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at          timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Awards & Honors blocks
+-- Awards & Honors blocks (immutable)
 CREATE TABLE awards
 (
     block_id              INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -295,10 +352,10 @@ CREATE TABLE awards
     significance          VARCHAR(100), -- 'local', 'regional', 'national', 'international'
     related_work          TEXT[],       -- projects/work this recognizes
     impact_statement      TEXT,         -- how this award impacted your career
-    created_at            TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at            timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Volunteer Experience blocks
+-- Volunteer Experience blocks (immutable)
 CREATE TABLE volunteer_experiences
 (
     block_id                INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -309,7 +366,7 @@ CREATE TABLE volunteer_experiences
     role_title              VARCHAR(255),
     start_date              DATE,
     end_date                DATE,
-    is_current              BOOLEAN                  DEFAULT FALSE,
+    is_current              BOOLEAN     DEFAULT FALSE,
     hours_per_week          DECIMAL(4, 1),
     total_hours_contributed INTEGER,
     location                VARCHAR(255),
@@ -320,19 +377,19 @@ CREATE TABLE volunteer_experiences
     responsibilities        TEXT[],
     impact_metrics          TEXT[],       -- 'helped 50 families', 'raised $10K'
     team_size               INTEGER,
-    leadership_role         BOOLEAN                  DEFAULT FALSE,
+    leadership_role         BOOLEAN     DEFAULT FALSE,
     projects_led            TEXT[],
     recognition             TEXT[],
     why_involved            TEXT,         -- personal motivation
-    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at              timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Languages blocks
+-- Languages blocks (immutable)
 CREATE TABLE languages
 (
     block_id            INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
     language_name       VARCHAR(100) NOT NULL,
-    native_language     BOOLEAN                  DEFAULT FALSE,
+    native_language     BOOLEAN     DEFAULT FALSE,
     proficiency_level   VARCHAR(50),  -- 'elementary', 'limited', 'professional', 'full-professional', 'native'
     speaking_level      VARCHAR(50),
     writing_level       VARCHAR(50),
@@ -348,11 +405,14 @@ CREATE TABLE languages
     accent              VARCHAR(100), -- 'American', 'British', 'Australian'
     dialect             VARCHAR(100),
     learning_method     VARCHAR(255), -- 'formal-education', 'self-study', 'immersion'
-    currently_studying  BOOLEAN                  DEFAULT FALSE,
-    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    currently_studying  BOOLEAN     DEFAULT FALSE,
+    created_at          timestamptz DEFAULT CURRENT_TIMESTAMP,
+
+    -- Validation constraints
+    CONSTRAINT chk_not_native_and_certified CHECK (NOT (native_language = TRUE AND certification_name IS NOT NULL))
 );
 
--- Courses blocks
+-- Courses blocks (immutable)
 CREATE TABLE courses
 (
     block_id                  INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -376,15 +436,15 @@ CREATE TABLE courses
     tools_used                TEXT[],
     cost_amount               DECIMAL(10, 2),
     cost_currency             VARCHAR(3),
-    scholarship_received      BOOLEAN                  DEFAULT FALSE,
-    peer_reviewed_assignments BOOLEAN                  DEFAULT FALSE,
+    scholarship_received      BOOLEAN     DEFAULT FALSE,
+    peer_reviewed_assignments BOOLEAN     DEFAULT FALSE,
     final_project_description TEXT,
     why_taken                 TEXT,         -- motivation for taking the course
     key_takeaways             TEXT[],
-    created_at                TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at                timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Organizations & Memberships blocks
+-- Organizations & Memberships blocks (immutable)
 CREATE TABLE organizations
 (
     block_id          INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -395,7 +455,7 @@ CREATE TABLE organizations
     position_title    VARCHAR(255),
     start_date        DATE,
     end_date          DATE,
-    is_current        BOOLEAN                  DEFAULT TRUE,
+    is_current        BOOLEAN     DEFAULT TRUE,
     membership_level  VARCHAR(100), -- 'standard', 'premium', 'lifetime', 'honorary'
     membership_id     VARCHAR(255),
     annual_dues       DECIMAL(10, 2),
@@ -409,10 +469,10 @@ CREATE TABLE organizations
     skills_gained     TEXT[],
     recognition       TEXT[],       -- any recognition within the org
     why_joined        TEXT,
-    created_at        TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at        timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Test Scores blocks
+-- Test Scores blocks (immutable)
 CREATE TABLE test_scores
 (
     block_id               INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -424,20 +484,23 @@ CREATE TABLE test_scores
     percentile             INTEGER CHECK (percentile >= 1 AND percentile <= 100),
     max_possible_score     VARCHAR(100),
     subject_scores         JSONB,        -- {math: 780, verbal: 720, writing: 6.0}
-    attempts_number        INTEGER                  DEFAULT 1,
+    attempts_number        INTEGER     DEFAULT 1,
     preparation_time_hours INTEGER,
     preparation_methods    TEXT[],       -- 'self-study', 'prep-course', 'tutor'
     prep_materials         TEXT[],       -- books, courses used
     score_validity_period  VARCHAR(100), -- 'valid until 2025'
-    retake_planned         BOOLEAN                  DEFAULT FALSE,
+    retake_planned         BOOLEAN     DEFAULT FALSE,
     target_score           VARCHAR(100),
     schools_sent_to        TEXT[],       -- for academic tests
     purpose                VARCHAR(255), -- why you took the test
     performance_analysis   TEXT,         -- strengths/weaknesses
-    created_at             TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at             timestamptz DEFAULT CURRENT_TIMESTAMP,
+
+    -- Validation constraints
+    CONSTRAINT chk_attempts_positive CHECK (attempts_number >= 1)
 );
 
--- Speaking Engagements blocks
+-- Speaking Engagements blocks (immutable)
 CREATE TABLE speaking_engagements
 (
     block_id                INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -464,14 +527,14 @@ CREATE TABLE speaking_engagements
     co_speakers             TEXT[],
     compensation_amount     DECIMAL(10, 2),
     compensation_currency   VARCHAR(3),
-    travel_covered          BOOLEAN                  DEFAULT FALSE,
+    travel_covered          BOOLEAN     DEFAULT FALSE,
     media_coverage          TEXT[],        -- articles about your talk
     social_mentions         TEXT[],        -- Twitter threads, LinkedIn posts
     follow_up_opportunities TEXT[],
-    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at              timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- References blocks
+-- References blocks (immutable)
 CREATE TABLE referrers
 (
     block_id                INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -485,27 +548,32 @@ CREATE TABLE referrers
     phone                   VARCHAR(50),
     linkedin_url            VARCHAR(500),
     years_known             INTEGER,
-    permission_granted      BOOLEAN                  DEFAULT FALSE,
+    permission_granted      BOOLEAN     DEFAULT FALSE,
     permission_date         DATE,
     last_contacted          DATE,
-    recommendation_provided BOOLEAN                  DEFAULT FALSE,
+    recommendation_provided BOOLEAN     DEFAULT FALSE,
     recommendation_text     TEXT,
     recommendation_url      VARCHAR(500), -- LinkedIn recommendation link
     strengths_highlighted   TEXT[],       -- what they highlight about you
     projects_collaborated   TEXT[],       -- specific work done together
     availability            VARCHAR(255), -- 'available immediately', 'prefer email contact'
     notes                   TEXT,         -- private notes about this reference
-    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at              timestamptz DEFAULT CURRENT_TIMESTAMP,
+
+    -- Validation constraints
+    CONSTRAINT chk_email_format CHECK (
+        email IS NULL OR email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+        )
 );
 
--- Personal Information blocks
+-- Personal Information blocks (immutable)
 CREATE TABLE personal_info
 (
     block_id                INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
     summary                 TEXT,         -- professional summary
     headline                VARCHAR(500), -- LinkedIn-style headline
     location                VARCHAR(255),
-    willing_to_relocate     BOOLEAN                  DEFAULT FALSE,
+    willing_to_relocate     BOOLEAN     DEFAULT FALSE,
     preferred_locations     TEXT[],
     website_url             VARCHAR(500),
     portfolio_url           VARCHAR(500),
@@ -533,10 +601,10 @@ CREATE TABLE personal_info
     career_goals            TEXT,
     interests               TEXT[],       -- professional interests
     hobbies                 TEXT[],       -- personal hobbies
-    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at              timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Patents blocks
+-- Patents blocks (immutable)
 CREATE TABLE patents
 (
     block_id           INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -560,15 +628,15 @@ CREATE TABLE patents
     solution_summary   TEXT,
     applications       TEXT[],       -- practical applications
     prior_art          TEXT[],       -- related patents/publications
-    citations_count    INTEGER                  DEFAULT 0,
+    citations_count    INTEGER     DEFAULT 0,
     licensing_status   VARCHAR(100), -- 'available', 'licensed', 'proprietary'
     commercial_value   VARCHAR(255),
     related_products   TEXT[],
     patent_url         VARCHAR(500),
-    created_at         TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at         timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Research Experience blocks
+-- Research Experience blocks (immutable)
 CREATE TABLE research_experiences
 (
     block_id         INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -581,7 +649,7 @@ CREATE TABLE research_experiences
     position_title   VARCHAR(255), -- 'Research Assistant', 'PhD Candidate', 'Postdoc'
     start_date       DATE,
     end_date         DATE,
-    is_current       BOOLEAN                  DEFAULT FALSE,
+    is_current       BOOLEAN     DEFAULT FALSE,
     funding_source   VARCHAR(255),
     grant_amount     DECIMAL(12, 2),
     grant_currency   VARCHAR(3),
@@ -600,10 +668,10 @@ CREATE TABLE research_experiences
     skills_gained    TEXT[],
     impact_statement TEXT,
     future_work      TEXT,
-    created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at       timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Military Service blocks
+-- Military Service blocks (immutable)
 CREATE TABLE military_service
 (
     block_id              INTEGER PRIMARY KEY REFERENCES blocks (id) ON DELETE CASCADE,
@@ -629,12 +697,12 @@ CREATE TABLE military_service
     skills_gained         TEXT[],
     responsibilities      TEXT[],
     notable_operations    TEXT[],
-    transition_assistance BOOLEAN                  DEFAULT FALSE,
+    transition_assistance BOOLEAN     DEFAULT FALSE,
     gi_bill_benefits      VARCHAR(255),
-    created_at            TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at            timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
--- Add indexes for performance
+-- Create essential indexes for performance
 CREATE INDEX idx_version_blocks_version_id ON version_blocks (version_id);
 CREATE INDEX idx_version_blocks_block_id ON version_blocks (block_id);
 CREATE INDEX idx_blocks_type_id ON blocks (block_type_id);
@@ -643,6 +711,27 @@ CREATE INDEX idx_versions_parent ON versions (parent_version_id);
 CREATE INDEX idx_versions_created_at ON versions (created_at);
 CREATE INDEX idx_versions_profile_id ON versions (profile_id);
 CREATE INDEX idx_profiles_username ON profiles (username);
+
+-- Date range indexes for common queries
+CREATE INDEX idx_work_experiences_dates ON work_experiences (start_date, end_date);
+CREATE INDEX idx_education_dates ON education (start_date, end_date);
+CREATE INDEX idx_projects_dates ON projects (start_date, end_date);
+
+-- Status and type filtering indexes
+CREATE INDEX idx_projects_status ON projects (status);
+CREATE INDEX idx_work_experiences_current ON work_experiences (is_current);
+CREATE INDEX idx_certifications_expiry ON certifications (expiration_date) WHERE expiration_date IS NOT NULL;
+
+-- Profile link indexes
+CREATE INDEX idx_profile_links_profile_public ON profile_links (profile_id, is_public);
+CREATE INDEX idx_profile_links_category ON profile_links (category, is_public);
+
+-- Version traversal indexes
+CREATE INDEX idx_versions_profile_created ON versions (profile_id, created_at DESC);
+
+-- Skills indexes
+CREATE INDEX idx_skills_category_proficiency ON skills (category, proficiency_level);
+CREATE INDEX idx_skills_name_lower ON skills (LOWER(name));
 
 -- Insert block types
 INSERT INTO block_types (name, display_name, description, category, sort_order)
