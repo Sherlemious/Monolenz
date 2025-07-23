@@ -154,7 +154,14 @@ importers:
 
   packages/shared: {}
 
-  packages/types: {}
+  packages/types:
+    dependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.0(jiti@2.4.2)(postcss@8.4.31)(tsx@4.20.3)(typescript@5.8.3)
+      zod:
+        specifier: ^4.0.6
+        version: 4.0.6
 
   packages/typescript-config: {}
 
@@ -2395,6 +2402,9 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zod@4.0.6:
+    resolution: {integrity: sha512-grO8UyVvh4j3nIcvZYCxgVvxJOKbWW8rZX2wlAL2qPG/Pe/R66/9MBeptqxPgpT7CBtGnJiwp6q76pq+hCAw2w==}
 
 snapshots:
 
@@ -4837,3 +4847,5 @@ snapshots:
   ws@8.18.3: {}
 
   yocto-queue@0.1.0: {}
+
+  zod@4.0.6: {}
