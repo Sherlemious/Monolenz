@@ -45,4 +45,17 @@ export const HTTP_STATUS_CODES = {
   SERVICE_UNAVAILABLE: 503,
 } as const;
 
+export interface HealthCheckResponse {
+  status: 'OK' | 'ERROR';
+  timestamp: string;
+  environment: string;
+  version: string;
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
+  code?: string;
+}
+
 export type HttpStatusCode = (typeof HTTP_STATUS_CODES)[keyof typeof HTTP_STATUS_CODES];
