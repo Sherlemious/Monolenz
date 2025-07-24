@@ -28,4 +28,5 @@ export interface PublicProfile {
   portfolio_url?: string;
   // Deliberately excludes private fields like id, email, etc.
 }
+
 export type UserRole = 'user' | 'admin' | 'moderator';

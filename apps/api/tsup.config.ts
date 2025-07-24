@@ -2,7 +2,7 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: ['src/server.ts'],
-  format: ['cjs'],
+  format: ['esm'],
   target: 'node18',
   outDir: 'dist',
   clean: true,
@@ -11,4 +11,5 @@ export default defineConfig({
   splitting: false,
   dts: false,
   external: ['@prisma/client'],
+  bundle: true,
 });

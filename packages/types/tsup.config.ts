@@ -1,7 +1,13 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/api/index.ts', 'src/entities/index.ts', 'src/validation/index.ts', 'src/enums/index.ts'],
+  entry: {
+    index: 'src/index.ts',
+    'api/index': 'src/api/index.ts',
+    'entities/index': 'src/entities/index.ts',
+    'validation/index': 'src/validation/index.ts',
+    'enums/index': 'src/enums/index.ts',
+  },
   format: ['esm'],
   dts: true,
   clean: true,
@@ -9,4 +15,6 @@ export default defineConfig({
   sourcemap: true,
   minify: false,
   external: ['zod'],
+  outDir: 'dist',
+  target: 'es2022',
 });
