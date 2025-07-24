@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin, createUserClient } from '../config/supabase';
-import {} from '@athaar/types'; // Adjust import path as needed
+import { HTTP_STATUS_CODES } from '@athaar/types'; // Adjust import path as needed
 import type { User } from '@supabase/supabase-js';
 
 // Extend Express Request type to include user
@@ -210,52 +210,6 @@ export const requireProfile = async (req: Request, res: Response, next: NextFunc
       errors: [{ field: 'profile', message: 'Failed to verify profile' }],
     });
   }
-};
-
-// Rate limiting by user
-export const rateLimitByUser = (maxRequests: number, windowMs: number) => {
-  const userRequests = new Map<string, { count: number; resetTime: number }>();
-
-  return (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.userId || req.ip; // Fallback to IP if not authenticated
-    const now = Date.now();
-
-    let userLimit = userRequests.get(userId);
-
-    if (!userLimit || userLimit.resetTime <= now) {
-      userLimit = { count: 0, resetTime: now + windowMs };
-      userRequests.set(userId, userLimit);
-    }
-
-    // Clean up expired entries
-    for (const [key, entry] of userRequests.entries()) {
-      if (entry.resetTime <= now) {
-        userRequests.delete(key);
-      }
-    }
-
-    if (userLimit.count >= maxRequests) {
-      return res.status(429).json({
-        success: false,
-        message: 'Rate limit exceeded',
-        errors: [{ field: 'rate_limit', message: 'Too many requests' }],
-        meta: {
-          timestamp: new Date().toISOString(),
-          retryAfter: Math.ceil((userLimit.resetTime - now) / 1000),
-        },
-      });
-    }
-
-    userLimit.count++;
-
-    res.set({
-      'X-RateLimit-Limit': maxRequests.toString(),
-      'X-RateLimit-Remaining': (maxRequests - userLimit.count).toString(),
-      'X-RateLimit-Reset': new Date(userLimit.resetTime).toISOString(),
-    });
-
-    next();
-  };
 };
 
 // Activity logging middleware
