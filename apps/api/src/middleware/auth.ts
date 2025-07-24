@@ -1,18 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { supabaseAdmin, createUserClient } from '../config/supabase';
-import { HTTP_STATUS_CODES } from '@athaar/types'; // Adjust import path as needed
-import type { User } from '@supabase/supabase-js';
-
-// Extend Express Request type to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User;
-      userId?: string;
-      userRole?: string;
-    }
-  }
-}
+import { supabaseAdmin } from '../config/supabase';
 
 // Authentication middleware
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {

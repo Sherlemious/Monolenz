@@ -1,49 +1,43 @@
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { ApiResponse, HTTP_STATUS_CODES } from '@athaar/types';
-import { IPaginationMeta } from '../types/express';
+import { ApiResponse, HTTP_STATUS_CODES, PaginationMeta } from '@athaar/types/api';
 
 /**
  * Request preprocessing middleware
- * Adds common properties and utilities to request object
+ * Processes query params into standardized, typed objects with defaults
  */
 export const preprocessRequest = (req: Request, res: Response, next: NextFunction) => {
-  // Add request ID for tracing
+  // Add request tracking
   req.requestId = uuidv4();
   req.startTime = new Date();
-
-  // Initialize metadata object
   req.metadata = {};
 
-  // Parse pagination parameters
+  // Process pagination params with defaults
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
-  const sort = req.query.sort as string;
+  const sort = (req.query.sort as string) || '';
   const order = (req.query.order as string)?.toLowerCase() === 'desc' ? 'desc' : 'asc';
-  const search = req.query.search as string;
 
-  req.paginationQuery = {
-    page,
-    limit,
-    sort,
-    order,
-    search,
-  };
+  req.pagination = { page, limit, sort, order };
 
-  // Parse filters (anything not pagination-related)
-  req.filters = Object.fromEntries(
-    Object.entries(req.query).filter(([key]) => !['page', 'limit', 'sort', 'order', 'search'].includes(key))
-  );
+  // Process search params (extends pagination)
+  const query = (req.query.query as string) || '';
+  const search = (req.query.search as string) || query;
+
+  // Extract filters (everything except pagination/search params)
+  const reservedParams = ['page', 'limit', 'sort', 'order', 'query', 'search'];
+  const filters = Object.fromEntries(Object.entries(req.query).filter(([key]) => !reservedParams.includes(key)));
+
+  req.searchParams = { ...req.pagination, query, search, filters };
 
   next();
 };
 
 /**
  * Response formatting middleware
- * Adds standardized response methods
+ * Adds standardized response methods to Express Response
  */
 export const formatResponse = (req: Request, res: Response, next: NextFunction) => {
-  // Success response method
   res.success = function <T>(data: T, message = 'Success') {
     const response: ApiResponse<T> = {
       success: true,
@@ -55,11 +49,9 @@ export const formatResponse = (req: Request, res: Response, next: NextFunction) 
         version: '1.0.0',
       },
     };
-
     return this.status(HTTP_STATUS_CODES.OK).json(response);
   };
 
-  // Error response method
   res.error = function (message: string, statusCode = HTTP_STATUS_CODES.BAD_REQUEST, errors?: string[]) {
     const response: ApiResponse = {
       success: false,
@@ -71,12 +63,22 @@ export const formatResponse = (req: Request, res: Response, next: NextFunction) 
         version: '1.0.0',
       },
     };
-
     return this.status(statusCode).json(response);
   };
 
-  // Paginated response method
-  res.paginated = function <T>(data: T[], meta: IPaginationMeta, message = 'Success') {
+  res.paginated = function <T>(data: T[], total: number, message = 'Success') {
+    const { page, limit } = req.pagination;
+    const totalPages = Math.ceil(total / limit);
+
+    const paginationMeta: PaginationMeta = {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrevious: page > 1,
+    };
+
     const response: ApiResponse<T[]> = {
       success: true,
       message,
@@ -85,10 +87,9 @@ export const formatResponse = (req: Request, res: Response, next: NextFunction) 
         timestamp: new Date().toISOString(),
         requestId: req.requestId,
         version: '1.0.0',
-        pagination: meta,
+        pagination: paginationMeta,
       },
     };
-
     return this.status(HTTP_STATUS_CODES.OK).json(response);
   };
 
@@ -104,16 +105,20 @@ export const logRequestResponse = (req: Request, res: Response, next: NextFuncti
   res.send = function (data) {
     const duration = Date.now() - req.startTime.getTime();
 
-    console.log({
-      requestId: req.requestId,
-      method: req.method,
-      path: req.path,
-      statusCode: res.statusCode,
-      duration: `${duration}ms`,
-      userAgent: req.get('User-Agent'),
-      ip: req.ip,
-      userId: req.userId,
-    });
+    // Log request details
+    console.log(
+      JSON.stringify({
+        requestId: req.requestId,
+        method: req.method,
+        path: req.path,
+        statusCode: res.statusCode,
+        duration: `${duration}ms`,
+        userAgent: req.get('User-Agent'),
+        ip: req.ip,
+        userId: req.userId,
+        timestamp: new Date().toISOString(),
+      })
+    );
 
     return originalSend.call(this, data);
   };
@@ -122,17 +127,38 @@ export const logRequestResponse = (req: Request, res: Response, next: NextFuncti
 };
 
 /**
- * Error handling middleware
+ * Global error handling middleware
  */
 export const handleErrors = (err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Error:', {
+  console.error('Request Error:', {
     requestId: req.requestId,
     error: err.message,
-    stack: err.stack,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     path: req.path,
     method: req.method,
     userId: req.userId,
+    timestamp: new Date().toISOString(),
   });
+
+  // Handle Zod validation errors
+  if (err.name === 'ZodError') {
+    const zodErrors = err.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`);
+    return res.error('Validation failed', HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY, zodErrors);
+  }
+
+  // Handle Prisma errors
+  if (err.code === 'P2002') {
+    return res.error('Duplicate entry', HTTP_STATUS_CODES.CONFLICT, ['Resource already exists']);
+  }
+
+  if (err.code === 'P2025') {
+    return res.error('Resource not found', HTTP_STATUS_CODES.NOT_FOUND);
+  }
+
+  // Handle Supabase auth errors
+  if (err.name === 'AuthError' || err.message?.includes('JWT')) {
+    return res.error('Authentication failed', HTTP_STATUS_CODES.UNAUTHORIZED);
+  }
 
   // Handle specific error types
   if (err.name === 'ValidationError') {
@@ -140,16 +166,16 @@ export const handleErrors = (err: any, req: Request, res: Response, next: NextFu
   }
 
   if (err.name === 'UnauthorizedError') {
-    return res.error('Unauthorized', HTTP_STATUS_CODES.UNAUTHORIZED);
+    return res.error('Unauthorized access', HTTP_STATUS_CODES.UNAUTHORIZED);
   }
 
   if (err.code === 'ECONNREFUSED') {
-    return res.error('Service unavailable', HTTP_STATUS_CODES.SERVICE_UNAVAILABLE);
+    return res.error('Service temporarily unavailable', HTTP_STATUS_CODES.SERVICE_UNAVAILABLE);
   }
 
   // Default error response
-  return res.error(
-    process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
-    HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
-  );
+  const message =
+    process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message || 'Unknown error occurred';
+
+  return res.error(message, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
 };

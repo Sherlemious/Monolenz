@@ -1,11 +1,12 @@
-import { ApiResponse, PaginationParams } from '@athaar/types';
+import { Request, Response } from 'express';
+import { PaginationParams, SearchParams, ApiResponse, PaginationMeta } from '@athaar/types/api';
 import type { User } from '@supabase/supabase-js';
 
 // Extend Express Request interface
 declare global {
   namespace Express {
     interface Request {
-      // Auth-related (you already have some of these)
+      // Auth-related
       user?: User;
       userId?: string;
       userRole?: string;
@@ -14,11 +15,11 @@ declare global {
       requestId: string;
       startTime: Date;
 
-      // Pagination & filtering
-      paginationQuery: IPaginationQuery;
-      filters: Record<string, any>;
+      // Processed pagination/search params with defaults applied
+      pagination: ProcessedPaginationParams;
+      searchParams: ProcessedSearchParams;
 
-      // Validation
+      // Validation results
       validatedBody?: any;
       validatedQuery?: any;
       validatedParams?: any;
@@ -28,27 +29,23 @@ declare global {
     }
 
     interface Response {
-      // Custom response methods
       success<T>(data: T, message?: string): Response;
       error(message: string, statusCode?: number, errors?: string[]): Response;
-      paginated<T>(data: T[], meta: IPaginationMeta, message?: string): Response;
+      paginated<T>(data: T[], total: number, message?: string): Response;
     }
   }
 }
 
-export interface IPaginationQuery extends PaginationParams {
-  page: number;
-  limit: number;
-  sort?: string;
-  order: 'asc' | 'desc';
-  search?: string;
+// Processed versions where optional fields become required with defaults
+export interface ProcessedPaginationParams extends Required<PaginationParams> {
+  page: number; // always a number >= 1
+  limit: number; // always a number 1-100
+  sort: string; // empty string if not provided
+  order: 'asc' | 'desc'; // defaults to 'asc'
 }
 
-export interface IPaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
+export interface ProcessedSearchParams extends ProcessedPaginationParams {
+  query: string; // empty string if not provided
+  search: string; // alias for query, empty string if not provided
+  filters: Record<string, any>; // all other query params
 }
