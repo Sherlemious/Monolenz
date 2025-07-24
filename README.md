@@ -67,7 +67,9 @@ athaar/
 - **PostgreSQL**: >=14.0
 - **Git**
 
-## Architecture Overview
+## Architecture
+
+### Block-Based Versioning
 
 ATHAAR uses a **block-based versioning system** inspired by Git, where professional information is stored as immutable content blocks. This enables:
 
@@ -82,6 +84,44 @@ ATHAAR uses a **block-based versioning system** inspired by Git, where professio
 2. **Versions** → Snapshots referencing specific blocks
 3. **Resumes/Portfolios** → Compositions of versioned blocks
 4. **Export** → HTML generation → PDF conversion (resumes) or static site (portfolios)
+
+### Authentication
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                               ARCHITECTURE                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┐                    ┌─────────────────┐
+│   Next.js App   │◄──────────────────►│   Supabase      │
+│                 │                    │                 │
+│   AUTH OWNER    │                    │     SINGLE      │
+│                 │                    │     SOURCE      │
+│ • Login/Logout  │                    │                 │
+│ • Registration  │                    │ • Auth Service  │
+│ • Token Mgmt    │                    │ • JWT Tokens    │
+│ • Route Guards  │                    │ • PostgreSQL    │
+│ • User State    │                    │ • RLS Policies  │
+│ • Direct DB     │◄──────────────────►│ • Realtime      │
+│   Access (opt)  │                    │ • Storage       │
+└─────────────────┘                    │ • Edge Funcs    │
+         │                             └─────────────────┘
+         │ API Calls                            ▲
+         │ Bearer Token                         │
+         ▼                                      │ DB Access
+┌─────────────────┐                             │  + Auth
+│  Express API    │◄────────────────────────────┘
+│                 │
+│    BUSINESS     │  • Connect to Supabase DB
+│     LOGIC       │  • Use service role key
+│                 │  • Leverage RLS policies
+│ • Token Verify  │  • Business logic only
+│ • Data CRUD     │  • No auth endpoints
+│ • Validation    │  • Focus on API layer
+│ • Rate Limits   │
+│ • Aggregation   │
+└─────────────────┘
+```
 
 ## Contributing
 

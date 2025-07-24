@@ -1,16 +1,16 @@
 {
-    "extends": "@athaar/typescript-config/base.json",
+    "extends": "@athaar/typescript-config/node.json",
     "compilerOptions": {
         "lib": [
             "ES2022"
         ],
-        "module": "ESNext",
+        "module": "NodeNext",
         "target": "ES2022",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
+        "moduleResolution": "NodeNext",
         "allowSyntheticDefaultImports": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
