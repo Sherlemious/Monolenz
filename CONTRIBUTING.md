@@ -31,7 +31,7 @@
 
 ### Branch Naming Types
 
-- `feature` - New functionality
+- `feat` - New functionality
 - `bugfix` - Bug fixes
 - `hotfix` - Critical production fixes
 - `docs` - Documentation changes
