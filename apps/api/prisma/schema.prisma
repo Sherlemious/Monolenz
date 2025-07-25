@@ -327,198 +327,39 @@ model users {
   @@schema("auth")
 }
 
-model awards {
-  block_id              Int       @id
-  title                 String    @db.VarChar(255)
-  awarding_organization String    @db.VarChar(255)
-  award_type            String?   @db.VarChar(100)
-  category              String?   @db.VarChar(255)
-  date_received         DateTime? @db.Date
-  description           String?
-  criteria              String?
-  selection_process     String?   @db.VarChar(255)
-  recipients_count      Int?
-  monetary_value        Decimal?  @db.Decimal(10, 2)
-  currency              String?   @db.VarChar(3)
-  url                   String?   @db.VarChar(500)
-  certificate_url       String?   @db.VarChar(500)
-  media_coverage        String[]
-  nominating_party      String?   @db.VarChar(255)
-  significance          String?   @db.VarChar(100)
-  related_work          String[]
-  impact_statement      String?
-  created_at            DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
 model block_types {
-  id           Int       @id @default(autoincrement())
-  name         String    @unique @db.VarChar(100)
-  display_name String    @db.VarChar(255)
-  description  String?
-  category     String?   @db.VarChar(100)
-  sort_order   Int?      @default(0)
-  icon         String?   @db.VarChar(100)
-  is_active    Boolean?  @default(true)
-  created_at   DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at   DateTime? @default(now()) @db.Timestamptz(6)
-  blocks       blocks[]
+  id               Int                @id @default(autoincrement())
+  name             String             @unique @db.VarChar(100)
+  display_name     String             @db.VarChar(255)
+  description      String?
+  category         String?            @db.VarChar(100)
+  sort_order       Int?               @default(0)
+  icon             String?            @db.VarChar(100)
+  is_active        Boolean?           @default(true)
+  schema_version   Int?               @default(1)
+  created_at       DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime?          @default(now()) @db.Timestamptz(6)
+  block_properties block_properties[]
+  blocks           blocks[]
 
   @@schema("public")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model blocks {
-  id                                                      Int                    @id @default(autoincrement())
+  id                                                      Int                     @id @default(autoincrement())
   block_type_id                                           Int
-  content_hash                                            String                 @unique @db.VarChar(64)
-  created_at                                              DateTime?              @default(now()) @db.Timestamptz(6)
-  awards                                                  awards?
-  block_types                                             block_types            @relation(fields: [block_type_id], references: [id], onUpdate: NoAction)
-  certifications                                          certifications?
-  courses                                                 courses?
-  education                                               education?
-  languages                                               languages?
-  military_service                                        military_service?
-  organizations                                           organizations?
-  patents                                                 patents?
-  personal_info                                           personal_info?
-  projects                                                projects?
-  publications                                            publications?
-  referrers                                               referrers?
-  research_experiences                                    research_experiences?
-  skills                                                  skills?
-  speaking_engagements                                    speaking_engagements?
-  test_scores                                             test_scores?
-  version_blocks_version_blocks_block_idToblocks          version_blocks[]       @relation("version_blocks_block_idToblocks")
-  version_blocks_version_blocks_previous_block_idToblocks version_blocks[]       @relation("version_blocks_previous_block_idToblocks")
-  volunteer_experiences                                   volunteer_experiences?
-  work_experiences                                        work_experiences?
+  data                                                    Json                    @default("{}")
+  content_hash                                            String                  @unique @db.VarChar(64)
+  created_at                                              DateTime?               @default(now()) @db.Timestamptz(6)
+  block_property_values                                   block_property_values[]
+  block_types                                             block_types             @relation(fields: [block_type_id], references: [id], onUpdate: NoAction)
+  version_blocks_version_blocks_block_idToblocks          version_blocks[]        @relation("version_blocks_block_idToblocks")
+  version_blocks_version_blocks_previous_block_idToblocks version_blocks[]        @relation("version_blocks_previous_block_idToblocks")
 
   @@index([content_hash], map: "idx_blocks_content_hash")
   @@index([block_type_id], map: "idx_blocks_type_id")
-  @@schema("public")
-}
-
-model certifications {
-  block_id                      Int       @id
-  name                          String    @db.VarChar(255)
-  issuing_organization          String    @db.VarChar(255)
-  issuing_url                   String?   @db.VarChar(500)
-  credential_id                 String?   @db.VarChar(255)
-  credential_url                String?   @db.VarChar(500)
-  issue_date                    DateTime? @db.Date
-  expiration_date               DateTime? @db.Date
-  does_not_expire               Boolean?  @default(false)
-  verification_url              String?   @db.VarChar(500)
-  badge_url                     String?   @db.VarChar(500)
-  description                   String?
-  skills_covered                String[]
-  exam_score                    String?   @db.VarChar(100)
-  preparation_time_hours        Int?
-  cost_amount                   Decimal?  @db.Decimal(10, 2)
-  cost_currency                 String?   @db.VarChar(3)
-  renewal_required              Boolean?  @default(false)
-  renewal_period_months         Int?
-  continuing_education_required Boolean?  @default(false)
-  related_certifications        String[]
-  industry_recognition          String?   @db.VarChar(100)
-  difficulty_level              String?   @db.VarChar(50)
-  created_at                    DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                        blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-model courses {
-  block_id                  Int       @id
-  course_name               String    @db.VarChar(255)
-  provider_name             String    @db.VarChar(255)
-  provider_type             String?   @db.VarChar(100)
-  platform                  String?   @db.VarChar(100)
-  course_url                String?   @db.VarChar(500)
-  instructor_name           String?   @db.VarChar(255)
-  completion_date           DateTime? @db.Date
-  certificate_url           String?   @db.VarChar(500)
-  certificate_id            String?   @db.VarChar(255)
-  duration_hours            Int?
-  duration_weeks            Int?
-  difficulty_level          String?   @db.VarChar(50)
-  course_type               String?   @db.VarChar(100)
-  grade                     String?   @db.VarChar(50)
-  skills_learned            String[]
-  topics_covered            String[]
-  projects_completed        String[]
-  tools_used                String[]
-  cost_amount               Decimal?  @db.Decimal(10, 2)
-  cost_currency             String?   @db.VarChar(3)
-  scholarship_received      Boolean?  @default(false)
-  peer_reviewed_assignments Boolean?  @default(false)
-  final_project_description String?
-  why_taken                 String?
-  key_takeaways             String[]
-  created_at                DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                    blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model education {
-  block_id             Int       @id
-  institution_name     String    @db.VarChar(255)
-  institution_url      String?   @db.VarChar(500)
-  institution_logo_url String?   @db.VarChar(500)
-  degree_type          String?   @db.VarChar(100)
-  degree_name          String?   @db.VarChar(255)
-  field_of_study       String?   @db.VarChar(255)
-  minor_fields         String[]
-  start_date           DateTime? @db.Date
-  end_date             DateTime? @db.Date
-  is_current           Boolean?  @default(false)
-  gpa                  Decimal?  @db.Decimal(4, 3)
-  gpa_scale            Decimal?  @default(4.0) @db.Decimal(4, 3)
-  honors               String[]
-  relevant_coursework  String[]
-  thesis_title         String?   @db.VarChar(500)
-  thesis_description   String?
-  advisor_name         String?   @db.VarChar(255)
-  activities           String[]
-  location             String?   @db.VarChar(255)
-  accreditation        String?   @db.VarChar(255)
-  created_at           DateTime? @default(now()) @db.Timestamptz(6)
-  blocks               blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([start_date, end_date], map: "idx_education_dates")
-  @@schema("public")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model languages {
-  block_id            Int       @id
-  language_name       String    @db.VarChar(100)
-  native_language     Boolean?  @default(false)
-  proficiency_level   String?   @db.VarChar(50)
-  speaking_level      String?   @db.VarChar(50)
-  writing_level       String?   @db.VarChar(50)
-  reading_level       String?   @db.VarChar(50)
-  listening_level     String?   @db.VarChar(50)
-  certification_name  String?   @db.VarChar(255)
-  certification_score String?   @db.VarChar(100)
-  certification_date  DateTime? @db.Date
-  years_studied       Int?
-  countries_used_in   String[]
-  contexts_used       String[]
-  fluency_description String?
-  accent              String?   @db.VarChar(100)
-  dialect             String?   @db.VarChar(100)
-  learning_method     String?   @db.VarChar(255)
-  currently_studying  Boolean?  @default(false)
-  created_at          DateTime? @default(now()) @db.Timestamptz(6)
-  blocks              blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
+  @@index([data], map: "idx_blocks_data_gin", type: Gin)
   @@schema("public")
 }
 
@@ -534,139 +375,6 @@ model link_platforms {
   created_at    DateTime?       @default(now()) @db.Timestamptz(6)
   updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
   profile_links profile_links[]
-
-  @@schema("public")
-}
-
-model military_service {
-  block_id              Int       @id
-  branch                String    @db.VarChar(255)
-  rank                  String?   @db.VarChar(255)
-  service_number        String?   @db.VarChar(255)
-  start_date            DateTime? @db.Date
-  end_date              DateTime? @db.Date
-  discharge_type        String?   @db.VarChar(100)
-  service_type          String?   @db.VarChar(100)
-  specialty_code        String?   @db.VarChar(100)
-  specialty_description String?   @db.VarChar(255)
-  units_served          String[]
-  deployments           String[]
-  combat_deployments    String[]
-  training_completed    String[]
-  certifications_earned String[]
-  awards_received       String[]
-  leadership_positions  String[]
-  security_clearance    String?   @db.VarChar(255)
-  clearance_level       String?   @db.VarChar(100)
-  languages_learned     String[]
-  skills_gained         String[]
-  responsibilities      String[]
-  notable_operations    String[]
-  transition_assistance Boolean?  @default(false)
-  gi_bill_benefits      String?   @db.VarChar(255)
-  created_at            DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-model organizations {
-  block_id          Int       @id
-  organization_name String    @db.VarChar(255)
-  organization_type String?   @db.VarChar(100)
-  organization_url  String?   @db.VarChar(500)
-  membership_type   String?   @db.VarChar(100)
-  position_title    String?   @db.VarChar(255)
-  start_date        DateTime? @db.Date
-  end_date          DateTime? @db.Date
-  is_current        Boolean?  @default(true)
-  membership_level  String?   @db.VarChar(100)
-  membership_id     String?   @db.VarChar(255)
-  annual_dues       Decimal?  @db.Decimal(10, 2)
-  currency          String?   @db.VarChar(3)
-  benefits          String[]
-  contributions     String[]
-  committees        String[]
-  events_organized  String[]
-  events_attended   String[]
-  networking_value  String?
-  skills_gained     String[]
-  recognition       String[]
-  why_joined        String?
-  created_at        DateTime? @default(now()) @db.Timestamptz(6)
-  blocks            blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-model patents {
-  block_id           Int       @id
-  title              String    @db.VarChar(500)
-  patent_number      String?   @db.VarChar(255)
-  patent_type        String?   @db.VarChar(100)
-  status             String?   @db.VarChar(100)
-  filing_date        DateTime? @db.Date
-  publication_date   DateTime? @db.Date
-  grant_date         DateTime? @db.Date
-  expiration_date    DateTime? @db.Date
-  patent_office      String?   @db.VarChar(255)
-  inventors          String[]
-  assignee           String?   @db.VarChar(255)
-  abstract           String?
-  description        String?
-  claims             String[]
-  field_of_invention String?   @db.VarChar(255)
-  background         String?
-  technical_problem  String?
-  solution_summary   String?
-  applications       String[]
-  prior_art          String[]
-  citations_count    Int?      @default(0)
-  licensing_status   String?   @db.VarChar(100)
-  commercial_value   String?   @db.VarChar(255)
-  related_products   String[]
-  patent_url         String?   @db.VarChar(500)
-  created_at         DateTime? @default(now()) @db.Timestamptz(6)
-  blocks             blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-model personal_info {
-  block_id                Int       @id
-  summary                 String?
-  headline                String?   @db.VarChar(500)
-  location                String?   @db.VarChar(255)
-  willing_to_relocate     Boolean?  @default(false)
-  preferred_locations     String[]
-  website_url             String?   @db.VarChar(500)
-  portfolio_url           String?   @db.VarChar(500)
-  blog_url                String?   @db.VarChar(500)
-  github_url              String?   @db.VarChar(500)
-  linkedin_url            String?   @db.VarChar(500)
-  twitter_url             String?   @db.VarChar(500)
-  stackoverflow_url       String?   @db.VarChar(500)
-  behance_url             String?   @db.VarChar(500)
-  dribbble_url            String?   @db.VarChar(500)
-  medium_url              String?   @db.VarChar(500)
-  youtube_url             String?   @db.VarChar(500)
-  other_profiles          Json?
-  availability            String?   @db.VarChar(100)
-  work_authorization      String?   @db.VarChar(255)
-  security_clearance      String?   @db.VarChar(255)
-  preferred_work_type     String?   @db.VarChar(100)
-  salary_expectation_min  Decimal?  @db.Decimal(12, 2)
-  salary_expectation_max  Decimal?  @db.Decimal(12, 2)
-  salary_currency         String?   @db.VarChar(3)
-  benefits_important      String[]
-  company_size_preference String?   @db.VarChar(100)
-  industry_preferences    String[]
-  values                  String[]
-  career_goals            String?
-  interests               String[]
-  hobbies                 String[]
-  created_at              DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                  blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("public")
 }
@@ -707,231 +415,6 @@ model profiles {
   @@schema("public")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model projects {
-  block_id              Int       @id
-  name                  String    @db.VarChar(255)
-  tagline               String?   @db.VarChar(500)
-  description           String?
-  project_type          String?   @db.VarChar(100)
-  status                String?   @db.VarChar(50)
-  start_date            DateTime? @db.Date
-  end_date              DateTime? @db.Date
-  duration_months       Int?
-  project_url           String?   @db.VarChar(500)
-  demo_url              String?   @db.VarChar(500)
-  repository_url        String?   @db.VarChar(500)
-  documentation_url     String?   @db.VarChar(500)
-  technologies          String[]
-  programming_languages String[]
-  frameworks            String[]
-  databases             String[]
-  cloud_platforms       String[]
-  tools                 String[]
-  team_size             Int?
-  role                  String?   @db.VarChar(255)
-  key_features          String[]
-  challenges_overcome   String[]
-  impact_metrics        String[]
-  awards                String[]
-  media_urls            String[]
-  collaborators         Json[]
-  budget_range          String?   @db.VarChar(100)
-  client_name           String?   @db.VarChar(255)
-  industry              String?   @db.VarChar(255)
-  created_at            DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([start_date, end_date], map: "idx_projects_dates")
-  @@index([status], map: "idx_projects_status")
-  @@schema("public")
-}
-
-model publications {
-  block_id            Int       @id
-  title               String    @db.VarChar(500)
-  publication_type    String?   @db.VarChar(100)
-  publisher           String?   @db.VarChar(255)
-  publication_name    String?   @db.VarChar(255)
-  authors             String[]
-  publication_date    DateTime? @db.Date
-  url                 String?   @db.VarChar(500)
-  doi                 String?   @db.VarChar(255)
-  isbn                String?   @db.VarChar(20)
-  abstract            String?
-  keywords            String[]
-  pages               String?   @db.VarChar(50)
-  volume              String?   @db.VarChar(50)
-  issue               String?   @db.VarChar(50)
-  citation_count      Int?      @default(0)
-  peer_reviewed       Boolean?  @default(false)
-  open_access         Boolean?  @default(false)
-  language            String?   @default("English") @db.VarChar(50)
-  research_areas      String[]
-  methodology         String?   @db.VarChar(255)
-  funding_sources     String[]
-  conference_location String?   @db.VarChar(255)
-  presentation_type   String?   @db.VarChar(100)
-  awards              String[]
-  created_at          DateTime? @default(now()) @db.Timestamptz(6)
-  blocks              blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model referrers {
-  block_id                Int       @id
-  reference_type          String?   @db.VarChar(100)
-  name                    String    @db.VarChar(255)
-  title                   String?   @db.VarChar(255)
-  company                 String?   @db.VarChar(255)
-  relationship            String?   @db.VarChar(255)
-  relationship_duration   String?   @db.VarChar(100)
-  email                   String?   @db.VarChar(255)
-  phone                   String?   @db.VarChar(50)
-  linkedin_url            String?   @db.VarChar(500)
-  years_known             Int?
-  permission_granted      Boolean?  @default(false)
-  permission_date         DateTime? @db.Date
-  last_contacted          DateTime? @db.Date
-  recommendation_provided Boolean?  @default(false)
-  recommendation_text     String?
-  recommendation_url      String?   @db.VarChar(500)
-  strengths_highlighted   String[]
-  projects_collaborated   String[]
-  availability            String?   @db.VarChar(255)
-  notes                   String?
-  created_at              DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                  blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-model research_experiences {
-  block_id         Int       @id
-  research_title   String    @db.VarChar(500)
-  institution_name String    @db.VarChar(255)
-  department       String?   @db.VarChar(255)
-  supervisor_name  String?   @db.VarChar(255)
-  supervisor_title String?   @db.VarChar(255)
-  research_type    String?   @db.VarChar(100)
-  position_title   String?   @db.VarChar(255)
-  start_date       DateTime? @db.Date
-  end_date         DateTime? @db.Date
-  is_current       Boolean?  @default(false)
-  funding_source   String?   @db.VarChar(255)
-  grant_amount     Decimal?  @db.Decimal(12, 2)
-  grant_currency   String?   @db.VarChar(3)
-  research_areas   String[]
-  keywords         String[]
-  methodology      String[]
-  tools_used       String[]
-  software_used    String[]
-  equipment_used   String[]
-  abstract         String?
-  objectives       String[]
-  key_findings     String[]
-  publications     String[]
-  presentations    String[]
-  collaborators    String[]
-  skills_gained    String[]
-  impact_statement String?
-  future_work      String?
-  created_at       DateTime? @default(now()) @db.Timestamptz(6)
-  blocks           blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
-model skills {
-  block_id               Int       @id
-  category               String    @db.VarChar(100)
-  subcategory            String?   @db.VarChar(100)
-  name                   String    @db.VarChar(255)
-  proficiency_level      String?   @db.VarChar(50)
-  proficiency_score      Int?
-  years_experience       Decimal?  @db.Decimal(3, 1)
-  months_since_last_used Int?
-  learning_status        String?   @db.VarChar(50)
-  endorsements_count     Int?      @default(0)
-  verified_by            String[]
-  certifications         String[]
-  projects_used_in       String[]
-  how_learned            String?   @db.VarChar(255)
-  resources_used         String[]
-  related_skills         String[]
-  created_at             DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                 blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([category, proficiency_level], map: "idx_skills_category_proficiency")
-  @@schema("public")
-}
-
-model speaking_engagements {
-  block_id                Int       @id
-  event_name              String    @db.VarChar(255)
-  event_type              String?   @db.VarChar(100)
-  event_url               String?   @db.VarChar(500)
-  organizer_name          String?   @db.VarChar(255)
-  presentation_title      String?   @db.VarChar(500)
-  presentation_type       String?   @db.VarChar(100)
-  date                    DateTime? @db.Date
-  location                String?   @db.VarChar(255)
-  venue                   String?   @db.VarChar(255)
-  audience_size           Int?
-  audience_type           String?   @db.VarChar(255)
-  duration_minutes        Int?
-  topics_covered          String[]
-  abstract                String?
-  slides_url              String?   @db.VarChar(500)
-  recording_url           String?   @db.VarChar(500)
-  slides_download_url     String?   @db.VarChar(500)
-  feedback_score          Decimal?  @db.Decimal(3, 2)
-  feedback_comments       String[]
-  languages_presented     String[]
-  co_speakers             String[]
-  compensation_amount     Decimal?  @db.Decimal(10, 2)
-  compensation_currency   String?   @db.VarChar(3)
-  travel_covered          Boolean?  @default(false)
-  media_coverage          String[]
-  social_mentions         String[]
-  follow_up_opportunities String[]
-  created_at              DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                  blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model test_scores {
-  block_id               Int       @id
-  test_name              String    @db.VarChar(255)
-  test_type              String?   @db.VarChar(100)
-  testing_organization   String?   @db.VarChar(255)
-  test_date              DateTime? @db.Date
-  score                  String?   @db.VarChar(100)
-  percentile             Int?
-  max_possible_score     String?   @db.VarChar(100)
-  subject_scores         Json?
-  attempts_number        Int?      @default(1)
-  preparation_time_hours Int?
-  preparation_methods    String[]
-  prep_materials         String[]
-  score_validity_period  String?   @db.VarChar(100)
-  retake_planned         Boolean?  @default(false)
-  target_score           String?   @db.VarChar(100)
-  schools_sent_to        String[]
-  purpose                String?   @db.VarChar(255)
-  performance_analysis   String?
-  created_at             DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                 blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
 model version_blocks {
   version_id                                            Int
   block_id                                              Int
@@ -939,6 +422,7 @@ model version_blocks {
   previous_block_id                                     Int?
   is_visible                                            Boolean?  @default(true)
   section_name                                          String?   @db.VarChar(255)
+  sort_order                                            Int?      @default(0)
   created_at                                            DateTime? @default(now()) @db.Timestamptz(6)
   blocks_version_blocks_block_idToblocks                blocks    @relation("version_blocks_block_idToblocks", fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   blocks_version_blocks_previous_block_idToblocks       blocks?   @relation("version_blocks_previous_block_idToblocks", fields: [previous_block_id], references: [id], onUpdate: NoAction)
@@ -948,6 +432,7 @@ model version_blocks {
   @@id([version_id, block_id])
   @@index([block_id], map: "idx_version_blocks_block_id")
   @@index([version_id], map: "idx_version_blocks_version_id")
+  @@index([version_id, section_name, sort_order], map: "idx_version_blocks_section_order")
   @@schema("public")
 }
 
@@ -972,69 +457,45 @@ model versions {
   @@schema("public")
 }
 
-model volunteer_experiences {
-  block_id                Int       @id
-  organization_name       String    @db.VarChar(255)
-  organization_url        String?   @db.VarChar(500)
-  organization_type       String?   @db.VarChar(100)
-  cause                   String?   @db.VarChar(255)
-  role_title              String?   @db.VarChar(255)
-  start_date              DateTime? @db.Date
-  end_date                DateTime? @db.Date
-  is_current              Boolean?  @default(false)
-  hours_per_week          Decimal?  @db.Decimal(4, 1)
-  total_hours_contributed Int?
-  location                String?   @db.VarChar(255)
-  description             String?
-  achievements            String[]
-  skills_used             String[]
-  skills_gained           String[]
-  responsibilities        String[]
-  impact_metrics          String[]
-  team_size               Int?
-  leadership_role         Boolean?  @default(false)
-  projects_led            String[]
-  recognition             String[]
-  why_involved            String?
-  created_at              DateTime? @default(now()) @db.Timestamptz(6)
-  blocks                  blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model block_properties {
+  id                    Int                     @id @default(autoincrement())
+  block_type_id         Int?
+  property_name         String                  @db.VarChar(100)
+  property_type         String                  @db.VarChar(50)
+  display_name          String                  @db.VarChar(255)
+  description           String?
+  is_required           Boolean?                @default(false)
+  is_searchable         Boolean?                @default(true)
+  validation_rules      Json?                   @default("{}")
+  default_value         Json?
+  sort_order            Int?                    @default(0)
+  group_name            String?                 @db.VarChar(100)
+  placeholder_text      String?                 @db.VarChar(255)
+  help_text             String?
+  is_active             Boolean?                @default(true)
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  block_types           block_types?            @relation(fields: [block_type_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  block_property_values block_property_values[]
 
+  @@unique([block_type_id, property_name])
+  @@index([block_type_id, is_active], map: "idx_block_properties_type_active")
+  @@index([block_type_id, property_name], map: "idx_block_properties_type_name")
   @@schema("public")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model work_experiences {
-  block_id         Int       @id
-  company_name     String    @db.VarChar(255)
-  company_url      String?   @db.VarChar(500)
-  company_logo_url String?   @db.VarChar(500)
-  company_size     String?   @db.VarChar(50)
-  company_industry String?   @db.VarChar(255)
-  position_title   String    @db.VarChar(255)
-  employment_type  String?   @db.VarChar(50)
-  location         String?   @db.VarChar(255)
-  location_type    String?   @db.VarChar(50)
-  start_date       DateTime  @db.Date
-  end_date         DateTime? @db.Date
-  is_current       Boolean?  @default(false)
-  description      String?
-  achievements     String[]
-  responsibilities String[]
-  technologies     String[]
-  team_size        Int?
-  reports_to       String?   @db.VarChar(255)
-  direct_reports   Int?
-  salary_currency  String?   @db.VarChar(3)
-  salary_amount    Decimal?  @db.Decimal(12, 2)
-  salary_period    String?   @db.VarChar(20)
-  skills_gained    String[]
-  key_projects     String[]
-  recognition      String[]
-  created_at       DateTime? @default(now()) @db.Timestamptz(6)
-  blocks           blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model block_property_values {
+  block_id         Int
+  property_id      Int
+  value            Json
+  is_active        Boolean?         @default(true)
+  is_public        Boolean?         @default(true)
+  created_at       DateTime?        @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime?        @default(now()) @db.Timestamptz(6)
+  blocks           blocks           @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  block_properties block_properties @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([is_current], map: "idx_work_experiences_current")
-  @@index([start_date, end_date], map: "idx_work_experiences_dates")
+  @@id([block_id, property_id])
   @@schema("public")
 }
 
