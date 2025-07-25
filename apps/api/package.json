@@ -3,12 +3,15 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "tsup",
+    "build": "pnpm i && prisma db pull && prisma generate && tsup",
     "dev": "tsx watch src/server.ts --clear-screen=false",
     "start": "node dist/server.js",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src/ --max-warnings 0"
+    "lint": "eslint src/ --max-warnings 0",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:pull": "prisma db pull"
   },
   "dependencies": {
     "@athaar/types": "workspace:*",
