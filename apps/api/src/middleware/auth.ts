@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase';
+import { HTTP_STATUS_CODES } from '@athaar/types';
 
 // Authentication middleware
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
@@ -7,14 +8,21 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
         success: false,
         message: 'Authentication required',
         errors: [{ field: 'authorization', message: 'Bearer token required' }],
       });
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        success: false,
+        message: 'Authentication required',
+        errors: [{ field: 'authorization', message: 'Bearer token required' }],
+      });
+    }
 
     // Verify token with Supabase
     const {
@@ -23,7 +31,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     } = await supabaseAdmin.auth.getUser(token);
 
     if (error || !user) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
         success: false,
         message: 'Invalid or expired token',
         errors: [{ field: 'authorization', message: 'Invalid token' }],
@@ -32,7 +40,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     // Check if user is active
     if (!user.email_confirmed_at) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
         success: false,
         message: 'Email not confirmed',
         errors: [{ field: 'email', message: 'Please confirm your email address' }],
@@ -47,7 +55,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    return res.status(500).json({
+    return res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Authentication service error',
       errors: [{ field: 'auth', message: 'Internal authentication error' }],
@@ -165,7 +173,7 @@ export const authenticateApiKey = (req: Request, res: Response, next: NextFuncti
 // Check if user profile exists
 export const requireProfile = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.userId) {
-    return res.status(401).json({
+    return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
       success: false,
       message: 'Authentication required',
       errors: [{ field: 'auth', message: 'User not authenticated' }],
@@ -181,7 +189,7 @@ export const requireProfile = async (req: Request, res: Response, next: NextFunc
       .single();
 
     if (error || !profile) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS_CODES.NOT_FOUND).json({
         success: false,
         message: 'Profile not found',
         errors: [{ field: 'profile', message: 'Please create a profile first' }],
@@ -191,7 +199,7 @@ export const requireProfile = async (req: Request, res: Response, next: NextFunc
     next();
   } catch (error) {
     console.error('Profile check error:', error);
-    return res.status(500).json({
+    return res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Profile check failed',
       errors: [{ field: 'profile', message: 'Failed to verify profile' }],

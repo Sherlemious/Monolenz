@@ -5,66 +5,95 @@ import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import routes from './routes';
+import { handleErrors } from './middleware/request-response';
+import './types/express';
 
 const app: express.Application = express();
 
-// Security middleware
-app.use(helmet());
+// 1. SECURITY FIRST (before any processing)
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        scriptSrc: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // For file uploads
+  })
+);
 
-// CORS configuration
+// 2. CORS (early, before auth)
 app.use(
   cors({
     origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-});
-app.use(limiter);
-
-// Compression
+// 3. COMPRESSION (before body parsing)
 app.use(compression());
 
-// Logging
+// 4. LOGGING (early for all requests)
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-// Body parsing
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+// 5. BODY PARSING (before routes)
+app.use(
+  express.json({
+    limit: '10mb',
+    verify: (req, res, buf) => {
+      // Store raw body for webhook verification
+      (req as any).rawBody = buf;
+    },
+  })
+);
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check endpoint
+// 6. GLOBAL RATE LIMITING (before expensive operations)
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Higher limit for global
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip || 'unknown',
+});
+app.use('/api', globalLimiter);
+
+// 7. REQUEST PREPROCESSING (before routes)
+app.use((req, res, next) => {
+  req.requestId = crypto.randomUUID();
+  req.startTime = new Date();
+  next();
+});
+
+// 8. SIMPLE HEALTH CHECK (no auth needed)
 app.get('/health', (req, res) => {
-  res.status(200).json({
+  res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development',
   });
 });
 
-// API routes
+// 9. API ROUTES (main application)
 app.use('/api', routes);
 
-// 404 handler
+// 10. 404 HANDLER (after all routes)
 app.use('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
     message: `Route ${req.originalUrl} not found`,
+    method: req.method,
+    timestamp: new Date().toISOString(),
   });
 });
 
-// Global error handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err);
-
-  res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message,
-    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
-  });
-});
+// 11. ERROR HANDLER (must be last)
+app.use(handleErrors);
 
 export default app;
