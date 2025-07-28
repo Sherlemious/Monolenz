@@ -1,5 +1,5 @@
 import { BaseRepository, BaseEntity } from '../repositories/base.repository';
-import { PaginationParams } from '@athaar/types/api';
+import { HTTP_STATUS_CODES, PaginationParams } from '@athaar/types/api';
 import { Logger } from '../utils/logger';
 import { MetricsCollector } from '../utils/metrics';
 import { CacheManager } from '../utils/cache';
@@ -308,7 +308,7 @@ export class ServiceError extends Error {
   constructor(
     message: string,
     public readonly cause?: any,
-    public readonly statusCode: number = 500
+    public readonly statusCode: number = HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
   ) {
     super(message);
     this.name = 'ServiceError';

@@ -1,7 +1,5 @@
 import { Router } from 'express';
 import profileRoutes from './profiles';
-import profileLinkRoutes from './profile-links';
-import { authenticate, optionalAuth } from '../../../middleware/auth';
 import { rateLimit } from 'express-rate-limit';
 
 const router: Router = Router();
@@ -18,16 +16,5 @@ router.use(profileRateLimit);
 
 // Main profile routes
 router.use('/', profileRoutes);
-
-// Sub-resource routes with parameter passing
-router.use(
-  '/:profileId/links',
-  (req, res, next) => {
-    // Pass profile ID to sub-routes
-    req.params.parentProfileId = req.params.profileId;
-    next();
-  },
-  profileLinkRoutes
-);
 
 export default router;

@@ -1,3 +1,1 @@
-import { Request, Response } from 'express';
-
-async function 
+export { profileController } from './profile';

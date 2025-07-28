@@ -1,13 +1,12 @@
 import { Router } from 'express';
 import authRoutes from './auth';
+import profileRoutes from './profiles.ts';
 
 const router: Router = Router();
 
 // Feature-based organization
 router.use('/auth', authRoutes);
-router.use('/profiles');
-// router.use('/resumes', resumeRoutes);
-// router.use('/portfolios', portfolioRoutes);
+router.use('/profiles', profileRoutes);
 
 // Version info
 router.get('/', (req, res) => {
