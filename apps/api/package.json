@@ -6,7 +6,6 @@
     "build": "pnpm i && prisma db pull && prisma generate && tsup",
     "dev": "tsx watch src/server.ts --clear-screen=false",
     "start": "node dist/server.mjs",
-    "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
     "lint": "eslint src/ --max-warnings 0",
     "db:generate": "prisma generate",
