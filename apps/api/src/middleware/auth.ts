@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { supabaseAuth, supabaseAdmin } from '../config/supabase';
+import { supabaseAuth } from '../config/supabase';
 import { HTTP_STATUS_CODES } from '@athaar/types';
 
 // Authentication middleware
@@ -168,43 +168,6 @@ export const authenticateApiKey = (req: Request, res: Response, next: NextFuncti
   }
 
   next();
-};
-
-// Check if user profile exists
-export const requireProfile = async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.userId) {
-    return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
-      success: false,
-      message: 'Authentication required',
-      errors: [{ field: 'auth', message: 'User not authenticated' }],
-    });
-  }
-
-  try {
-    // Check if profile exists using Supabase client
-    const { data: profile, error } = await supabaseAdmin
-      .from('profiles')
-      .select('id, username')
-      .eq('id', req.userId)
-      .single();
-
-    if (error || !profile) {
-      return res.status(HTTP_STATUS_CODES.NOT_FOUND).json({
-        success: false,
-        message: 'Profile not found',
-        errors: [{ field: 'profile', message: 'Please create a profile first' }],
-      });
-    }
-
-    next();
-  } catch (error) {
-    console.error('Profile check error:', error);
-    return res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: 'Profile check failed',
-      errors: [{ field: 'profile', message: 'Failed to verify profile' }],
-    });
-  }
 };
 
 // Activity logging middleware
