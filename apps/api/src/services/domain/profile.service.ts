@@ -1,7 +1,7 @@
 import { BaseService, ServiceContext, ServiceOptions, ServiceError } from '../base.service';
 import { ProfileRepository, ProfileEntity, ProfileRepositoryOptions } from '../../repositories/profile/profile';
 import { profileSchemas, ProfileCreateData, ProfileUpdateData } from '@athaar/types/validation';
-import { PaginationParams } from '@athaar/types/api';
+import { HTTP_STATUS_CODES, PaginationParams } from '@athaar/types/api';
 
 export interface ProfileServiceOptions extends ServiceOptions {
   includeLinks?: boolean;
@@ -92,7 +92,7 @@ export class ProfileService extends BaseService<ProfileEntity> {
     if (data.username) {
       const isAvailable = await this.profileRepository.checkUsernameAvailability(data.username, id);
       if (!isAvailable) {
-        throw new ServiceError('Username is already taken', null, 409);
+        throw new ServiceError('Username is already taken', null, HTTP_STATUS_CODES.CONFLICT);
       }
     }
 
@@ -130,13 +130,17 @@ export class ProfileService extends BaseService<ProfileEntity> {
 
     // Require authentication for write operations
     if (!context?.userId) {
-      throw new ServiceError('Authentication required', null, 401);
+      throw new ServiceError('Authentication required', null, HTTP_STATUS_CODES.UNAUTHORIZED);
     }
 
     // For update/delete operations, ensure user owns the profile or is admin
     if ((operation === 'update' || operation === 'delete' || operation === 'getProfileStats') && data.id) {
       if (data.id !== context.userId && context.userRole !== 'admin') {
-        throw new ServiceError('Access denied: You can only modify your own profile', null, 403);
+        throw new ServiceError(
+          'Access denied: You can only modify your own profile',
+          null,
+          HTTP_STATUS_CODES.FORBIDDEN
+        );
       }
     }
   }
@@ -149,7 +153,7 @@ export class ProfileService extends BaseService<ProfileEntity> {
         profileSchemas.update.parse(data);
       }
     } catch (error) {
-      throw new ServiceError('Validation failed', error, 422);
+      throw new ServiceError('Validation failed', error, HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY);
     }
   }
 
