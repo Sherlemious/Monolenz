@@ -84,6 +84,9 @@ importers:
       '@types/morgan':
         specifier: ^1.9.4
         version: 1.9.10
+      '@types/newrelic':
+        specifier: ^9.14.8
+        version: 9.14.8
       '@types/node':
         specifier: ^20.5.0
         version: 20.19.9
@@ -941,6 +944,9 @@ packages:
 
   '@types/morgan@1.9.10':
     resolution: {integrity: sha512-sS4A1zheMvsADRVfT0lYbJ4S9lmsey8Zo2F7cnbYjWHP67Q0AwMYuuzLlkIM2N8gAbb9cubhIVFwcIN2XyYCkA==}
+
+  '@types/newrelic@9.14.8':
+    resolution: {integrity: sha512-rkOTEVR7Lui4TTEykDUxIxCbFkcI/yw3C8URLOWM84zjuHh9W35RAequHTEvGBbbrLCdn43FVTHMLji4uunDWQ==}
 
   '@types/node@20.19.9':
     resolution: {integrity: sha512-cuVNgarYWZqxRJDQHEB58GEONhOK79QVR/qYx4S7kcUObQvUwvFnYxJuuHUKm2aieN9X3yZB4LZsuYNU1Qphsw==}
@@ -3605,6 +3611,8 @@ snapshots:
   '@types/morgan@1.9.10':
     dependencies:
       '@types/node': 20.19.9
+
+  '@types/newrelic@9.14.8': {}
 
   '@types/node@20.19.9':
     dependencies:

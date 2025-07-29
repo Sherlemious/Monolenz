@@ -14,4 +14,10 @@ export default defineConfig({
   treeshake: true,
   external: ['@prisma/client', 'newrelic', 'dotenv'],
   bundle: true,
+  // Handle path mapping
+  esbuildOptions(options) {
+    options.alias = {
+      '@': './src',
+    };
+  },
 });
