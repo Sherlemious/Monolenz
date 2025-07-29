@@ -1,49 +1,79 @@
-name: Auto Format
+name: Format Check
 
 on:
+  push:
+    branches: [main, dev, stage]
   pull_request:
-    types: [opened, synchronize]
     branches: [main, dev, stage]
 
-permissions:
-  contents: write
-
 jobs:
-  format:
+  format-check:
+    name: Check Code Formatting
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      - uses: pnpm/action-setup@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
           version: 9.0.0
+          run_install: false
 
-      - run: pnpm install --frozen-lockfile
-
-      - name: Format and commit
+      - name: Get pnpm store directory
+        shell: bash
         run: |
-          # Configure git
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-          # Run prettier
-          pnpm format
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
 
-          # Check if there are changes
-          if ! git diff --quiet; then
-            git add .
-            git commit -m "style: auto-format code [skip ci]"
-            git push
-            echo "✅ Code formatted and pushed!"
-          else
-            echo "✅ No formatting changes needed!"
+      - name: Install dependencies
+        run: |
+          echo "📦 Installing dependencies..."
+
+          # Try frozen lockfile first, fall back if needed
+          if ! pnpm install --frozen-lockfile; then
+            echo "⚠️ Frozen lockfile failed, installing without frozen lockfile..."
+            pnpm install --no-frozen-lockfile
           fi
+
+          echo "✅ Dependencies installed"
+
+      - name: Check code formatting
+        run: |
+          echo "🎨 Checking code formatting with Prettier..."
+          echo "Using configuration from .prettierrc:"
+          cat .prettierrc 2>/dev/null || echo "No .prettierrc found, using defaults"
+          echo ""
+
+          if pnpm format:check; then
+            echo "✅ All code is properly formatted!"
+          else
+            echo ""
+            echo "❌ Code formatting issues found!"
+            echo ""
+            echo "To fix formatting issues, run locally:"
+            echo "  pnpm format"
+            echo ""
+            echo "Or fix specific files:"
+            echo "  npx prettier --write path/to/your/file.ts"
+            echo ""
+            exit 1
+          fi
+
+      - name: Formatting success
+        run: |
+          echo "🎉 Code formatting check passed!"
+          echo "All files follow the project's formatting standards."
