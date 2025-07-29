@@ -7,8 +7,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
   try {
     const authHeader = req.headers.authorization;
 
-    console.log('Authorization header:', authHeader);
-
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
         success: false,
@@ -31,8 +29,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       data: { user },
       error,
     } = await supabaseAuth.auth.getUser(token);
-
-    console.log('Authenticated user:', user);
 
     if (error || !user) {
       return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
