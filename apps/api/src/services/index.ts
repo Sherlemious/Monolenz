@@ -3,7 +3,6 @@ import { ProfileRepository } from '../repositories/profile/profile';
 import { ProfileService } from './domain/profile.service';
 import { Logger } from '../utils/logger';
 import { MetricsCollector } from '../utils/metrics';
-import { CacheManager } from '../utils/cache';
 
 // Initialize shared dependencies
 const prisma = new PrismaClient();
