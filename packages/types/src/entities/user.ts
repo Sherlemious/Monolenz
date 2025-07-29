@@ -18,15 +18,15 @@ export interface Profile {
   linkedin_url?: string;
   github_url?: string;
   portfolio_url?: string;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface PublicProfile {
   username: string;
   bio?: string;
   portfolio_url?: string;
-  // Deliberately excludes private fields like id, email, etc.
+  profile_picture_url?: string;
 }
 
 export type UserRole = 'user' | 'admin' | 'moderator';

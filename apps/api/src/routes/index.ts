@@ -1,20 +1,29 @@
 import { Router } from 'express';
-import type { Router as ExpressRouter } from 'express';
+import { preprocessRequest, formatResponse } from '../middleware/request-response';
+import v1Routes from './v1';
 
-const router: ExpressRouter = Router();
+const router: Router = Router();
 
-// Health check for API routes
+// Global API middleware
+router.use(preprocessRequest);
+router.use(formatResponse);
+
+// API versioning
+router.use('/v1', v1Routes);
+
+// Root API info
 router.get('/', (req, res) => {
   res.json({
-    message: 'Athaar API is running',
+    name: 'ATHAAR API',
     version: '1.0.0',
+    description: 'Resume and portfolio management platform',
+    endpoints: {
+      v1: '/api/v1',
+      health: '/health',
+      docs: '/api/docs', // Future API documentation
+    },
     timestamp: new Date().toISOString(),
   });
 });
-
-// TODO: Add your API routes here
-// Example:
-// router.use('/users', userRoutes);
-// router.use('/auth', authRoutes);
 
 export default router;

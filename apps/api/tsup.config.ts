@@ -10,6 +10,14 @@ export default defineConfig({
   sourcemap: true,
   splitting: false,
   dts: false,
-  external: ['@prisma/client'],
+  platform: 'node',
+  treeshake: true,
+  external: ['@prisma/client', 'newrelic', 'dotenv'],
   bundle: true,
+  // Handle path mapping
+  esbuildOptions(options) {
+    options.alias = {
+      '@': './src',
+    };
+  },
 });

@@ -1,5 +1,4 @@
-import { Request, Response } from 'express';
-import { PaginationParams, SearchParams, ApiResponse, PaginationMeta } from '@athaar/types/api';
+import { PaginationParams } from '@athaar/types/api';
 import type { User } from '@supabase/supabase-js';
 
 // Extend Express Request interface
