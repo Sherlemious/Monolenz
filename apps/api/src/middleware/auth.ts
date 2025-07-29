@@ -95,7 +95,7 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
 export const authorize = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !req.userRole) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
         success: false,
         message: 'Authentication required',
         errors: [{ field: 'auth', message: 'User not authenticated' }],
@@ -103,7 +103,7 @@ export const authorize = (allowedRoles: string[]) => {
     }
 
     if (!allowedRoles.includes(req.userRole)) {
-      return res.status(403).json({
+      return res.status(HTTP_STATUS_CODES.FORBIDDEN).json({
         success: false,
         message: 'Insufficient permissions',
         errors: [
@@ -123,7 +123,7 @@ export const authorize = (allowedRoles: string[]) => {
 export const authorizeOwnership = (resourceIdParam: string = 'id') => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !req.userId) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
         success: false,
         message: 'Authentication required',
         errors: [{ field: 'auth', message: 'User not authenticated' }],
@@ -138,7 +138,7 @@ export const authorizeOwnership = (resourceIdParam: string = 'id') => {
       return next();
     }
 
-    return res.status(403).json({
+    return res.status(HTTP_STATUS_CODES.FORBIDDEN).json({
       success: false,
       message: 'Access denied',
       errors: [{ field: 'ownership', message: 'You can only access your own resources' }],
@@ -152,7 +152,7 @@ export const authenticateApiKey = (req: Request, res: Response, next: NextFuncti
   const expectedApiKey = process.env.API_KEY;
 
   if (!expectedApiKey) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'API key authentication not configured',
       errors: [{ field: 'config', message: 'API key not configured' }],
@@ -160,7 +160,7 @@ export const authenticateApiKey = (req: Request, res: Response, next: NextFuncti
   }
 
   if (!apiKey || apiKey !== expectedApiKey) {
-    return res.status(401).json({
+    return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
       success: false,
       message: 'Invalid API key',
       errors: [{ field: 'x-api-key', message: 'Valid API key required' }],
