@@ -1,0 +1,49 @@
+name: Auto Format
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main, dev, stage]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9.0.0
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Format and commit
+        run: |
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Run prettier
+          pnpm format
+
+          # Check if there are changes
+          if ! git diff --quiet; then
+            git add .
+            git commit -m "style: auto-format code [skip ci]"
+            git push
+            echo "✅ Code formatted and pushed!"
+          else
+            echo "✅ No formatting changes needed!"
+          fi
