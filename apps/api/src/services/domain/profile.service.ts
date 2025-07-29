@@ -31,16 +31,6 @@ export class ProfileService extends BaseService<ProfileEntity> {
       this.logger.info(`${operation} started`, { identifier, context });
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.attempts`);
 
-      // Check cache first
-      if (!options?.skipCache) {
-        const cacheKey = this.buildCacheKey('findByIdentifier', identifier);
-        const cached = await this.cache.get<ProfileEntity>(cacheKey);
-        if (cached) {
-          this.metrics.incrementCounter(`${this.serviceName}.${operation}.cache_hits`);
-          return cached;
-        }
-      }
-
       const repositoryOptions: ProfileRepositoryOptions = {
         includeLinks: options?.includeLinks,
         includeVersions: options?.includeVersions,
@@ -52,12 +42,6 @@ export class ProfileService extends BaseService<ProfileEntity> {
       if (result) {
         // Apply privacy filters based on context
         const filteredResult = await this.applyPrivacyFilters(result, context);
-
-        // Cache the result
-        if (!options?.skipCache) {
-          const cacheKey = this.buildCacheKey('findByIdentifier', identifier);
-          await this.cache.set(cacheKey, filteredResult, 300);
-        }
 
         this.metrics.recordDuration(`${this.serviceName}.${operation}.duration`, Date.now() - startTime);
         this.metrics.incrementCounter(`${this.serviceName}.${operation}.success`);
@@ -210,24 +194,6 @@ export class ProfileService extends BaseService<ProfileEntity> {
     }
 
     return serviceFilters;
-  }
-
-  protected async invalidateRelatedCaches(entity: ProfileEntity): Promise<void> {
-    await super.invalidateRelatedCaches(entity);
-
-    // Invalidate username-based cache
-    if (entity.username) {
-      const usernameCacheKey = this.buildCacheKey('findByUsername', entity.username);
-      await this.cache.delete(usernameCacheKey);
-    }
-
-    // Invalidate identifier-based cache
-    const identifierCacheKey = this.buildCacheKey('findByIdentifier', entity.id);
-    await this.cache.delete(identifierCacheKey);
-
-    // Invalidate stats cache
-    const statsCacheKey = this.buildCacheKey('stats', entity.id);
-    await this.cache.delete(statsCacheKey);
   }
 
   private async applyPrivacyFilters(profile: ProfileEntity, context?: ServiceContext): Promise<ProfileEntity> {

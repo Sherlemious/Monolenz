@@ -9,7 +9,7 @@ import { CacheManager } from '../utils/cache';
 const prisma = new PrismaClient();
 const logger = new Logger('ServiceContainer');
 const metrics = new MetricsCollector();
-const cache = new CacheManager();
+// const cache = new CacheManager();
 
 // Initialize repositories
 const profileRepository = new ProfileRepository(prisma);

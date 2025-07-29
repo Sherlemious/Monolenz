@@ -2,7 +2,6 @@ import { BaseRepository, BaseEntity } from '../repositories/base.repository';
 import { HTTP_STATUS_CODES, PaginationParams } from '@athaar/types/api';
 import { Logger } from '../utils/logger';
 import { MetricsCollector } from '../utils/metrics';
-import { CacheManager } from '../utils/cache';
 
 export interface ServiceOptions {
   skipCache?: boolean;
@@ -22,19 +21,16 @@ export abstract class BaseService<T extends BaseEntity> {
   protected serviceName: string;
   protected logger: Logger;
   protected metrics: MetricsCollector;
-  protected cache: CacheManager;
 
   constructor(
     serviceName: string,
     protected readonly repository: BaseRepository<T>,
     logger?: Logger,
-    metrics?: MetricsCollector,
-    cache?: CacheManager
+    metrics?: MetricsCollector
   ) {
     this.serviceName = serviceName;
     this.logger = logger || new Logger(serviceName);
     this.metrics = metrics || new MetricsCollector();
-    this.cache = cache || new CacheManager();
   }
 
   async findById(id: string | number, context?: ServiceContext, options?: ServiceOptions): Promise<T | null> {
@@ -45,25 +41,10 @@ export abstract class BaseService<T extends BaseEntity> {
       this.logger.info(`${operation} started`, { id, context });
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.attempts`);
 
-      // Check cache first
-      if (!options?.skipCache) {
-        const cacheKey = this.buildCacheKey('findById', id.toString());
-        const cached = await this.cache.get<T>(cacheKey);
-        if (cached) {
-          this.metrics.incrementCounter(`${this.serviceName}.${operation}.cache_hits`);
-          return cached;
-        }
-      }
-
       // Validate access
       await this.validateAccess(operation, { id }, context);
 
       const result = await this.repository.findById(id);
-
-      if (result && !options?.skipCache) {
-        const cacheKey = this.buildCacheKey('findById', id.toString());
-        await this.cache.set(cacheKey, result, 300); // 5 minutes
-      }
 
       this.metrics.recordDuration(`${this.serviceName}.${operation}.duration`, Date.now() - startTime);
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.success`);
@@ -151,9 +132,6 @@ export abstract class BaseService<T extends BaseEntity> {
 
       const result = await this.repository.create(processedData);
 
-      // Clear related caches
-      await this.invalidateRelatedCaches(result);
-
       // Audit log
       if (options?.auditLog !== false) {
         await this.logAuditEvent('create', result, context);
@@ -197,9 +175,6 @@ export abstract class BaseService<T extends BaseEntity> {
 
       const result = await this.repository.update(id, processedData);
 
-      // Clear related caches
-      await this.invalidateRelatedCaches(result);
-
       // Audit log
       if (options?.auditLog !== false) {
         await this.logAuditEvent('update', { before: existing, after: result }, context);
@@ -242,9 +217,6 @@ export abstract class BaseService<T extends BaseEntity> {
 
       const result = options?.soft ? await this.repository.softDelete(id) : await this.repository.delete(id);
 
-      // Clear related caches
-      await this.invalidateRelatedCaches(result);
-
       // Audit log
       if (options?.auditLog !== false) {
         await this.logAuditEvent(options?.soft ? 'soft_delete' : 'delete', existing, context);
@@ -282,11 +254,6 @@ export abstract class BaseService<T extends BaseEntity> {
   // Optional hooks
   protected async validateDeletion(entity: T, context?: ServiceContext): Promise<void> {
     // Override in child classes if needed
-  }
-
-  protected async invalidateRelatedCaches(entity: T): Promise<void> {
-    const cacheKey = this.buildCacheKey('findById', entity.id.toString());
-    await this.cache.delete(cacheKey);
   }
 
   protected async logAuditEvent(action: string, data: any, context?: ServiceContext): Promise<void> {
