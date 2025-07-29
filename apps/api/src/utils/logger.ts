@@ -81,5 +81,3 @@ export class Logger {
     this.logger.debug(message, context);
   }
 }
-
-// apps/api/src/utils/metrics.ts
