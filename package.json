@@ -5,8 +5,11 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-path .gitignore",
+    "check-types": "turbo run check-types",
+    "clean": "turbo run clean",
+    "pre-commit": "pnpm format && pnpm lint && pnpm check-types"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
