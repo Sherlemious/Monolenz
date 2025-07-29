@@ -18,6 +18,13 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   },
 });
 
+export const supabaseAuth = createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
+
 // Client for user-specific operations
 export const createUserClient = (accessToken: string) => {
   return createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {

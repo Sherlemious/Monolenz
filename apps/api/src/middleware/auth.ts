@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import { supabaseAdmin } from '../config/supabase';
+import { supabaseAuth, supabaseAdmin } from '../config/supabase';
 import { HTTP_STATUS_CODES } from '@athaar/types';
 
 // Authentication middleware
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
+
+    console.log('Authorization header:', authHeader);
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
@@ -28,7 +30,9 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     const {
       data: { user },
       error,
-    } = await supabaseAdmin.auth.getUser(token);
+    } = await supabaseAuth.auth.getUser(token);
+
+    console.log('Authenticated user:', user);
 
     if (error || !user) {
       return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
@@ -76,7 +80,7 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
     const {
       data: { user },
       error,
-    } = await supabaseAdmin.auth.getUser(token);
+    } = await supabaseAuth.auth.getUser(token);
 
     if (!error && user && user.email_confirmed_at) {
       req.user = user;
