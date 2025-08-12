@@ -1,13 +1,30 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, FileText, Globe, Briefcase, BarChart3, Plus, Circle, Square } from 'lucide-react';
+import {
+  ArrowRight,
+  FileText,
+  Globe,
+  Briefcase,
+  BarChart3,
+  Plus,
+  Circle,
+  Square,
+  Menu,
+  User,
+  Bell,
+} from 'lucide-react';
 
 const HeroSection = () => {
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [activeOutput, setActiveOutput] = useState<string | null>(null);
   const [hoveredBlock, setHoveredBlock] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const masterRef = useRef<HTMLDivElement | null>(null);
+  const outputRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [linePositions, setLinePositions] = useState<
+    Array<{ startX: number; startY: number; endX: number; endY: number }>
+  >([]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -24,12 +41,43 @@ const HeroSection = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  const calculateLinePositions = () => {
+    if (!containerRef.current || !masterRef.current) return;
+
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const masterRect = masterRef.current.getBoundingClientRect();
+
+    const newPositions = outputRefs.current.map((outputRef) => {
+      if (!outputRef) return { startX: 0, startY: 0, endX: 0, endY: 0 };
+
+      const outputRect = outputRef.getBoundingClientRect();
+
+      return {
+        startX: masterRect.right - containerRect.left,
+        startY: masterRect.top + masterRect.height / 2 - containerRect.top,
+        endX: outputRect.left - containerRect.left,
+        endY: outputRect.top + outputRect.height / 2 - containerRect.top,
+      };
+    });
+
+    setLinePositions(newPositions);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(calculateLinePositions, 100);
+    window.addEventListener('resize', calculateLinePositions);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', calculateLinePositions);
+    };
+  }, []);
+
   const outputs = [
     {
       id: 'resume',
       title: 'Dynamic Resumes',
       icon: FileText,
-      accent: '#1f2937',
+      accent: 'oklch(0.205 0 0)',
       description: 'Tailored for each application',
       stats: '95% ATS pass rate',
     },
@@ -37,7 +85,7 @@ const HeroSection = () => {
       id: 'portfolio',
       title: 'Live Portfolio',
       icon: Globe,
-      accent: '#059669',
+      accent: 'oklch(0.646 0.222 41.116)',
       description: 'monolenz.com/you',
       stats: 'Real-time updates',
     },
@@ -45,7 +93,7 @@ const HeroSection = () => {
       id: 'applications',
       title: 'Application Tracker',
       icon: Briefcase,
-      accent: '#0891b2',
+      accent: 'oklch(0.6 0.118 184.704)',
       description: 'Never lose track',
       stats: 'All in one place',
     },
@@ -53,7 +101,7 @@ const HeroSection = () => {
       id: 'analytics',
       title: 'Insights',
       icon: BarChart3,
-      accent: '#dc2626',
+      accent: 'oklch(0.577 0.245 27.325)',
       description: 'Performance metrics',
       stats: 'Track success',
     },
@@ -73,14 +121,170 @@ const HeroSection = () => {
       style={{
         position: 'relative',
         minHeight: '100vh',
-        backgroundColor: '#ffffff',
+        backgroundColor: 'var(--background, #ffffff)',
+        color: 'var(--foreground, #111827)',
         overflow: 'hidden',
         margin: 0,
         padding: 0,
         width: '100%',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontFamily: 'var(--font-montserrat, system-ui), system-ui, -apple-system, sans-serif',
       }}
     >
+      {/* Header */}
+      <header
+        style={{
+          position: 'relative',
+          zIndex: 50,
+          borderBottom: '1px solid var(--border, #e5e7eb)',
+          backgroundColor: 'var(--background, #ffffff)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '0 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '64px',
+          }}
+        >
+          {/* Logo */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+            }}
+          >
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                backgroundColor: 'var(--primary, #111827)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--primary-foreground, #ffffff)',
+                fontWeight: 'bold',
+                fontSize: '18px',
+              }}
+            >
+              M
+            </div>
+            <span
+              style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                color: 'var(--foreground, #111827)',
+              }}
+            >
+              Monolenz
+            </span>
+          </div>
+
+          {/* Navigation */}
+          <nav
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '32px',
+            }}
+          >
+            <a
+              href="#"
+              style={{
+                color: 'var(--foreground, #111827)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'color 0.2s ease',
+              }}
+            >
+              Features
+            </a>
+            <a
+              href="#"
+              style={{
+                color: 'var(--muted-foreground, #6b7280)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'color 0.2s ease',
+              }}
+            >
+              Templates
+            </a>
+            <a
+              href="#"
+              style={{
+                color: 'var(--muted-foreground, #6b7280)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'color 0.2s ease',
+              }}
+            >
+              Pricing
+            </a>
+          </nav>
+
+          {/* Actions */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+            }}
+          >
+            <button
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: '8px',
+                borderRadius: '6px',
+                color: 'var(--muted-foreground, #6b7280)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Bell style={{ width: '18px', height: '18px' }} />
+            </button>
+            <button
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: '8px',
+                borderRadius: '6px',
+                color: 'var(--muted-foreground, #6b7280)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <User style={{ width: '18px', height: '18px' }} />
+            </button>
+            <button
+              style={{
+                backgroundColor: 'var(--primary, #111827)',
+                color: 'var(--primary-foreground, #ffffff)',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              Sign In
+            </button>
+          </div>
+        </div>
+      </header>
+
       {/* Subtle grid pattern */}
       <div
         style={{
@@ -90,8 +294,9 @@ const HeroSection = () => {
           right: 0,
           bottom: 0,
           backgroundImage:
-            'linear-gradient(to right, #80808010 1px, transparent 1px), linear-gradient(to bottom, #80808010 1px, transparent 1px)',
+            'linear-gradient(to right, var(--border, #e5e7eb) 1px, transparent 1px), linear-gradient(to bottom, var(--border, #e5e7eb) 1px, transparent 1px)',
           backgroundSize: '14px 24px',
+          opacity: 0.3,
         }}
       ></div>
 
@@ -104,9 +309,10 @@ const HeroSection = () => {
             left: '25%',
             width: '128px',
             height: '128px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border, #e5e7eb)',
             borderRadius: '50%',
             animation: 'float-slow 20s ease-in-out infinite',
+            opacity: 0.4,
           }}
         ></div>
         <div
@@ -116,9 +322,10 @@ const HeroSection = () => {
             right: '25%',
             width: '96px',
             height: '96px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border, #e5e7eb)',
             transform: 'rotate(45deg)',
             animation: 'float-slower 25s ease-in-out infinite',
+            opacity: 0.4,
           }}
         ></div>
       </div>
@@ -129,7 +336,7 @@ const HeroSection = () => {
           zIndex: 10,
           maxWidth: '1200px',
           margin: '0 auto',
-          padding: '128px 16px 96px',
+          padding: '80px 16px 96px',
           width: '100%',
           boxSizing: 'border-box',
         }}
@@ -141,25 +348,32 @@ const HeroSection = () => {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              backgroundColor: '#f1f5f9',
-              color: '#475569',
+              backgroundColor: 'var(--secondary, #f1f5f9)',
+              color: 'var(--secondary-foreground, #475569)',
               padding: '6px 12px',
-              borderRadius: '6px',
+              borderRadius: 'var(--radius-md, 6px)',
               fontSize: '12px',
               fontFamily: 'monospace',
               textTransform: 'uppercase',
               letterSpacing: '1px',
               marginBottom: '32px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid var(--border, #e5e7eb)',
             }}
           >
-            <Circle style={{ width: '12px', height: '12px', fill: '#10b981', color: '#10b981' }} />
+            <Circle
+              style={{
+                width: '12px',
+                height: '12px',
+                fill: 'oklch(0.646 0.222 41.116)',
+                color: 'oklch(0.646 0.222 41.116)',
+              }}
+            />
             <span>Your Career&apos;s Source of Truth</span>
           </div>
 
           <h1
             style={{
-              fontSize: '4rem',
+              fontSize: 'clamp(2.5rem, 5vw, 4rem)',
               fontWeight: 'bold',
               marginBottom: '24px',
               letterSpacing: '-0.02em',
@@ -167,16 +381,16 @@ const HeroSection = () => {
               margin: '0 0 24px 0',
             }}
           >
-            <span style={{ color: '#111827' }}>One Profile.</span>
+            <span style={{ color: 'var(--foreground, #111827)' }}>One Profile.</span>
             <br />
-            <span style={{ color: '#9ca3af' }}>Infinite Possibilities.</span>
+            <span style={{ color: 'var(--muted-foreground, #6b7280)' }}>Infinite Possibilities.</span>
           </h1>
 
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <p
               style={{
                 fontSize: '18px',
-                color: '#6b7280',
+                color: 'var(--muted-foreground, #6b7280)',
                 maxWidth: '512px',
                 lineHeight: '1.6',
                 textAlign: 'center',
@@ -184,7 +398,7 @@ const HeroSection = () => {
               }}
             >
               Stop managing scattered documents. Build your master profile once, then generate tailored resumes,
-              portfolios, and track applications—all perfectly synchronized.
+              portfolios, and track applications, all perfectly synchronized.
             </p>
           </div>
         </div>
@@ -200,7 +414,7 @@ const HeroSection = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '0 40px',
+            padding: '0 20px',
           }}
         >
           {/* Connection Lines */}
@@ -215,37 +429,35 @@ const HeroSection = () => {
               zIndex: 1,
             }}
           >
-            {outputs.map((output, index) => {
-              const startX = 320;
-              const startY = 250;
-              const endX = 680;
-              const endY = 150 + index * 80;
+            {linePositions.map((pos, index) => {
+              const output = outputs[index];
+              if (!output) return null;
 
               return (
                 <g key={output.id}>
                   <line
-                    x1={startX}
-                    y1={startY}
-                    x2={endX}
-                    y2={endY}
-                    stroke={activeOutput === output.id ? output.accent : '#cbd5e1'}
+                    x1={pos.startX}
+                    y1={pos.startY}
+                    x2={pos.endX}
+                    y2={pos.endY}
+                    stroke={activeOutput === output.id ? output.accent : 'var(--border, #e5e7eb)'}
                     strokeWidth={activeOutput === output.id ? 3 : 2}
                     strokeDasharray={activeOutput === output.id ? '0' : '8,8'}
                     style={{ transition: 'all 0.3s ease' }}
-                    opacity={activeOutput === output.id ? 1 : 0.7}
+                    opacity={activeOutput === output.id ? 1 : 0.6}
                   />
                   <circle
-                    cx={startX}
-                    cy={startY}
+                    cx={pos.startX}
+                    cy={pos.startY}
                     r={activeOutput === output.id ? 5 : 3}
-                    fill={activeOutput === output.id ? output.accent : '#94a3b8'}
+                    fill={activeOutput === output.id ? output.accent : 'var(--muted, #f1f5f9)'}
                     style={{ transition: 'all 0.3s ease' }}
                   />
                   <circle
-                    cx={endX}
-                    cy={endY}
+                    cx={pos.endX}
+                    cy={pos.endY}
                     r={activeOutput === output.id ? 5 : 3}
-                    fill={activeOutput === output.id ? output.accent : '#94a3b8'}
+                    fill={activeOutput === output.id ? output.accent : 'var(--muted, #f1f5f9)'}
                     style={{ transition: 'all 0.3s ease' }}
                   />
                 </g>
@@ -255,21 +467,23 @@ const HeroSection = () => {
 
           {/* Master Document - Left Side */}
           <div
+            ref={masterRef}
             style={{
               position: 'relative',
               zIndex: 20,
               transform: `perspective(1000px) rotateY(${mousePosition.x * 0.5}deg) rotateX(${-mousePosition.y * 0.5}deg)`,
               transition: 'transform 0.1s ease-out',
+              flexShrink: 0,
             }}
           >
             <div
               style={{
-                backgroundColor: '#ffffff',
-                borderRadius: '8px',
+                backgroundColor: 'var(--card, #ffffff)',
+                borderRadius: 'var(--radius-lg, 8px)',
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                 padding: '20px',
                 width: '280px',
-                border: '1px solid #e5e7eb',
+                border: '1px solid var(--border, #e5e7eb)',
               }}
             >
               {/* Document Header */}
@@ -282,15 +496,36 @@ const HeroSection = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#d1d5db' }}></div>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#d1d5db' }}></div>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#d1d5db' }}></div>
+                  <div
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--muted, #f1f5f9)',
+                    }}
+                  ></div>
+                  <div
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--muted, #f1f5f9)',
+                    }}
+                  ></div>
+                  <div
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--muted, #f1f5f9)',
+                    }}
+                  ></div>
                 </div>
                 <span
                   style={{
                     fontSize: '10px',
                     fontFamily: 'monospace',
-                    color: '#9ca3af',
+                    color: 'var(--muted-foreground, #6b7280)',
                     textTransform: 'uppercase',
                     letterSpacing: '1px',
                   }}
@@ -306,7 +541,7 @@ const HeroSection = () => {
                     style={{
                       fontSize: '11px',
                       fontFamily: 'monospace',
-                      color: '#6b7280',
+                      color: 'var(--muted-foreground, #6b7280)',
                       textTransform: 'uppercase',
                       letterSpacing: '1px',
                       margin: '0 0 4px 0',
@@ -314,7 +549,7 @@ const HeroSection = () => {
                   >
                     Content Blocks
                   </h3>
-                  <span style={{ fontSize: '11px', color: '#9ca3af' }}>18+ sections</span>
+                  <span style={{ fontSize: '11px', color: 'var(--muted-foreground, #6b7280)' }}>18+ sections</span>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -329,13 +564,13 @@ const HeroSection = () => {
                         style={{
                           width: '100%',
                           height: '24px',
-                          borderRadius: '4px',
+                          borderRadius: 'var(--radius-sm, 4px)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           padding: '0 10px',
-                          backgroundColor: block.filled ? '#f8fafc' : 'transparent',
-                          border: block.filled ? 'none' : '1px dashed #d1d5db',
+                          backgroundColor: block.filled ? 'var(--muted, #f1f5f9)' : 'transparent',
+                          border: block.filled ? 'none' : '1px dashed var(--border, #e5e7eb)',
                           transform: hoveredBlock === index ? 'scale(1.02)' : 'scale(1)',
                           transition: 'all 0.2s ease',
                           boxShadow: hoveredBlock === index ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
@@ -345,12 +580,14 @@ const HeroSection = () => {
                           style={{
                             fontSize: '11px',
                             fontWeight: '500',
-                            color: '#374151',
+                            color: 'var(--card-foreground, #111827)',
                           }}
                         >
                           {block.name}
                         </span>
-                        {!block.filled && <Plus style={{ width: '10px', height: '10px', color: '#9ca3af' }} />}
+                        {!block.filled && (
+                          <Plus style={{ width: '10px', height: '10px', color: 'var(--muted-foreground, #6b7280)' }} />
+                        )}
                       </div>
                     </div>
                   ))}
@@ -365,9 +602,30 @@ const HeroSection = () => {
                   }}
                 >
                   <div style={{ display: 'flex', gap: '4px' }}>
-                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#d1d5db' }}></div>
-                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#d1d5db' }}></div>
-                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#d1d5db' }}></div>
+                    <div
+                      style={{
+                        width: '4px',
+                        height: '4px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--muted, #f1f5f9)',
+                      }}
+                    ></div>
+                    <div
+                      style={{
+                        width: '4px',
+                        height: '4px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--muted, #f1f5f9)',
+                      }}
+                    ></div>
+                    <div
+                      style={{
+                        width: '4px',
+                        height: '4px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--muted, #f1f5f9)',
+                      }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -375,11 +633,19 @@ const HeroSection = () => {
           </div>
 
           {/* Output Documents - Right Side */}
-          <div style={{ position: 'relative', zIndex: 20 }}>
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 20,
+              flexShrink: 0,
+              marginLeft: 'auto',
+            }}
+          >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {outputs.map((output, index) => (
                 <div
                   key={output.id}
+                  ref={(el) => (outputRefs.current[index] = el)}
                   style={{
                     cursor: 'pointer',
                     transform: activeOutput === output.id ? 'scale(1.05)' : 'scale(1)',
@@ -390,15 +656,15 @@ const HeroSection = () => {
                 >
                   <div
                     style={{
-                      backgroundColor: '#ffffff',
-                      borderRadius: '8px',
+                      backgroundColor: 'var(--card, #ffffff)',
+                      borderRadius: 'var(--radius-lg, 8px)',
                       boxShadow:
                         activeOutput === output.id
                           ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
                           : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                       padding: '16px',
                       width: '220px',
-                      border: '1px solid #e5e7eb',
+                      border: '1px solid var(--border, #e5e7eb)',
                       position: 'relative',
                       transition: 'all 0.3s ease',
                     }}
@@ -422,10 +688,13 @@ const HeroSection = () => {
                       style={{
                         display: 'inline-flex',
                         padding: '8px',
-                        borderRadius: '6px',
+                        borderRadius: 'var(--radius-md, 6px)',
                         marginBottom: '12px',
-                        backgroundColor: activeOutput === output.id ? `${output.accent}20` : 'transparent',
-                        color: activeOutput === output.id ? output.accent : '#64748b',
+                        backgroundColor:
+                          activeOutput === output.id
+                            ? `color-mix(in srgb, ${output.accent} 20%, transparent)`
+                            : 'var(--muted, #f1f5f9)',
+                        color: activeOutput === output.id ? output.accent : 'var(--muted-foreground, #6b7280)',
                         transition: 'all 0.3s ease',
                       }}
                     >
@@ -437,7 +706,7 @@ const HeroSection = () => {
                       style={{
                         fontWeight: '600',
                         fontSize: '14px',
-                        color: '#111827',
+                        color: 'var(--card-foreground, #111827)',
                         margin: '0 0 4px 0',
                       }}
                     >
@@ -446,7 +715,7 @@ const HeroSection = () => {
                     <p
                       style={{
                         fontSize: '12px',
-                        color: '#6b7280',
+                        color: 'var(--muted-foreground, #6b7280)',
                         margin: '0 0 8px 0',
                       }}
                     >
@@ -456,7 +725,7 @@ const HeroSection = () => {
                       style={{
                         fontSize: '10px',
                         fontFamily: 'monospace',
-                        color: '#9ca3af',
+                        color: 'var(--muted-foreground, #6b7280)',
                         margin: 0,
                       }}
                     >
@@ -498,7 +767,7 @@ const HeroSection = () => {
               style={{
                 fontSize: '12px',
                 fontFamily: 'monospace',
-                color: '#9ca3af',
+                color: 'var(--muted-foreground, #6b7280)',
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
                 marginBottom: '4px',
@@ -506,7 +775,9 @@ const HeroSection = () => {
             >
               Generates
             </div>
-            <ArrowRight style={{ width: '16px', height: '16px', color: '#9ca3af', margin: '0 auto' }} />
+            <ArrowRight
+              style={{ width: '16px', height: '16px', color: 'var(--muted-foreground, #6b7280)', margin: '0 auto' }}
+            />
           </div>
         </div>
 
@@ -526,10 +797,10 @@ const HeroSection = () => {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '12px',
-              backgroundColor: '#111827',
-              color: '#ffffff',
+              backgroundColor: 'var(--primary, #111827)',
+              color: 'var(--primary-foreground, #ffffff)',
               padding: '16px 32px',
-              borderRadius: '8px',
+              borderRadius: 'var(--radius-lg, 8px)',
               fontWeight: '500',
               border: 'none',
               cursor: 'pointer',
@@ -548,11 +819,11 @@ const HeroSection = () => {
               alignItems: 'center',
               gap: '12px',
               backgroundColor: 'transparent',
-              color: '#111827',
+              color: 'var(--foreground, #111827)',
               padding: '16px 32px',
-              borderRadius: '8px',
+              borderRadius: 'var(--radius-lg, 8px)',
               fontWeight: '500',
-              border: '1px solid #d1d5db',
+              border: '1px solid var(--border, #e5e7eb)',
               cursor: 'pointer',
               fontSize: '16px',
               transition: 'all 0.2s ease',
@@ -572,20 +843,32 @@ const HeroSection = () => {
             gap: '48px',
             marginTop: '64px',
             fontSize: '14px',
-            color: '#6b7280',
+            color: 'var(--muted-foreground, #6b7280)',
             flexWrap: 'wrap',
           }}
         >
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827', margin: '0 0 4px 0' }}>18+</div>
+            <div
+              style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--foreground, #111827)', margin: '0 0 4px 0' }}
+            >
+              18+
+            </div>
             <div style={{ fontSize: '12px' }}>Content Blocks</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827', margin: '0 0 4px 0' }}>100+</div>
+            <div
+              style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--foreground, #111827)', margin: '0 0 4px 0' }}
+            >
+              100+
+            </div>
             <div style={{ fontSize: '12px' }}>Templates</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827', margin: '0 0 4px 0' }}>∞</div>
+            <div
+              style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--foreground, #111827)', margin: '0 0 4px 0' }}
+            >
+              ∞
+            </div>
             <div style={{ fontSize: '12px' }}>Versions</div>
           </div>
         </div>
