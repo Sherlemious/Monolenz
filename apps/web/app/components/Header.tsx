@@ -39,7 +39,7 @@ const Header: React.FC = () => {
         }}
       >
         {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+        <Link href='/' style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
           <div
             style={{
               width: '32px',
@@ -62,19 +62,19 @@ const Header: React.FC = () => {
         {/* Navigation */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
           <Link
-            href="#"
+            href='#'
             style={{ color: 'var(--foreground)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}
           >
             Features
           </Link>
           <Link
-            href="#"
+            href='#'
             style={{ color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}
           >
             Templates
           </Link>
           <Link
-            href="#"
+            href='#'
             style={{ color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}
           >
             Pricing
@@ -86,7 +86,7 @@ const Header: React.FC = () => {
           {isAuthed ? (
             <>
               <Link
-                href="/dashboard"
+                href='/dashboard'
                 style={{
                   color: 'var(--foreground)',
                   textDecoration: 'none',
@@ -107,14 +107,14 @@ const Header: React.FC = () => {
                     color: 'var(--muted-foreground)',
                     cursor: 'pointer',
                   }}
-                  aria-label="Notifications"
+                  aria-label='Notifications'
                 >
                   <Bell style={{ width: 18, height: 18 }} />
                 </button>
               )}
               <form action={signOut}>
                 <button
-                  type="submit"
+                  type='submit'
                   style={{
                     backgroundColor: 'transparent',
                     color: 'var(--foreground)',
@@ -133,7 +133,7 @@ const Header: React.FC = () => {
           ) : (
             <>
               <Link
-                href="/login"
+                href='/login'
                 style={{
                   backgroundColor: 'transparent',
                   color: 'var(--foreground)',
@@ -148,7 +148,7 @@ const Header: React.FC = () => {
                 Sign in
               </Link>
               <Link
-                href="/signup"
+                href='/signup'
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',

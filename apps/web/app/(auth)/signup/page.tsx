@@ -9,7 +9,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
   const { pending } = useFormStatus();
   return (
     <button
-      type="submit"
+      type='submit'
       disabled={pending}
       style={{
         marginTop: 8,
@@ -56,7 +56,7 @@ export default function SignupPage() {
 
         {state?.error && (
           <div
-            role="alert"
+            role='alert'
             style={{
               border: '1px solid var(--destructive)',
               color: 'var(--destructive)',
@@ -72,7 +72,7 @@ export default function SignupPage() {
 
         {state?.success && (
           <div
-            role="status"
+            role='status'
             style={{
               border: '1px solid var(--chart-1)',
               color: 'var(--foreground)',
@@ -86,13 +86,13 @@ export default function SignupPage() {
           </div>
         )}
 
-        <label htmlFor="email" style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
+        <label htmlFor='email' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
           Email
         </label>
         <input
-          id="email"
-          name="email"
-          type="email"
+          id='email'
+          name='email'
+          type='email'
           required
           style={{
             padding: '10px 12px',
@@ -103,13 +103,13 @@ export default function SignupPage() {
           }}
         />
 
-        <label htmlFor="password" style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
+        <label htmlFor='password' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
           Password
         </label>
         <input
-          id="password"
-          name="password"
-          type="password"
+          id='password'
+          name='password'
+          type='password'
           required
           style={{
             padding: '10px 12px',
@@ -120,11 +120,11 @@ export default function SignupPage() {
           }}
         />
 
-        <SubmitButton label="Sign up" pendingLabel="Creating..." />
+        <SubmitButton label='Sign up' pendingLabel='Creating...' />
 
         <div style={{ fontSize: 13, color: 'var(--muted-foreground)', textAlign: 'center', marginTop: 8 }}>
           Already have an account?{' '}
-          <Link href="/login" style={{ color: 'var(--foreground)', textDecoration: 'underline' }}>
+          <Link href='/login' style={{ color: 'var(--foreground)', textDecoration: 'underline' }}>
             Sign in
           </Link>
         </div>
@@ -149,15 +149,15 @@ export default function SignupPage() {
           }}
         >
           <div style={{ fontWeight: 600 }}>Verify email</div>
-          <label htmlFor="otp-email" style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
+          <label htmlFor='otp-email' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
             Email
           </label>
           <input
-            id="otp-email"
-            name="email"
-            type="email"
+            id='otp-email'
+            name='email'
+            type='email'
             required
-            placeholder="your@email.com"
+            placeholder='your@email.com'
             style={{
               padding: '10px 12px',
               borderRadius: 'var(--radius-md)',
@@ -166,15 +166,15 @@ export default function SignupPage() {
               color: 'var(--foreground)',
             }}
           />
-          <label htmlFor="otp-token" style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
+          <label htmlFor='otp-token' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
             Code
           </label>
           <input
-            id="otp-token"
-            name="token"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            placeholder="6-digit code"
+            id='otp-token'
+            name='token'
+            inputMode='numeric'
+            pattern='[0-9]*'
+            placeholder='6-digit code'
             required
             style={{
               padding: '10px 12px',
@@ -186,7 +186,7 @@ export default function SignupPage() {
               textAlign: 'center',
             }}
           />
-          <SubmitButton label="Verify" pendingLabel="Verifying..." />
+          <SubmitButton label='Verify' pendingLabel='Verifying...' />
         </form>
       )}
     </main>

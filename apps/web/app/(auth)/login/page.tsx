@@ -9,7 +9,7 @@ function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <button
-      type="submit"
+      type='submit'
       disabled={pending}
       style={{
         marginTop: 8,
@@ -56,7 +56,7 @@ export default function LoginPage() {
 
         {state?.error && (
           <div
-            role="alert"
+            role='alert'
             style={{
               border: '1px solid var(--destructive)',
               color: 'var(--destructive)',
@@ -70,13 +70,13 @@ export default function LoginPage() {
           </div>
         )}
 
-        <label htmlFor="email" style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
+        <label htmlFor='email' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
           Email
         </label>
         <input
-          id="email"
-          name="email"
-          type="email"
+          id='email'
+          name='email'
+          type='email'
           required
           style={{
             padding: '10px 12px',
@@ -87,13 +87,13 @@ export default function LoginPage() {
           }}
         />
 
-        <label htmlFor="password" style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
+        <label htmlFor='password' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
           Password
         </label>
         <input
-          id="password"
-          name="password"
-          type="password"
+          id='password'
+          name='password'
+          type='password'
           required
           style={{
             padding: '10px 12px',
@@ -104,11 +104,11 @@ export default function LoginPage() {
           }}
         />
 
-        <SubmitButton label="Sign in" />
+        <SubmitButton label='Sign in' />
 
         <div style={{ fontSize: 13, color: 'var(--muted-foreground)', textAlign: 'center', marginTop: 8 }}>
           Don&apos;t have an account?{' '}
-          <Link href="/signup" style={{ color: 'var(--foreground)', textDecoration: 'underline' }}>
+          <Link href='/signup' style={{ color: 'var(--foreground)', textDecoration: 'underline' }}>
             Sign up
           </Link>
         </div>
