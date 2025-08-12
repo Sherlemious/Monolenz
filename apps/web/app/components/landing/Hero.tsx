@@ -1,19 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  ArrowRight,
-  FileText,
-  Globe,
-  Briefcase,
-  BarChart3,
-  Plus,
-  Circle,
-  Square,
-  Menu,
-  User,
-  Bell,
-} from 'lucide-react';
+import { ArrowRight, FileText, Globe, Briefcase, BarChart3, Plus, Circle, Square } from 'lucide-react';
 
 const HeroSection = () => {
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -77,7 +65,7 @@ const HeroSection = () => {
       id: 'resume',
       title: 'Dynamic Resumes',
       icon: FileText,
-      accent: 'oklch(0.205 0 0)',
+      accent: 'var(--primary)',
       description: 'Tailored for each application',
       stats: '95% ATS pass rate',
     },
@@ -85,7 +73,7 @@ const HeroSection = () => {
       id: 'portfolio',
       title: 'Live Portfolio',
       icon: Globe,
-      accent: 'oklch(0.646 0.222 41.116)',
+      accent: 'var(--chart-1)',
       description: 'monolenz.com/you',
       stats: 'Real-time updates',
     },
@@ -93,7 +81,7 @@ const HeroSection = () => {
       id: 'applications',
       title: 'Application Tracker',
       icon: Briefcase,
-      accent: 'oklch(0.6 0.118 184.704)',
+      accent: 'var(--chart-2)',
       description: 'Never lose track',
       stats: 'All in one place',
     },
@@ -101,7 +89,7 @@ const HeroSection = () => {
       id: 'analytics',
       title: 'Insights',
       icon: BarChart3,
-      accent: 'oklch(0.577 0.245 27.325)',
+      accent: 'var(--destructive)',
       description: 'Performance metrics',
       stats: 'Track success',
     },
@@ -130,160 +118,7 @@ const HeroSection = () => {
         fontFamily: 'var(--font-montserrat, system-ui), system-ui, -apple-system, sans-serif',
       }}
     >
-      {/* Header */}
-      <header
-        style={{
-          position: 'relative',
-          zIndex: 50,
-          borderBottom: '1px solid var(--border, #e5e7eb)',
-          backgroundColor: 'var(--background, #ffffff)',
-          backdropFilter: 'blur(8px)',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '0 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            height: '64px',
-          }}
-        >
-          {/* Logo */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-            }}
-          >
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: 'var(--primary, #111827)',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--primary-foreground, #ffffff)',
-                fontWeight: 'bold',
-                fontSize: '18px',
-              }}
-            >
-              M
-            </div>
-            <span
-              style={{
-                fontSize: '20px',
-                fontWeight: '600',
-                color: 'var(--foreground, #111827)',
-              }}
-            >
-              Monolenz
-            </span>
-          </div>
-
-          {/* Navigation */}
-          <nav
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '32px',
-            }}
-          >
-            <a
-              href="#"
-              style={{
-                color: 'var(--foreground, #111827)',
-                textDecoration: 'none',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'color 0.2s ease',
-              }}
-            >
-              Features
-            </a>
-            <a
-              href="#"
-              style={{
-                color: 'var(--muted-foreground, #6b7280)',
-                textDecoration: 'none',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'color 0.2s ease',
-              }}
-            >
-              Templates
-            </a>
-            <a
-              href="#"
-              style={{
-                color: 'var(--muted-foreground, #6b7280)',
-                textDecoration: 'none',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'color 0.2s ease',
-              }}
-            >
-              Pricing
-            </a>
-          </nav>
-
-          {/* Actions */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-            }}
-          >
-            <button
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '8px',
-                borderRadius: '6px',
-                color: 'var(--muted-foreground, #6b7280)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <Bell style={{ width: '18px', height: '18px' }} />
-            </button>
-            <button
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '8px',
-                borderRadius: '6px',
-                color: 'var(--muted-foreground, #6b7280)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <User style={{ width: '18px', height: '18px' }} />
-            </button>
-            <button
-              style={{
-                backgroundColor: 'var(--primary, #111827)',
-                color: 'var(--primary-foreground, #ffffff)',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              Sign In
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Global header now lives in layout */}
 
       {/* Subtle grid pattern */}
       <div
@@ -364,8 +199,8 @@ const HeroSection = () => {
               style={{
                 width: '12px',
                 height: '12px',
-                fill: 'oklch(0.646 0.222 41.116)',
-                color: 'oklch(0.646 0.222 41.116)',
+                fill: 'var(--chart-1)',
+                color: 'var(--chart-1)',
               }}
             />
             <span>Your Career&apos;s Source of Truth</span>
@@ -645,7 +480,9 @@ const HeroSection = () => {
               {outputs.map((output, index) => (
                 <div
                   key={output.id}
-                  ref={(el) => (outputRefs.current[index] = el)}
+                  ref={(el) => {
+                    outputRefs.current[index] = el;
+                  }}
                   style={{
                     cursor: 'pointer',
                     transform: activeOutput === output.id ? 'scale(1.05)' : 'scale(1)',
