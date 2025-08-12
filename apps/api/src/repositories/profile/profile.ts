@@ -27,7 +27,6 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
       const result = await this.prisma.profiles.findUnique({
         where: { username },
         include,
-        ...this.buildSelectOptions(options),
       });
 
       return result as ProfileEntity;
@@ -48,7 +47,6 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
       const result = await this.prisma.profiles.findUnique({
         where,
         include,
-        ...this.buildSelectOptions(options),
       });
 
       return result as ProfileEntity;
@@ -102,7 +100,7 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
     if (options?.includeVersions) {
       include.versions = {
         orderBy: { created_at: 'desc' },
-        take: 10, // Limit to recent versions
+        take: 10,
       };
     }
 

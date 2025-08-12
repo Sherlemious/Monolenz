@@ -145,7 +145,7 @@ export abstract class BaseService<T extends BaseEntity> {
     } catch (error) {
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.errors`);
       this.logger.error(`${operation} failed`, { error: error as Error, context });
-      throw new ServiceError(`Failed to create ${this.serviceName}`, error);
+      throw new ServiceError(`Failed to create, ${this.serviceName}`, error);
     }
   }
 
@@ -160,7 +160,7 @@ export abstract class BaseService<T extends BaseEntity> {
       // Check if record exists and validate access
       const existing = await this.repository.findById(id);
       if (!existing) {
-        throw new ServiceError(`${this.serviceName} not found`, null, 404);
+        throw new ServiceError(`${this.serviceName} not found`, null, HTTP_STATUS_CODES.NOT_FOUND);
       }
 
       await this.validateAccess(operation, { id, existing }, context);
@@ -207,7 +207,7 @@ export abstract class BaseService<T extends BaseEntity> {
       // Check if record exists and validate access
       const existing = await this.repository.findById(id);
       if (!existing) {
-        throw new ServiceError(`${this.serviceName} not found`, null, 404);
+        throw new ServiceError(`${this.serviceName} not found`, null, HTTP_STATUS_CODES.NOT_FOUND);
       }
 
       await this.validateAccess(operation, { id, existing }, context);

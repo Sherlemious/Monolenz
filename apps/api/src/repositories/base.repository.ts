@@ -141,14 +141,6 @@ export abstract class BaseRepository<T extends BaseEntity> {
     }
   }
 
-  async transaction<R>(callback: (tx: PrismaClient) => Promise<R>): Promise<R> {
-    try {
-      return await this.prisma.$transaction(callback);
-    } catch (error) {
-      throw new RepositoryError('Transaction failed', error);
-    }
-  }
-
   // Bulk operations
   async createMany(data: Partial<T>[]): Promise<{ count: number }> {
     try {

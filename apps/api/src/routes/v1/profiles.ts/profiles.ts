@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { profileController } from '../../../controllers';
-import { authenticate, optionalAuth, requireProfile } from '../../../middleware/auth';
+import { authenticate, optionalAuth } from '../../../middleware/auth';
 import { validate } from '../../../middleware/validation';
 import { profileSchemas } from '@athaar/types/validation';
 import { z } from 'zod';
@@ -60,18 +60,17 @@ router.post(
   profileController.createProfile
 );
 
-router.get('/me', requireProfile, profileController.getMyProfile);
+router.get('/me', profileController.getMyProfile);
 
 router.put(
   '/me',
-  requireProfile,
   validate({
     body: profileSchemas.update,
   }),
   profileController.updateProfile
 );
 
-router.delete('/me', requireProfile, profileController.deleteProfile);
+router.delete('/me', profileController.deleteProfile);
 
 router.get(
   '/:identifier',
