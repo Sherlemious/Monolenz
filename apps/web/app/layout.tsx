@@ -70,10 +70,6 @@ export const metadata: Metadata = {
     },
   },
   category: 'Technology',
-  verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
-  },
 };
 
 export default function RootLayout({
