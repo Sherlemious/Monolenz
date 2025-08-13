@@ -137,3 +137,43 @@ a {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .grid-pattern {
+    background-image: linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 14px 24px;
+  }
+
+  @keyframes float-slow {
+
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+      transform: translateY(-20px) rotate(180deg);
+    }
+  }
+
+  @keyframes float-slower {
+
+    0%,
+    100% {
+      transform: translateY(0px) rotate(45deg);
+    }
+
+    50% {
+      transform: translateY(-15px) rotate(225deg);
+    }
+  }
+
+  .animate-float-slow {
+    animation: float-slow 20s ease-in-out infinite;
+  }
+
+  .animate-float-slower {
+    animation: float-slower 25s ease-in-out infinite;
+  }
+}
