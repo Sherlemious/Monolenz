@@ -14,10 +14,11 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Monolenz - Your Career\'s Source of Truth',
-    template: '%s | Monolenz'
+    default: "Monolenz - Your Career's Source of Truth",
+    template: '%s | Monolenz',
   },
-  description: 'Stop managing scattered documents. Build your master profile once, then generate tailored resumes, portfolios, and track applications. One profile, infinite possibilities.',
+  description:
+    'Stop managing scattered documents. Build your master profile once, then generate tailored resumes, portfolios, and track applications. One profile, infinite possibilities.',
   keywords: [
     'resume builder',
     'portfolio generator',
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     'ATS-friendly resumes',
     'dynamic portfolio',
     'job search tools',
-    'career development'
+    'career development',
   ],
   authors: [{ name: 'Monolenz' }],
   creator: 'Monolenz',
@@ -43,8 +44,9 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Monolenz - Your Career\'s Source of Truth',
-    description: 'Stop managing scattered documents. Build your master profile once, then generate tailored resumes, portfolios, and track applications.',
+    title: "Monolenz - Your Career's Source of Truth",
+    description:
+      'Stop managing scattered documents. Build your master profile once, then generate tailored resumes, portfolios, and track applications.',
     url: 'https://www.monolenz.com',
     siteName: 'Monolenz',
     locale: 'en_US',
@@ -52,7 +54,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Monolenz - Your Career\'s Source of Truth',
+    title: "Monolenz - Your Career's Source of Truth",
     description: 'Build your master profile once, then generate tailored resumes, portfolios, and track applications.',
     creator: '@monolenz',
   },
@@ -80,51 +82,49 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Monolenz",
-    "description": "Professional career management platform for building resumes, portfolios, and tracking job applications",
-    "url": "https://www.monolenz.com",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "Web",
-    "offers": {
-      "@type": "Offer",
-      "category": "SaaS"
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Monolenz',
+    description:
+      'Professional career management platform for building resumes, portfolios, and tracking job applications',
+    url: 'https://www.monolenz.com',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      category: 'SaaS',
     },
-    "featureList": [
-      "Dynamic Resume Generation",
-      "Portfolio Builder",
-      "Application Tracking",
-      "ATS-Friendly Templates",
-      "Real-time Analytics"
-    ]
+    featureList: [
+      'Dynamic Resume Generation',
+      'Portfolio Builder',
+      'Application Tracking',
+      'ATS-Friendly Templates',
+      'Real-time Analytics',
+    ],
   };
 
   return (
     <html lang='en'>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#111827" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-        />
+        <link rel='icon' href='/favicon.ico' sizes='any' />
+        <link rel='icon' href='/favicon.svg' type='image/svg+xml' />
+        <link rel='apple-touch-icon' href='/apple-touch-icon.png' />
+        <link rel='manifest' href='/manifest.json' />
+        <meta name='theme-color' content='#111827' />
+        <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </head>
       <body className={montserrat.variable}>
         <Header />
         {children}
-        
+
         {/* Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-              strategy="afterInteractive"
+              strategy='afterInteractive'
             />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script id='google-analytics' strategy='afterInteractive'>
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
@@ -135,13 +135,10 @@ export default function RootLayout({
             <GoogleAnalytics ga_id={process.env.NEXT_PUBLIC_GA_ID} />
           </>
         )}
-        
+
         {/* Tally Form Script */}
-        <Script
-          src="https://tally.so/widgets/embed.js"
-          strategy="afterInteractive"
-        />
-        <Script id="tally-config" strategy="afterInteractive">
+        <Script src='https://tally.so/widgets/embed.js' strategy='afterInteractive' />
+        <Script id='tally-config' strategy='afterInteractive'>
           {`
             window.TallyConfig = {
               "formId": "n09QLZ",

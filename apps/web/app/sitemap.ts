@@ -1,8 +1,8 @@
-import { MetadataRoute } from 'next'
- 
+import { MetadataRoute } from 'next';
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://www.monolenz.com'
-  
+  const baseUrl = 'https://www.monolenz.com';
+
   return [
     {
       url: baseUrl,
@@ -28,5 +28,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.7,
     },
-  ]
+  ];
 }

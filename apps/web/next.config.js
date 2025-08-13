@@ -23,7 +23,7 @@ const nextConfig = {
           },
         ],
       },
-    ]
+    ];
   },
   async redirects() {
     return [
@@ -32,7 +32,7 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
-    ]
+    ];
   },
   compress: true,
   poweredByHeader: false,
