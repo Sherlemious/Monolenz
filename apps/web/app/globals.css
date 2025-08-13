@@ -131,7 +131,9 @@ a {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
+    font-family: var(--font-montserrat), system-ui, sans-serif;
     @apply bg-background text-foreground;
   }
 }
