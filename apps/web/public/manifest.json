@@ -1,0 +1,9 @@
+{
+  "name": "Monolenz - Career Management Platform",
+  "short_name": "Monolenz",
+  "description": "Build your master profile once, then generate tailored resumes, portfolios, and track applications",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111827"
+}
