@@ -4,12 +4,24 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 
-export type SignupActionState = {
+export type AuthActionState = {
   error?: string;
   success?: string;
 };
 
-export async function signup(_prevState: SignupActionState, formData: FormData): Promise<SignupActionState> {
+export async function login(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const supabase = await createClient();
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return { error: error.message };
+
+  revalidatePath('/', 'layout');
+  redirect('/dashboard');
+}
+
+export async function signup(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const supabase = await createClient();
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
@@ -25,7 +37,7 @@ export async function signup(_prevState: SignupActionState, formData: FormData):
   redirect('/dashboard');
 }
 
-export async function verifyEmailOtp(formData: FormData): Promise<SignupActionState> {
+export async function verifyEmailOtp(formData: FormData): Promise<AuthActionState> {
   const supabase = await createClient();
   const email = (formData.get('email') as string) || '';
   const token = (formData.get('token') as string) || '';
