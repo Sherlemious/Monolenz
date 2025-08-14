@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAuth } from '../config/supabase';
-import { HTTP_STATUS_CODES } from '@athaar/types';
+import { HTTP_STATUS_CODES } from '@monolenz/types';
 
 // Authentication middleware
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {

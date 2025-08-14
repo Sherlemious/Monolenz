@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { BaseRepository, RepositoryOptions } from '../base.repository';
-import { Profile } from '@athaar/types/entities';
+import { Profile } from '@monolenz/types/entities';
 
 export interface ProfileEntity extends Profile {
   profile_links?: any[];

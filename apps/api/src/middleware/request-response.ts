@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { ApiResponse, HTTP_STATUS_CODES, PaginationMeta } from '@athaar/types/api';
+import { ApiResponse, HTTP_STATUS_CODES, PaginationMeta } from '@monolenz/types/api';
 
 /**
  * Request preprocessing middleware

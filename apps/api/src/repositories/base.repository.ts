@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { PaginationParams, SearchParams } from '@athaar/types/api';
+import { PaginationParams, SearchParams } from '@monolenz/types/api';
 
 export interface BaseEntity {
   id: string | number;

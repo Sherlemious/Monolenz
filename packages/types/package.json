@@ -1,5 +1,5 @@
 {
-  "name": "@athaar/types",
+  "name": "@monolenz/types",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -39,7 +39,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@athaar/typescript-config": "workspace:*",
+    "@monolenz/typescript-config": "workspace:*",
     "tsup": "^8.0.0",
     "typescript": "^5.8.3"
   }

@@ -14,7 +14,7 @@ router.use('/v1', v1Routes);
 // Root API info
 router.get('/', (req, res) => {
   res.json({
-    name: 'ATHAAR API',
+    name: 'Monolenz API',
     version: '1.0.0',
     description: 'Resume and portfolio management platform',
     endpoints: {
