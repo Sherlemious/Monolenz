@@ -1,8 +1,8 @@
-# ATHAAR
+# MONOLENZ
 
 **Write once, tailor everywhere. Your one-stop source-of-truth for your professional identity.**
 
-ATHAAR is a streamlined resume and portfolio builder platform designed for students and recent graduates. Create comprehensive professional profiles, generate tailored resumes, build stunning portfolios, and track job applications—all from a single platform.
+Monolenz is a streamlined resume and portfolio builder platform designed for students and recent graduates. Create comprehensive professional profiles, generate tailored resumes, build stunning portfolios, and track job applications—all from a single platform.
 
 ## Tech Stack
 
@@ -18,7 +18,7 @@ ATHAAR is a streamlined resume and portfolio builder platform designed for stude
 ## Project Structure
 
 ```text
-athaar/
+monolenz/
 ├── apps/
 │   ├── web/                    # Next.js frontend application
 │   │   ├── app/               # App router pages and layouts
@@ -71,7 +71,7 @@ athaar/
 
 ### Block-Based Versioning
 
-ATHAAR uses a **block-based versioning system** inspired by Git, where professional information is stored as immutable content blocks. This enables:
+Monolenz uses a **block-based versioning system** inspired by Git, where professional information is stored as immutable content blocks. This enables:
 
 - **Complete version history** of profile changes
 - **Structural sharing** for storage efficiency

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodSchema } from 'zod';
-import { HTTP_STATUS_CODES } from '@athaar/types/api';
+import { HTTP_STATUS_CODES } from '@monolenz/types/api';
 
 /**
  * Validation middleware factory
@@ -60,4 +60,4 @@ export {
   profileLinkSchemas,
   profileFilterSchemas,
   profileLinkFilterSchemas,
-} from '@athaar/types/validation';
+} from '@monolenz/types/validation';

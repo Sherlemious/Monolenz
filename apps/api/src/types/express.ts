@@ -1,4 +1,4 @@
-import { PaginationParams } from '@athaar/types/api';
+import { PaginationParams } from '@monolenz/types/api';
 import type { User } from '@supabase/supabase-js';
 
 // Extend Express Request interface

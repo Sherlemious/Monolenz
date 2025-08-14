@@ -1,5 +1,5 @@
 import { BaseRepository, BaseEntity } from '../repositories/base.repository';
-import { HTTP_STATUS_CODES, PaginationParams } from '@athaar/types/api';
+import { HTTP_STATUS_CODES, PaginationParams } from '@monolenz/types/api';
 import { Logger } from '../utils/logger';
 import { MetricsCollector } from '../utils/metrics';
 

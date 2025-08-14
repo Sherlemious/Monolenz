@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { profileController } from '../../../controllers';
 import { authenticate, optionalAuth } from '../../../middleware/auth';
 import { validate } from '../../../middleware/validation';
-import { profileSchemas } from '@athaar/types/validation';
+import { profileSchemas } from '@monolenz/types/validation';
 import { z } from 'zod';
 
 const router: Router = Router();

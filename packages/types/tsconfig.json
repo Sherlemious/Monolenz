@@ -1,5 +1,5 @@
 {
-  "extends": "@athaar/typescript-config/base.json",
+  "extends": "@monolenz/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",

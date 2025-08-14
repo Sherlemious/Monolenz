@@ -1,7 +1,7 @@
 import { BaseService, ServiceContext, ServiceOptions, ServiceError } from '../base.service';
 import { ProfileRepository, ProfileEntity, ProfileRepositoryOptions } from '../../repositories/profile/profile';
-import { profileSchemas, ProfileCreateData, ProfileUpdateData } from '@athaar/types/validation';
-import { HTTP_STATUS_CODES, PaginationParams } from '@athaar/types/api';
+import { profileSchemas, ProfileCreateData, ProfileUpdateData } from '@monolenz/types/validation';
+import { HTTP_STATUS_CODES, PaginationParams } from '@monolenz/types/api';
 
 export interface ProfileServiceOptions extends ServiceOptions {
   includeLinks?: boolean;

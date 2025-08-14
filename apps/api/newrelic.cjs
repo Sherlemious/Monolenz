@@ -6,7 +6,7 @@ require('dotenv').config();
  * New Relic agent configuration.
  */
 exports.config = {
-  app_name: [process.env.NEW_RELIC_APP_NAME || 'athaar API'],
+  app_name: [process.env.NEW_RELIC_APP_NAME || 'monolenz API'],
   license_key: process.env.NEW_RELIC_LICENSE_KEY,
   logging: {
     level: process.env.NEW_RELIC_LOG_LEVEL || 'info',
