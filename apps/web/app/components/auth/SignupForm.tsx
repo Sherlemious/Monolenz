@@ -1,14 +1,11 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {
-  signup,
-  verifyEmailOtp,
-  resendVerification,
-  type AuthActionState as SignupActionState,
-} from '@/app/(auth)/actions';
+import { signup, resendVerification, type AuthActionState as SignupActionState } from '@/app/(auth)/actions';
+import { createClient } from '@/utils/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,8 +22,21 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
 const initialState: SignupActionState = {};
 
 export default function SignupForm() {
+  const router = useRouter();
   const [state, formAction] = useActionState(signup, initialState);
   const [resendState, resendAction] = useActionState(resendVerification, {} as SignupActionState);
+
+  useEffect(() => {
+    if (!state?.emailSentTo) return;
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) router.replace('/dashboard');
+    });
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) router.replace('/dashboard');
+    });
+    return () => subscription.subscription.unsubscribe();
+  }, [state?.emailSentTo, router]);
 
   return (
     <>
