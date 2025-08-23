@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, FileText, Globe, Briefcase, BarChart3, Plus, Circle, Square } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const HeroSection = () => {
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -105,165 +106,52 @@ const HeroSection = () => {
   ];
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        minHeight: '100vh',
-        backgroundColor: 'var(--background, #ffffff)',
-        color: 'var(--foreground, #111827)',
-        overflow: 'hidden',
-        margin: 0,
-        padding: 0,
-        width: '100%',
-        fontFamily: 'var(--font-montserrat, system-ui), system-ui, -apple-system, sans-serif',
-      }}
-    >
+    <div className="relative min-h-[100svh] bg-background text-foreground overflow-hidden w-full">
       {/* Global header now lives in layout */}
 
       {/* Subtle grid pattern */}
       <div
+        className="absolute inset-0 opacity-30"
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
           backgroundImage:
-            'linear-gradient(to right, var(--border, #e5e7eb) 1px, transparent 1px), linear-gradient(to bottom, var(--border, #e5e7eb) 1px, transparent 1px)',
+            'linear-gradient(to right, var(--border) 1px, transparent 1px), linear-gradient(to bottom, var(--border) 1px, transparent 1px)',
           backgroundSize: '14px 24px',
-          opacity: 0.3,
         }}
-      ></div>
+      />
 
       {/* Floating geometric shapes */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-        <div
-          style={{
-            position: 'absolute',
-            top: '25%',
-            left: '25%',
-            width: '128px',
-            height: '128px',
-            border: '1px solid var(--border, #e5e7eb)',
-            borderRadius: '50%',
-            animation: 'float-slow 20s ease-in-out infinite',
-            opacity: 0.4,
-          }}
-        ></div>
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '25%',
-            right: '25%',
-            width: '96px',
-            height: '96px',
-            border: '1px solid var(--border, #e5e7eb)',
-            transform: 'rotate(45deg)',
-            animation: 'float-slower 25s ease-in-out infinite',
-            opacity: 0.4,
-          }}
-        ></div>
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="shape-circle" />
+        <div className="shape-square" />
       </div>
 
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 10,
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '80px 16px 96px',
-          width: '100%',
-          boxSizing: 'border-box',
-        }}
-      >
+      <div className="relative z-10 max-w-[1200px] mx-auto w-full box-border py-20 md:py-24 px-4">
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: 'var(--secondary, #f1f5f9)',
-              color: 'var(--secondary-foreground, #475569)',
-              padding: '6px 12px',
-              borderRadius: 'var(--radius-md, 6px)',
-              fontSize: '12px',
-              fontFamily: 'monospace',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '32px',
-              border: '1px solid var(--border, #e5e7eb)',
-            }}
-          >
-            <Circle
-              style={{
-                width: '12px',
-                height: '12px',
-                fill: 'var(--chart-1)',
-                color: 'var(--chart-1)',
-              }}
-            />
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-[12px] font-mono uppercase tracking-[0.1em] mb-8 border">
+            <Circle className="w-3 h-3 text-[var(--chart-1)] fill-current" />
             <span>Your Career&apos;s Source of Truth</span>
           </div>
 
-          <h1
-            style={{
-              fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-              fontWeight: 'bold',
-              marginBottom: '24px',
-              letterSpacing: '-0.02em',
-              lineHeight: '1.1',
-              margin: '0 0 24px 0',
-            }}
-          >
-            <span style={{ color: 'var(--foreground, #111827)' }}>One Profile.</span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
+            <span className="text-foreground">One Profile.</span>
             <br />
-            <span style={{ color: 'var(--muted-foreground, #6b7280)' }}>Infinite Possibilities.</span>
+            <span className="text-muted-foreground">Infinite Possibilities.</span>
           </h1>
 
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <p
-              style={{
-                fontSize: '18px',
-                color: 'var(--muted-foreground, #6b7280)',
-                maxWidth: '512px',
-                lineHeight: '1.6',
-                textAlign: 'center',
-                margin: 0,
-              }}
-            >
-              Stop managing scattered documents. Build your master profile once, then generate tailored resumes,
-              portfolios, and track applications, all perfectly synchronized.
-            </p>
-          </div>
+          <p className="mx-auto max-w-2xl text-center text-muted-foreground text-lg leading-relaxed">
+            Stop managing scattered documents. Build your master profile once, then generate tailored resumes,
+            portfolios, and track applications, all perfectly synchronized.
+          </p>
         </div>
 
         {/* Document Flow Visualization */}
         <div
           ref={containerRef}
-          style={{
-            position: 'relative',
-            maxWidth: '1000px',
-            margin: '0 auto 80px',
-            height: '500px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 20px',
-          }}
+          className="relative max-w-[1000px] mx-auto mb-20 h-[500px] flex items-center justify-between px-5"
         >
           {/* Connection Lines */}
-          <svg
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'none',
-              zIndex: 1,
-            }}
-          >
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
             {linePositions.map((pos, index) => {
               const output = outputs[index];
               if (!output) return null;
@@ -275,7 +163,7 @@ const HeroSection = () => {
                     y1={pos.startY}
                     x2={pos.endX}
                     y2={pos.endY}
-                    stroke={activeOutput === output.id ? output.accent : 'var(--border, #e5e7eb)'}
+                    stroke={activeOutput === output.id ? (output.accent as string) : 'var(--border)'}
                     strokeWidth={activeOutput === output.id ? 3 : 2}
                     strokeDasharray={activeOutput === output.id ? '0' : '8,8'}
                     style={{ transition: 'all 0.3s ease' }}
@@ -285,14 +173,14 @@ const HeroSection = () => {
                     cx={pos.startX}
                     cy={pos.startY}
                     r={activeOutput === output.id ? 5 : 3}
-                    fill={activeOutput === output.id ? output.accent : 'var(--muted, #f1f5f9)'}
+                    fill={activeOutput === output.id ? (output.accent as string) : 'var(--muted)'}
                     style={{ transition: 'all 0.3s ease' }}
                   />
                   <circle
                     cx={pos.endX}
                     cy={pos.endY}
                     r={activeOutput === output.id ? 5 : 3}
-                    fill={activeOutput === output.id ? output.accent : 'var(--muted, #f1f5f9)'}
+                    fill={activeOutput === output.id ? (output.accent as string) : 'var(--muted)'}
                     style={{ transition: 'all 0.3s ease' }}
                   />
                 </g>
@@ -304,163 +192,58 @@ const HeroSection = () => {
           <div
             ref={masterRef}
             style={{
-              position: 'relative',
-              zIndex: 20,
               transform: `perspective(1000px) rotateY(${mousePosition.x * 0.5}deg) rotateX(${-mousePosition.y * 0.5}deg)`,
               transition: 'transform 0.1s ease-out',
-              flexShrink: 0,
             }}
+            className="relative z-20 shrink-0"
           >
-            <div
-              style={{
-                backgroundColor: 'var(--card, #ffffff)',
-                borderRadius: 'var(--radius-lg, 8px)',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                padding: '20px',
-                width: '280px',
-                border: '1px solid var(--border, #e5e7eb)',
-              }}
-            >
+            <div className="bg-card border rounded-lg shadow-xl p-5 w-[280px]">
               {/* Document Header */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '16px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--muted, #f1f5f9)',
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--muted, #f1f5f9)',
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--muted, #f1f5f9)',
-                    }}
-                  ></div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-muted" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-muted" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-muted" />
                 </div>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontFamily: 'monospace',
-                    color: 'var(--muted-foreground, #6b7280)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                  }}
-                >
+                <span className="text-[10px] font-mono uppercase tracking-[0.1em] text-muted-foreground">
                   Master Profile
                 </span>
               </div>
 
               {/* Content Blocks */}
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-                  <h3
-                    style={{
-                      fontSize: '11px',
-                      fontFamily: 'monospace',
-                      color: 'var(--muted-foreground, #6b7280)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '1px',
-                      margin: '0 0 4px 0',
-                    }}
-                  >
+              <div className="mb-3">
+                <div className="text-center mb-3">
+                  <h3 className="text-[11px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1">
                     Content Blocks
                   </h3>
-                  <span style={{ fontSize: '11px', color: 'var(--muted-foreground, #6b7280)' }}>18+ sections</span>
+                  <span className="text-[11px] text-muted-foreground">18+ sections</span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div className="flex flex-col gap-1.5">
                   {contentBlocks.map((block, index) => (
                     <div
                       key={block.name}
-                      style={{ cursor: 'pointer' }}
+                      className="cursor-pointer"
                       onMouseEnter={() => setHoveredBlock(index)}
                       onMouseLeave={() => setHoveredBlock(null)}
                     >
                       <div
-                        style={{
-                          width: '100%',
-                          height: '24px',
-                          borderRadius: 'var(--radius-sm, 4px)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '0 10px',
-                          backgroundColor: block.filled ? 'var(--muted, #f1f5f9)' : 'transparent',
-                          border: block.filled ? 'none' : '1px dashed var(--border, #e5e7eb)',
-                          transform: hoveredBlock === index ? 'scale(1.02)' : 'scale(1)',
-                          transition: 'all 0.2s ease',
-                          boxShadow: hoveredBlock === index ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-                        }}
+                        className={`w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all ${
+                          block.filled ? 'bg-muted' : 'border border-dashed'
+                        } ${hoveredBlock === index ? 'scale-[1.02] shadow-xs' : ''}`}
                       >
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: '500',
-                            color: 'var(--card-foreground, #111827)',
-                          }}
-                        >
-                          {block.name}
-                        </span>
-                        {!block.filled && (
-                          <Plus style={{ width: '10px', height: '10px', color: 'var(--muted-foreground, #6b7280)' }} />
-                        )}
+                        <span className="text-[11px] font-medium text-card-foreground">{block.name}</span>
+                        {!block.filled && <Plus className="w-2.5 h-2.5 text-muted-foreground" />}
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingTop: '8px',
-                  }}
-                >
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <div
-                      style={{
-                        width: '4px',
-                        height: '4px',
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--muted, #f1f5f9)',
-                      }}
-                    ></div>
-                    <div
-                      style={{
-                        width: '4px',
-                        height: '4px',
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--muted, #f1f5f9)',
-                      }}
-                    ></div>
-                    <div
-                      style={{
-                        width: '4px',
-                        height: '4px',
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--muted, #f1f5f9)',
-                      }}
-                    ></div>
+                <div className="flex items-center justify-center pt-2">
+                  <div className="flex gap-1">
+                    <span className="w-1 h-1 rounded-full bg-muted" />
+                    <span className="w-1 h-1 rounded-full bg-muted" />
+                    <span className="w-1 h-1 rounded-full bg-muted" />
                   </div>
                 </div>
               </div>
@@ -468,119 +251,49 @@ const HeroSection = () => {
           </div>
 
           {/* Output Documents - Right Side */}
-          <div
-            style={{
-              position: 'relative',
-              zIndex: 20,
-              flexShrink: 0,
-              marginLeft: 'auto',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="relative z-20 shrink-0 ml-auto">
+            <div className="flex flex-col gap-4">
               {outputs.map((output, index) => (
                 <div
                   key={output.id}
                   ref={(el) => {
                     outputRefs.current[index] = el;
                   }}
-                  style={{
-                    cursor: 'pointer',
-                    transform: activeOutput === output.id ? 'scale(1.05)' : 'scale(1)',
-                    transition: 'all 0.3s ease',
-                  }}
+                  className={`cursor-pointer transition-transform ${activeOutput === output.id ? 'scale-105' : ''}`}
                   onMouseEnter={() => setActiveOutput(output.id)}
                   onMouseLeave={() => setActiveOutput(null)}
                 >
                   <div
-                    style={{
-                      backgroundColor: 'var(--card, #ffffff)',
-                      borderRadius: 'var(--radius-lg, 8px)',
-                      boxShadow:
-                        activeOutput === output.id
-                          ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-                          : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                      padding: '16px',
-                      width: '220px',
-                      border: '1px solid var(--border, #e5e7eb)',
-                      position: 'relative',
-                      transition: 'all 0.3s ease',
-                    }}
+                    className={`bg-card border rounded-lg p-4 w-[220px] relative transition-all ${activeOutput === output.id ? 'shadow-2xl' : 'shadow-sm'}`}
                   >
-                    {/* Accent line */}
                     <div
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '2px',
-                        borderRadius: '8px 8px 0 0',
-                        backgroundColor: activeOutput === output.id ? output.accent : 'transparent',
-                        transition: 'all 0.3s ease',
-                      }}
-                    ></div>
+                      className={`absolute top-0 left-0 w-full h-0.5 rounded-t-lg transition-all ${activeOutput === output.id ? '' : 'bg-transparent'}`}
+                      style={{ backgroundColor: activeOutput === output.id ? (output.accent as string) : undefined }}
+                    />
 
-                    {/* Icon */}
                     <div
+                      className={`inline-flex p-2 rounded-md mb-3 transition-all ${activeOutput === output.id ? 'text-[inherit]' : 'bg-muted text-muted-foreground'}`}
                       style={{
-                        display: 'inline-flex',
-                        padding: '8px',
-                        borderRadius: 'var(--radius-md, 6px)',
-                        marginBottom: '12px',
                         backgroundColor:
                           activeOutput === output.id
-                            ? `color-mix(in srgb, ${output.accent} 20%, transparent)`
-                            : 'var(--muted, #f1f5f9)',
-                        color: activeOutput === output.id ? output.accent : 'var(--muted-foreground, #6b7280)',
-                        transition: 'all 0.3s ease',
+                            ? `color-mix(in srgb, ${output.accent as string} 20%, transparent)`
+                            : undefined,
+                        color: activeOutput === output.id ? (output.accent as string) : undefined,
                       }}
                     >
-                      <output.icon style={{ width: '20px', height: '20px' }} />
+                      <output.icon className="w-5 h-5" />
                     </div>
 
-                    {/* Content */}
-                    <h4
-                      style={{
-                        fontWeight: '600',
-                        fontSize: '14px',
-                        color: 'var(--card-foreground, #111827)',
-                        margin: '0 0 4px 0',
-                      }}
-                    >
-                      {output.title}
-                    </h4>
-                    <p
-                      style={{
-                        fontSize: '12px',
-                        color: 'var(--muted-foreground, #6b7280)',
-                        margin: '0 0 8px 0',
-                      }}
-                    >
-                      {output.description}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: '10px',
-                        fontFamily: 'monospace',
-                        color: 'var(--muted-foreground, #6b7280)',
-                        margin: 0,
-                      }}
-                    >
-                      {output.stats}
-                    </p>
+                    <h4 className="font-semibold text-sm text-card-foreground mb-1">{output.title}</h4>
+                    <p className="text-xs text-muted-foreground mb-2">{output.description}</p>
+                    <p className="text-[10px] font-mono text-muted-foreground m-0">{output.stats}</p>
 
-                    {/* Arrow indicator */}
                     <ArrowRight
+                      className="absolute bottom-3 right-3 w-3.5 h-3.5 transition-all"
                       style={{
-                        position: 'absolute',
-                        bottom: '12px',
-                        right: '12px',
-                        width: '14px',
-                        height: '14px',
-                        color: output.accent,
+                        color: output.accent as string,
                         opacity: activeOutput === output.id ? 1 : 0,
                         transform: activeOutput === output.id ? 'translateX(0)' : 'translateX(-8px)',
-                        transition: 'all 0.3s ease',
                       }}
                     />
                   </div>
@@ -590,128 +303,68 @@ const HeroSection = () => {
           </div>
 
           {/* Center Label */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 10,
-              textAlign: 'center',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '12px',
-                fontFamily: 'monospace',
-                color: 'var(--muted-foreground, #6b7280)',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                marginBottom: '4px',
-              }}
-            >
-              Generates
+          <div className="absolute inset-0 flex items-center justify-center z-10 text-center pointer-events-none">
+            <div>
+              <div className="text-[12px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1">
+                Generates
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground mx-auto" />
             </div>
-            <ArrowRight
-              style={{ width: '16px', height: '16px', color: 'var(--muted-foreground, #6b7280)', margin: '0 auto' }}
-            />
           </div>
         </div>
 
         {/* CTA Buttons */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '16px',
-            marginTop: '80px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <button
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '12px',
-              backgroundColor: 'var(--primary, #111827)',
-              color: 'var(--primary-foreground, #ffffff)',
-              padding: '16px 32px',
-              borderRadius: 'var(--radius-lg, 8px)',
-              fontWeight: '500',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '16px',
-              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-              transition: 'all 0.2s ease',
-            }}
-          >
+        <div className="flex items-center justify-center gap-4 mt-20 flex-wrap">
+          <Button className="h-11 px-8 gap-3">
             <span>Start Building</span>
-            <ArrowRight style={{ width: '16px', height: '16px' }} />
-          </button>
-
-          <button
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '12px',
-              backgroundColor: 'transparent',
-              color: 'var(--foreground, #111827)',
-              padding: '16px 32px',
-              borderRadius: 'var(--radius-lg, 8px)',
-              fontWeight: '500',
-              border: '1px solid var(--border, #e5e7eb)',
-              cursor: 'pointer',
-              fontSize: '16px',
-              transition: 'all 0.2s ease',
-            }}
-          >
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+          <Button variant="outline" className="h-11 px-8 gap-3">
             <span>See Examples</span>
-            <Square style={{ width: '12px', height: '12px' }} />
-          </button>
+            <Square className="w-3 h-3" />
+          </Button>
         </div>
 
         {/* Simple metrics */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '48px',
-            marginTop: '64px',
-            fontSize: '14px',
-            color: 'var(--muted-foreground, #6b7280)',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--foreground, #111827)', margin: '0 0 4px 0' }}
-            >
-              18+
-            </div>
-            <div style={{ fontSize: '12px' }}>Content Blocks</div>
+        <div className="flex items-center justify-center gap-12 mt-16 text-sm text-muted-foreground flex-wrap">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-foreground mb-1">18+</div>
+            <div className="text-xs">Content Blocks</div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--foreground, #111827)', margin: '0 0 4px 0' }}
-            >
-              100+
-            </div>
-            <div style={{ fontSize: '12px' }}>Templates</div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-foreground mb-1">100+</div>
+            <div className="text-xs">Templates</div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--foreground, #111827)', margin: '0 0 4px 0' }}
-            >
-              ∞
-            </div>
-            <div style={{ fontSize: '12px' }}>Versions</div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-foreground mb-1">∞</div>
+            <div className="text-xs">Versions</div>
           </div>
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
+        .shape-circle {
+          position: absolute;
+          top: 25%;
+          left: 25%;
+          width: 128px;
+          height: 128px;
+          border: 1px solid var(--border);
+          border-radius: 9999px;
+          animation: float-slow 20s ease-in-out infinite;
+          opacity: 0.4;
+        }
+        .shape-square {
+          position: absolute;
+          bottom: 25%;
+          right: 25%;
+          width: 96px;
+          height: 96px;
+          border: 1px solid var(--border);
+          transform: rotate(45deg);
+          animation: float-slower 25s ease-in-out infinite;
+          opacity: 0.4;
+        }
         @keyframes float-slow {
           0%,
           100% {
