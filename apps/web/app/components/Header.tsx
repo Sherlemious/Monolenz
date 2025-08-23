@@ -70,7 +70,7 @@ const Header: React.FC = () => {
           }}
         >
           {/* Logo */}
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+          <Link href='/' style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
             <div
               style={{
                 width: '32px',
@@ -91,23 +91,23 @@ const Header: React.FC = () => {
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex" style={{ alignItems: 'center', gap: '32px' }}>
+          <nav className='hidden md:flex' style={{ alignItems: 'center', gap: '32px' }}>
             {!isDashboard ? (
               <>
                 <Link
-                  href="/dashboard"
+                  href='/dashboard'
                   style={{ color: 'var(--foreground)', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}
                 >
                   Overview
                 </Link>
                 <Link
-                  href="/#features"
+                  href='/#features'
                   style={{ color: 'var(--foreground)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}
                 >
                   Features
                 </Link>
                 <Link
-                  href="/#pricing"
+                  href='/#pricing'
                   style={{
                     color: 'var(--muted-foreground)',
                     textDecoration: 'none',
@@ -121,13 +121,13 @@ const Header: React.FC = () => {
             ) : (
               <>
                 <Link
-                  href="/dashboard"
+                  href='/dashboard'
                   style={{ color: 'var(--foreground)', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}
                 >
                   Overview
                 </Link>
                 <Link
-                  href="/dashboard/profile"
+                  href='/dashboard/profile'
                   style={{
                     color: 'var(--muted-foreground)',
                     textDecoration: 'none',
@@ -138,7 +138,7 @@ const Header: React.FC = () => {
                   Profile
                 </Link>
                 <Link
-                  href="/dashboard/applications"
+                  href='/dashboard/applications'
                   style={{
                     color: 'var(--muted-foreground)',
                     textDecoration: 'none',
@@ -154,7 +154,7 @@ const Header: React.FC = () => {
 
           {/* Mobile menu toggle */}
           <button
-            className="md:hidden"
+            className='md:hidden'
             style={{
               background: 'none',
               border: '1px solid var(--border)',
@@ -176,8 +176,8 @@ const Header: React.FC = () => {
             {isAuthed ? (
               <>
                 <Link
-                  href="/dashboard"
-                  className="hidden md:inline-flex"
+                  href='/dashboard'
+                  className='hidden md:inline-flex'
                   style={{
                     color: 'var(--foreground)',
                     textDecoration: 'none',
@@ -198,14 +198,14 @@ const Header: React.FC = () => {
                       color: 'var(--muted-foreground)',
                       cursor: 'pointer',
                     }}
-                    aria-label="Notifications"
+                    aria-label='Notifications'
                   >
                     <Bell style={{ width: 18, height: 18 }} />
                   </button>
                 )}
-                <form action={signOut} className="hidden md:inline-flex">
+                <form action={signOut} className='hidden md:inline-flex'>
                   <button
-                    type="submit"
+                    type='submit'
                     style={{
                       backgroundColor: 'transparent',
                       color: 'var(--foreground)',
@@ -221,9 +221,9 @@ const Header: React.FC = () => {
                   </button>
                 </form>
                 {isDashboard && (
-                  <form action={signOut} className="inline-flex md:hidden">
+                  <form action={signOut} className='inline-flex md:hidden'>
                     <button
-                      type="submit"
+                      type='submit'
                       style={{
                         backgroundColor: 'transparent',
                         color: 'var(--foreground)',
@@ -243,7 +243,7 @@ const Header: React.FC = () => {
             ) : (
               <>
                 <Link
-                  href="/login"
+                  href='/login'
                   style={{
                     backgroundColor: 'transparent',
                     color: 'var(--foreground)',
@@ -258,7 +258,7 @@ const Header: React.FC = () => {
                   Sign in
                 </Link>
                 <Link
-                  href="/signup"
+                  href='/signup'
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
@@ -302,7 +302,7 @@ const Header: React.FC = () => {
         {/* Mobile sheet */}
         {mobileOpen && (
           <div
-            className="md:hidden"
+            className='md:hidden'
             style={{
               position: 'absolute',
               top: 64,
@@ -315,29 +315,29 @@ const Header: React.FC = () => {
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {!isDashboard ? (
                 <>
-                  <Link href="/" style={{ fontSize: 14 }}>
+                  <Link href='/' style={{ fontSize: 14 }}>
                     Overview
                   </Link>
-                  <Link href="/#features" style={{ fontSize: 14 }}>
+                  <Link href='/#features' style={{ fontSize: 14 }}>
                     Features
                   </Link>
-                  <Link href="/#pricing" style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
+                  <Link href='/#pricing' style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
                     Pricing
                   </Link>
                   <div aria-hidden style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
-                  <Link href="/dashboard" style={{ fontSize: 14 }}>
+                  <Link href='/dashboard' style={{ fontSize: 14 }}>
                     Dashboard
                   </Link>
                 </>
               ) : (
                 <>
-                  <Link href="/dashboard" style={{ fontSize: 14 }}>
+                  <Link href='/dashboard' style={{ fontSize: 14 }}>
                     Overview
                   </Link>
-                  <Link href="/dashboard/profile" style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
+                  <Link href='/dashboard/profile' style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
                     Profile
                   </Link>
-                  <Link href="/dashboard/applications" style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
+                  <Link href='/dashboard/applications' style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
                     Applications
                   </Link>
                 </>

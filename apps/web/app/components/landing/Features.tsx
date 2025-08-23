@@ -42,41 +42,41 @@ const bullets = [
 
 const FeaturesSection: React.FC = () => {
   return (
-    <section id="features">
-      <div className="max-w-[1200px] mx-auto px-4 py-20 md:py-24">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-[12px] font-mono uppercase tracking-[0.1em] mb-4 border">
+    <section id='features'>
+      <div className='max-w-[1200px] mx-auto px-4 py-20 md:py-24'>
+        <div className='text-center mb-12'>
+          <div className='inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-[12px] font-mono uppercase tracking-[0.1em] mb-4 border'>
             <span>Features</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Everything in one evolving profile</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto mt-3">
+          <h2 className='text-3xl md:text-4xl font-bold tracking-tight'>Everything in one evolving profile</h2>
+          <p className='text-muted-foreground max-w-2xl mx-auto mt-3'>
             MonoLenz isn&apos;t just another CV maker—it&apos;s your central professional identity hub.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
           {bullets.map((item) => (
-            <Card key={item.title} className="h-full">
+            <Card key={item.title} className='h-full'>
               <CardHeader>
-                <div className="inline-flex items-center justify-center size-9 rounded-md bg-muted text-muted-foreground">
-                  <item.icon className="size-5" />
+                <div className='inline-flex items-center justify-center size-9 rounded-md bg-muted text-muted-foreground'>
+                  <item.icon className='size-5' />
                 </div>
-                <CardTitle className="mt-2 text-base">{item.title}</CardTitle>
+                <CardTitle className='mt-2 text-base'>{item.title}</CardTitle>
                 <CardDescription>{item.description}</CardDescription>
               </CardHeader>
             </Card>
           ))}
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
-          <div className="inline-flex items-center gap-2">
-            <Check className="size-4 text-[var(--chart-1)]" /> 18+ content blocks
+        <div className='mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground'>
+          <div className='inline-flex items-center gap-2'>
+            <Check className='size-4 text-[var(--chart-1)]' /> 18+ content blocks
           </div>
-          <div className="inline-flex items-center gap-2">
-            <Check className="size-4 text-[var(--chart-2)]" /> Live portfolio URL
+          <div className='inline-flex items-center gap-2'>
+            <Check className='size-4 text-[var(--chart-2)]' /> Live portfolio URL
           </div>
-          <div className="inline-flex items-center gap-2">
-            <Check className="size-4 text-[var(--chart-3)]" /> Infinite versions
+          <div className='inline-flex items-center gap-2'>
+            <Check className='size-4 text-[var(--chart-3)]' /> Infinite versions
           </div>
         </div>
       </div>
