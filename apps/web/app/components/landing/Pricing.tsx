@@ -24,7 +24,7 @@ const featuresPro = [
 
 const PricingSection: React.FC = () => {
   return (
-    <section id="pricing" className="border-t">
+    <section id="pricing">
       <div className="max-w-[1200px] mx-auto px-4 py-20 md:py-24">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-[12px] font-mono uppercase tracking-[0.1em] mb-4 border">
