@@ -9,16 +9,7 @@ body {
   overflow-x: hidden;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
+/* Move resets into Tailwind base layer below to avoid overriding layered utilities */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -128,6 +119,18 @@ a {
 }
 
 @layer base {
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

@@ -3,28 +3,22 @@
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
-import { signup, verifyEmailOtp, type AuthActionState as SignupActionState } from '@/app/(auth)/actions';
+import {
+  signup,
+  verifyEmailOtp,
+  resendVerification,
+  type AuthActionState as SignupActionState,
+} from '@/app/(auth)/actions';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input, Label } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus();
   return (
-    <button
-      type='submit'
-      disabled={pending}
-      style={{
-        marginTop: 8,
-        backgroundColor: 'var(--primary)',
-        color: 'var(--primary-foreground)',
-        border: 'none',
-        padding: '12px 16px',
-        borderRadius: 'var(--radius-md)',
-        fontWeight: 600,
-        cursor: 'pointer',
-        opacity: pending ? 0.8 : 1,
-      }}
-    >
+    <Button type="submit" disabled={pending} className="mt-2 w-full">
       {pending ? pendingLabel : label}
-    </button>
+    </Button>
   );
 }
 
@@ -32,161 +26,96 @@ const initialState: SignupActionState = {};
 
 export default function SignupForm() {
   const [state, formAction] = useActionState(signup, initialState);
+  const [resendState, resendAction] = useActionState(resendVerification, {} as SignupActionState);
 
   return (
     <>
-      <form
-        action={formAction}
-        style={{
-          width: '100%',
-          maxWidth: 400,
-          backgroundColor: 'var(--card)',
-          color: 'var(--card-foreground)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 24,
-          display: 'grid',
-          gap: 12,
-        }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: 4 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Create account</h1>
-          <p style={{ color: 'var(--muted-foreground)', margin: '4px 0 0 0' }}>Get started with Monolenz</p>
-        </div>
+      <Card className="w-full max-w-xs sm:max-w-sm md:max-w-md rounded-lg md:rounded-xl shadow-sm md:shadow-md py-0 gap-0">
+        <CardHeader className="text-center border-b px-6 sm:px-8 md:px-10 py-5 sm:py-6">
+          <CardTitle className="text-lg sm:text-xl md:text-2xl tracking-tight leading-tight">Create account</CardTitle>
+          <CardDescription>Get started with Monolenz</CardDescription>
+        </CardHeader>
+        <CardContent className="px-6 sm:px-8 md:px-10 pt-5 sm:pt-6 pb-6 sm:pb-8">
+          {state?.error && (
+            <div
+              role="alert"
+              className="mb-3 rounded-md border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              {state.error}
+            </div>
+          )}
 
-        {state?.error && (
-          <div
-            role='alert'
-            style={{
-              border: '1px solid var(--destructive)',
-              color: 'var(--destructive)',
-              background: 'color-mix(in oklab, var(--destructive) 8%, transparent)',
-              borderRadius: 'var(--radius-md)',
-              padding: '10px 12px',
-              fontSize: 14,
-            }}
-          >
-            {state.error}
-          </div>
-        )}
+          {state?.success && (
+            <div
+              role="status"
+              className="mb-3 rounded-md border px-3 py-2 text-sm text-foreground"
+              style={{
+                borderColor: 'var(--chart-1)',
+                background: 'color-mix(in oklab, var(--chart-1) 10%, transparent)',
+              }}
+            >
+              {state.emailSentTo ? (
+                <>
+                  Verification link sent to <span className="font-medium">{state.emailSentTo}</span>. Click the link in
+                  your email to finish signing up.
+                </>
+              ) : (
+                state.success
+              )}
+            </div>
+          )}
 
-        {state?.success && (
-          <div
-            role='status'
-            style={{
-              border: '1px solid var(--chart-1)',
-              color: 'var(--foreground)',
-              background: 'color-mix(in oklab, var(--chart-1) 10%, transparent)',
-              borderRadius: 'var(--radius-md)',
-              padding: '10px 12px',
-              fontSize: 14,
-            }}
-          >
-            {state.success}
-          </div>
-        )}
+          {!state?.emailSentTo && (
+            <form action={formAction} className="grid gap-4 sm:gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" type="email" required className="h-10 sm:h-11 rounded-lg" />
+              </div>
 
-        <label htmlFor='email' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
-          Email
-        </label>
-        <input
-          id='email'
-          name='email'
-          type='email'
-          required
-          style={{
-            padding: '10px 12px',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--input)',
-            backgroundColor: 'var(--background)',
-            color: 'var(--foreground)',
-          }}
-        />
+              <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" name="password" type="password" required className="h-10 sm:h-11 rounded-lg" />
+              </div>
 
-        <label htmlFor='password' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
-          Password
-        </label>
-        <input
-          id='password'
-          name='password'
-          type='password'
-          required
-          style={{
-            padding: '10px 12px',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--input)',
-            backgroundColor: 'var(--background)',
-            color: 'var(--foreground)',
-          }}
-        />
+              <SubmitButton label="Sign up" pendingLabel="Creating..." />
 
-        <SubmitButton label='Sign up' pendingLabel='Creating...' />
-
-        <div style={{ fontSize: 13, color: 'var(--muted-foreground)', textAlign: 'center', marginTop: 8 }}>
-          Already have an account?{' '}
-          <Link href='/login' style={{ color: 'var(--foreground)', textDecoration: 'underline' }}>
-            Sign in
-          </Link>
-        </div>
-      </form>
-
-      {state?.success && (
-        <form
-          action={async (formData) => {
-            await verifyEmailOtp(formData);
-          }}
-          style={{
-            width: '100%',
-            maxWidth: 400,
-            marginTop: 16,
-            backgroundColor: 'var(--card)',
-            color: 'var(--card-foreground)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
-            padding: 24,
-            display: 'grid',
-            gap: 12,
-          }}
-        >
-          <div style={{ fontWeight: 600 }}>Verify email</div>
-          <label htmlFor='otp-email' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
-            Email
-          </label>
-          <input
-            id='otp-email'
-            name='email'
-            type='email'
-            required
-            placeholder='your@email.com'
-            style={{
-              padding: '10px 12px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--input)',
-              backgroundColor: 'var(--background)',
-              color: 'var(--foreground)',
-            }}
-          />
-          <label htmlFor='otp-token' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
-            Code
-          </label>
-          <input
-            id='otp-token'
-            name='token'
-            inputMode='numeric'
-            pattern='[0-9]*'
-            placeholder='6-digit code'
-            required
-            style={{
-              padding: '10px 12px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--input)',
-              backgroundColor: 'var(--background)',
-              color: 'var(--foreground)',
-              letterSpacing: '0.3em',
-              textAlign: 'center',
-            }}
-          />
-          <SubmitButton label='Verify' pendingLabel='Verifying...' />
+              <div className="mt-2 text-center text-xs text-muted-foreground">
+                Already have an account?{' '}
+                <Link href="/login" className="text-foreground underline">
+                  Sign in
+                </Link>
+              </div>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+      {state?.emailSentTo && (
+        <form action={resendAction} className="mt-3 grid justify-items-center gap-2">
+          <input type="hidden" name="email" value={state.emailSentTo} />
+          {resendState?.error && (
+            <div
+              role="alert"
+              className="rounded-md border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              {resendState.error}
+            </div>
+          )}
+          {resendState?.success && (
+            <div
+              role="status"
+              className="rounded-md border px-3 py-2 text-sm text-foreground"
+              style={{
+                borderColor: 'var(--chart-1)',
+                background: 'color-mix(in oklab, var(--chart-1) 10%, transparent)',
+              }}
+            >
+              Verification link resent to <span className="font-medium">{state.emailSentTo}</span>.
+            </div>
+          )}
+          <Button variant="outline" className="h-9 px-3">
+            Resend verification link
+          </Button>
+          <p className="text-xs text-muted-foreground">Didn’t get the email? Check spam or try another address.</p>
         </form>
       )}
     </>

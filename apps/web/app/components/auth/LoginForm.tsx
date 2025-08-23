@@ -4,27 +4,16 @@ import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
 import { login, type AuthActionState } from '@/app/(auth)/actions';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input, Label } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <button
-      type='submit'
-      disabled={pending}
-      style={{
-        marginTop: 8,
-        backgroundColor: 'var(--primary)',
-        color: 'var(--primary-foreground)',
-        border: 'none',
-        padding: '12px 16px',
-        borderRadius: 'var(--radius-md)',
-        fontWeight: 600,
-        cursor: 'pointer',
-        opacity: pending ? 0.8 : 1,
-      }}
-    >
+    <Button type="submit" disabled={pending} className="mt-2 w-full">
       {pending ? 'Signing in...' : label}
-    </button>
+    </Button>
   );
 }
 
@@ -34,83 +23,42 @@ export default function LoginForm() {
   const [state, formAction] = useActionState(login, initialState);
 
   return (
-    <form
-      action={formAction}
-      style={{
-        width: '100%',
-        maxWidth: 400,
-        backgroundColor: 'var(--card)',
-        color: 'var(--card-foreground)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-lg)',
-        padding: 24,
-        display: 'grid',
-        gap: 12,
-      }}
-    >
-      <div style={{ textAlign: 'center', marginBottom: 4 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Sign in</h1>
-        <p style={{ color: 'var(--muted-foreground)', margin: '4px 0 0 0' }}>Welcome back</p>
-      </div>
+    <Card className="w-full max-w-xs sm:max-w-sm md:max-w-md rounded-lg md:rounded-xl shadow-sm md:shadow-md py-0 gap-0">
+      <CardHeader className="text-center border-b px-6 sm:px-8 md:px-10 py-5 sm:py-6">
+        <CardTitle className="text-lg sm:text-xl md:text-2xl tracking-tight leading-tight">Sign in</CardTitle>
+        <CardDescription>Welcome back</CardDescription>
+      </CardHeader>
+      <CardContent className="px-6 sm:px-8 md:px-10 pt-5 sm:pt-6 pb-6 sm:pb-8">
+        {state?.error && (
+          <div
+            role="alert"
+            className="mb-3 rounded-md border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {state.error}
+          </div>
+        )}
 
-      {state?.error && (
-        <div
-          role='alert'
-          style={{
-            border: '1px solid var(--destructive)',
-            color: 'var(--destructive)',
-            background: 'color-mix(in oklab, var(--destructive) 8%, transparent)',
-            borderRadius: 'var(--radius-md)',
-            padding: '10px 12px',
-            fontSize: 14,
-          }}
-        >
-          {state.error}
-        </div>
-      )}
+        <form action={formAction} className="grid gap-4 sm:gap-6">
+          <div className="grid gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" required className="h-10 sm:h-11 rounded-lg" />
+          </div>
 
-      <label htmlFor='email' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
-        Email
-      </label>
-      <input
-        id='email'
-        name='email'
-        type='email'
-        required
-        style={{
-          padding: '10px 12px',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--input)',
-          backgroundColor: 'var(--background)',
-          color: 'var(--foreground)',
-        }}
-      />
+          <div className="grid gap-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" name="password" type="password" required className="h-10 sm:h-11 rounded-lg" />
+          </div>
 
-      <label htmlFor='password' style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
-        Password
-      </label>
-      <input
-        id='password'
-        name='password'
-        type='password'
-        required
-        style={{
-          padding: '10px 12px',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--input)',
-          backgroundColor: 'var(--background)',
-          color: 'var(--foreground)',
-        }}
-      />
+          <SubmitButton label="Sign in" />
 
-      <SubmitButton label='Sign in' />
-
-      <div style={{ fontSize: 13, color: 'var(--muted-foreground)', textAlign: 'center', marginTop: 8 }}>
-        Don&apos;t have an account?{' '}
-        <Link href='/signup' style={{ color: 'var(--foreground)', textDecoration: 'underline' }}>
-          Sign up
-        </Link>
-      </div>
-    </form>
+          <div className="mt-2 text-center text-xs text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="text-foreground underline">
+              Sign up
+            </Link>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
