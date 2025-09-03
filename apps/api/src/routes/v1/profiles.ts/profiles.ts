@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { profileController } from '../../../controllers';
+import { profileController } from '../../../controllers/profile';
 import { authenticate, optionalAuth } from '../../../middleware/auth';
 import { validate } from '../../../middleware/validation';
 import { profileSchemas } from '@monolenz/types/validation';
