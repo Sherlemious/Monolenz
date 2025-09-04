@@ -123,6 +123,138 @@ Monolenz uses a **block-based versioning system** inspired by Git, where profess
 └─────────────────┘
 ```
 
+## Versioning and Blocks (Profile Pages)
+
+This system models profile content as immutable blocks and versioned snapshots.
+
+- Blocks are immutable content blobs, deduplicated by `content_hash`.
+- A `version` is a snapshot of a profile at a point in time.
+- The `version_blocks` junction ties blocks to a version and stores lineage plus presentation details.
+- Block schemas are managed centrally via `block_types` and `block_properties`.
+
+### Data model overview
+
+```mermaid
+classDiagram
+  class profiles {
+    +string id
+    +string username
+  }
+  class versions {
+    +int id
+    +string profile_id
+    +int parent_version_id
+    +string metadata
+    +datetime created_at
+  }
+  class version_blocks {
+    +int version_id
+    +int block_id
+    +int previous_version_id
+    +int previous_block_id
+    +bool is_visible
+    +string section_name
+    +int sort_order
+    +datetime created_at
+  }
+  class blocks {
+    +int id
+    +int block_type_id
+    +string data
+    +string content_hash
+    +datetime created_at
+  }
+  class block_types {
+    +int id
+    +string name
+    +string display_name
+  }
+  class block_properties {
+    +int id
+    +int block_type_id
+    +string property_name
+    +string property_type
+    +bool is_required
+  }
+  class block_property_values {
+    +int block_id
+    +int property_id
+    +string value
+    +bool is_public
+  }
+
+  profiles "1" --> "many" versions
+  versions "1" --> "many" version_blocks
+  blocks "1" --> "many" version_blocks
+  block_types "1" --> "many" blocks
+  block_types "1" --> "many" block_properties
+  blocks "1" --> "many" block_property_values
+  block_properties "1" --> "many" block_property_values
+```
+
+Key points:
+
+- Blocks are immutable. To change content, create a new block and attach it to a new or target version.
+- Lineage is version-scoped: `version_blocks.previous_block_id` links a block to the one it supersedes in that chain.
+- Visibility is immutable per version: changing visibility creates a new version with the desired `is_visible` state.
+- Property-level privacy is enforced via `block_property_values.is_public` on reads for public users.
+
+### Version update (batch) sequence
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant C as Client (UI)
+  participant API as API Controller
+  participant S as ProfileBlockService
+  participant Rb as BlocksRepo
+  participant Rc as CatalogRepo
+  participant Rv as VersionsRepo
+  participant Rvb as VersionBlocksRepo
+
+  Note over C: POST /profiles/me/versions/:versionId/update
+  C->>API: { creations[], updates[], deletions[] }
+  API->>S: applyVersionUpdate(payload)
+  S->>Rb: begin transaction
+  S->>Rv: getVersionById(currentVersionId)
+  S->>Rv: listVersionBlockIds(currentVersionId)
+  S->>S: compute sets: unmentioned = current - (updates.parents ∪ deletions)
+
+  loop create blocks for creations
+    S->>Rc: load properties for block_type
+    S->>S: validate data
+    S->>Rb: compute hash, dedupe or create block
+  end
+
+  loop create new blocks for updates
+    S->>Rc: load properties for target block_type
+    S->>S: validate data
+    S->>Rb: compute hash, dedupe or create new block
+  end
+
+  S->>Rv: createVersion({ parent_version_id: currentVersionId })
+
+  par attach unchanged (unmentioned)
+    loop
+      S->>Rvb: attachBlockToVersion({ version_id: newVersion.id, block_id })
+    end
+  and attach creations
+    loop
+      S->>Rvb: attachBlockToVersion({ version_id: newVersion.id, block_id })
+    end
+  and attach updates (with lineage)
+    loop for each update
+      S->>Rvb: attachBlockToVersion({ version_id: newVersion.id, block_id: newId, previous_block_id: parentId })
+    end
+  end
+
+  S->>Rb: commit transaction
+  S->>API: { versionId: newVersion.id }
+  API->>C: 200 OK
+```
+
+Note: Deletions are part of the batch version update (they are omitted from the new version). There is no separate delete flow endpoint.
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed information about:
