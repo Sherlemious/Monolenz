@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { profileController } from '../../../controllers/profile';
+import { profileBlockRouter } from './blocks';
 import { authenticate, optionalAuth } from '../../../middleware/auth';
 import { validate } from '../../../middleware/validation';
 import { profileSchemas } from '@monolenz/types/validation';
@@ -48,6 +49,9 @@ router.get(
   }),
   profileController.checkUsername
 );
+
+// Profile blocks routes (some endpoints are public with optional auth)
+router.use('/', profileBlockRouter);
 
 // Protected routes (auth required)
 router.use(authenticate);
