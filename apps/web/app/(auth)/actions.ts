@@ -11,12 +11,32 @@ export type AuthActionState = {
 };
 
 export async function login(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  // Temporary debug: verify envs are present at runtime
+  // Note: values are not logged for security; only presence is checked
+  // Remove after debugging
+  try {
+    console.log('[auth/login] env check', {
+      urlSet: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+      keySet: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+      nodeEnv: process.env.NODE_ENV,
+    });
+  } catch {}
+
   const supabase = await createClient();
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
+  if (error) {
+    try {
+      console.error('[auth/login] signInWithPassword error', {
+        code: (error as any)?.code,
+        message: error.message,
+        status: (error as any)?.status,
+      });
+    } catch {}
+    return { error: error.message };
+  }
 
   revalidatePath('/', 'layout');
   redirect('/dashboard');
