@@ -1,0 +1,9 @@
+.git
+node_modules
+**/node_modules
+.next
+dist
+out
+.cache
+.vscode
+.DS_Store
