@@ -71,22 +71,7 @@ const Header: React.FC = () => {
         >
           {/* Logo */}
           <Link href='/' style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: isDashboard ? 'var(--secondary)' : 'var(--primary)',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--primary-foreground)',
-                fontWeight: 'bold',
-                fontSize: '18px',
-              }}
-            >
-              M
-            </div>
+            <img src='/logo.svg' alt='Monolenz' width={32} height={32} />
             <span style={{ fontSize: '20px', fontWeight: 600, color: 'var(--foreground)' }}>Monolenz</span>
           </Link>
 
