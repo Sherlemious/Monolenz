@@ -1,59 +1,13 @@
-import { createClient } from '@/utils/supabase/server';
-
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+export default function DashboardPage() {
   return (
-    <main
-      style={{
-        maxWidth: '960px',
-        margin: '0 auto',
-        padding: '48px 16px',
-      }}
-    >
-      <section
-        style={{
-          backgroundColor: 'var(--card)',
-          color: 'var(--card-foreground)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '24px',
-        }}
-      >
-        <h1 style={{ fontSize: '28px', fontWeight: 700, margin: '0 0 8px 0' }}>Dashboard</h1>
-        <p style={{ color: 'var(--muted-foreground)', margin: 0 }}>
-          {user ? `Welcome, ${user.email}` : 'Loading your account...'}
-        </p>
-      </section>
-
-      <section style={{ marginTop: 24 }}>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 16,
-          }}
-        >
-          {[1, 2, 3].map((card) => (
-            <div
-              key={card}
-              style={{
-                backgroundColor: 'var(--card)',
-                color: 'var(--card-foreground)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-md)',
-                padding: 16,
-              }}
-            >
-              <div style={{ fontSize: 12, color: 'var(--muted-foreground)', marginBottom: 8 }}>Widget</div>
-              <div style={{ fontSize: 16, fontWeight: 600 }}>Placeholder content</div>
-            </div>
-          ))}
+    <div className='p-8'>
+      <h1 className='text-3xl font-bold mb-6'>Dashboard</h1>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        <div className='bg-card p-6 rounded-lg border'>
+          <h2 className='text-xl font-semibold mb-2'>Welcome</h2>
+          <p className='text-muted-foreground'>Test page.</p>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
