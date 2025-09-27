@@ -15,8 +15,8 @@ echo -e "${BLUE}🐳 Setting up Artifact Registry for Monolenz${NC}"
 
 # Get project configuration
 read -p "Enter your Google Cloud Project ID: " PROJECT_ID
-read -p "Enter your preferred region [us-central1]: " REGION
-REGION=${REGION:-us-central1}
+read -p "Enter your preferred region [europe-west3]: " REGION
+REGION=${REGION:-europe-west3}
 
 # Set the project
 gcloud config set project $PROJECT_ID
