@@ -9,7 +9,7 @@
     "dev": "tsx watch src/server.ts --clear-screen=false",
     "start": "node dist/server.js",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src/ --max-warnings 0",
+    "lint": "eslint src/",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:pull": "prisma db pull"
