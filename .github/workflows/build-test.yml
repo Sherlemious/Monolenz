@@ -162,7 +162,12 @@ jobs:
         run: pnpm --filter="@monolenz/*" build
 
       - name: Build ${{ matrix.app }}
-        run: pnpm --filter=${{ matrix.app }} build
+        run: |
+          if [ "${{ matrix.app }}" = "api" ]; then
+            pnpm --filter=${{ matrix.app }} build:without-db
+          else
+            pnpm --filter=${{ matrix.app }} build
+          fi
 
       - name: Cache build artifacts
         uses: actions/cache@v4

@@ -6,6 +6,7 @@
   "main": "server.js",
   "scripts": {
     "build": "pnpm i && prisma db pull && prisma generate && tsup",
+    "build:without-db": "pnpm i && tsup",
     "dev": "tsx watch src/server.ts --clear-screen=false",
     "start": "node dist/server.js",
     "type-check": "tsc --noEmit",
