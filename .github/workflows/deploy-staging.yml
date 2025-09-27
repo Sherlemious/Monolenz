@@ -7,8 +7,9 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGISTRY: us-central1-docker.pkg.dev
-  REGION: us-central1
+  REGISTRY: europe-west3-docker.pkg.dev
+  REPOSITORY: monolenz
+  REGION: europe-west3
 
 jobs:
   changes:
@@ -44,7 +45,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -103,8 +104,8 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Configure Docker to use gcloud as a credential helper
-        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }}
 
       - name: Build Web Docker image
         run: |
@@ -112,18 +113,18 @@ jobs:
             --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL_STAGING }} \
             --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY_STAGING }} \
             --build-arg NEXT_PUBLIC_API_URL=https://monolenz-api-staging-${{ secrets.GCP_SERVICE_SUFFIX }}.a.run.app \
-            -t $REGISTRY/$PROJECT_ID/monolenz/monolenz-web-staging:$GITHUB_SHA \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }} \
             -f Dockerfile.web .
 
       - name: Push Web Docker image
-        run: docker push $REGISTRY/$PROJECT_ID/monolenz/monolenz-web-staging:$GITHUB_SHA
+        run: docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }}
 
       - name: Deploy Web to Cloud Run (0% traffic)
         run: |
           gcloud run deploy monolenz-web-staging \
-            --image $REGISTRY/$PROJECT_ID/monolenz/monolenz-web-staging:$GITHUB_SHA \
+            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }} \
             --platform managed \
-            --region $REGION \
+            --region ${{ env.REGION }} \
             --allow-unauthenticated \
             --port 3000 \
             --memory 1Gi \
@@ -131,7 +132,7 @@ jobs:
             --min-instances 0 \
             --max-instances 5 \
             --no-traffic \
-            --tag candidate-$GITHUB_SHA \
+            --tag candidate-${{ github.sha }} \
             --set-env-vars="NODE_ENV=staging"
 
       - name: Get candidate URL
@@ -139,9 +140,9 @@ jobs:
         run: |
           CANDIDATE_URL=$(gcloud run services describe monolenz-web-staging \
             --platform managed \
-            --region $REGION \
+            --region ${{ env.REGION }} \
             --format 'value(status.traffic[0].url)' \
-            --filter="status.traffic.tag=candidate-$GITHUB_SHA")
+            --filter="status.traffic.tag=candidate-${{ github.sha }}")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
       - name: Health check Web
@@ -162,8 +163,8 @@ jobs:
         run: |
           gcloud run services update-traffic monolenz-web-staging \
             --platform managed \
-            --region $REGION \
-            --to-tags candidate-$GITHUB_SHA=100
+            --region ${{ env.REGION }} \
+            --to-tags candidate-${{ github.sha }}=100
 
       - name: Clean up old revisions
         run: |
@@ -171,7 +172,7 @@ jobs:
           gcloud run revisions list \
             --service monolenz-web-staging \
             --platform managed \
-            --region $REGION \
+            --region ${{ env.REGION }} \
             --filter="NOT traffic.percent:0" \
             --sort-by="~metadata.creationTimestamp" \
             --format="value(metadata.name)" \
@@ -180,7 +181,7 @@ jobs:
                 echo "Deleting old revision: $revision"
                 gcloud run revisions delete $revision \
                   --platform managed \
-                  --region $REGION \
+                  --region ${{ env.REGION }} \
                   --quiet
               fi
             done
@@ -198,24 +199,24 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Configure Docker to use gcloud as a credential helper
-        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }}
 
       - name: Build API Docker image
         run: |
           docker build \
-            -t $REGISTRY/$PROJECT_ID/monolenz/monolenz-api-staging:$GITHUB_SHA \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }} \
             -f Dockerfile.api .
 
       - name: Push API Docker image
-        run: docker push $REGISTRY/$PROJECT_ID/monolenz-api-staging:$GITHUB_SHA
+        run: docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }}
 
       - name: Deploy API to Cloud Run (0% traffic)
         run: |
           gcloud run deploy monolenz-api-staging \
-            --image $REGISTRY/$PROJECT_ID/monolenz/monolenz-api-staging:$GITHUB_SHA \
+            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }} \
             --platform managed \
-            --region $REGION \
+            --region ${{ env.REGION }} \
             --allow-unauthenticated \
             --port 3001 \
             --memory 1Gi \
@@ -223,7 +224,7 @@ jobs:
             --min-instances 0 \
             --max-instances 5 \
             --no-traffic \
-            --tag candidate-$GITHUB_SHA \
+            --tag candidate-${{ github.sha }} \
             --set-env-vars="NODE_ENV=staging,PORT=3001" \
             --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
@@ -232,9 +233,9 @@ jobs:
         run: |
           CANDIDATE_URL=$(gcloud run services describe monolenz-api-staging \
             --platform managed \
-            --region $REGION \
+            --region ${{ env.REGION }} \
             --format 'value(status.traffic[0].url)' \
-            --filter="status.traffic.tag=candidate-$GITHUB_SHA")
+            --filter="status.traffic.tag=candidate-${{ github.sha }}")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
       - name: Health check API
@@ -255,8 +256,8 @@ jobs:
         run: |
           gcloud run services update-traffic monolenz-api-staging \
             --platform managed \
-            --region $REGION \
-            --to-tags candidate-$GITHUB_SHA=100
+            --region ${{ env.REGION }} \
+            --to-tags candidate-${{ github.sha }}=100
 
       - name: Clean up old revisions
         run: |
@@ -264,7 +265,7 @@ jobs:
           gcloud run revisions list \
             --service monolenz-api-staging \
             --platform managed \
-            --region $REGION \
+            --region ${{ env.REGION }} \
             --filter="NOT traffic.percent:0" \
             --sort-by="~metadata.creationTimestamp" \
             --format="value(metadata.name)" \
@@ -273,7 +274,7 @@ jobs:
                 echo "Deleting old revision: $revision"
                 gcloud run revisions delete $revision \
                   --platform managed \
-                  --region $REGION \
+                  --region ${{ env.REGION }} \
                   --quiet
               fi
             done

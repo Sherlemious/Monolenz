@@ -13,7 +13,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Default values
-DEFAULT_REGION="us-central1"
+DEFAULT_REGISTRY_LOCATION="europe"
+DEFAULT_CLOUDRUN_REGION="europe-west1"
 DEFAULT_SERVICE_ACCOUNT_NAME="github-actions-deploy"
 
 echo -e "${BLUE}🚀 Monolenz Deployment Setup${NC}"
@@ -39,16 +40,39 @@ fi
 echo -e "${BLUE}📋 Project Configuration${NC}"
 read -p "Enter your Google Cloud Project ID: " PROJECT_ID
 
-read -p "Enter your preferred region [$DEFAULT_REGION]: " REGION
-REGION=${REGION:-$DEFAULT_REGION}
+echo ""
+echo "Registry locations:"
+echo "• europe (Multi-regional - recommended for EU)"
+echo "• us (Multi-regional - recommended for US)"
+echo "• europe-west1 (Belgium)" 
+echo "• us-central1 (Iowa)"
+
+read -p "Enter your preferred registry location [$DEFAULT_REGISTRY_LOCATION]: " REGISTRY_LOCATION
+REGISTRY_LOCATION=${REGISTRY_LOCATION:-$DEFAULT_REGISTRY_LOCATION}
+
+# For Cloud Run, we need a specific region
+if [ "$REGISTRY_LOCATION" = "europe" ]; then
+    DEFAULT_CLOUDRUN_REGION="europe-west1"
+elif [ "$REGISTRY_LOCATION" = "us" ]; then
+    DEFAULT_CLOUDRUN_REGION="us-central1"
+else
+    DEFAULT_CLOUDRUN_REGION="$REGISTRY_LOCATION"
+fi
+
+read -p "Enter your Cloud Run region [$DEFAULT_CLOUDRUN_REGION]: " CLOUDRUN_REGION
+CLOUDRUN_REGION=${CLOUDRUN_REGION:-$DEFAULT_CLOUDRUN_REGION}
 
 read -p "Enter service account name [$DEFAULT_SERVICE_ACCOUNT_NAME]: " SERVICE_ACCOUNT_NAME
 SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME:-$DEFAULT_SERVICE_ACCOUNT_NAME}
 
+REGISTRY_URL="${REGISTRY_LOCATION}-docker.pkg.dev"
+
 echo ""
 echo -e "${GREEN}Configuration:${NC}"
 echo "Project ID: $PROJECT_ID"
-echo "Region: $REGION"
+echo "Registry Location: $REGISTRY_LOCATION"
+echo "Registry URL: $REGISTRY_URL"
+echo "Cloud Run Region: $CLOUDRUN_REGION"
 echo "Service Account: $SERVICE_ACCOUNT_NAME"
 echo ""
 
@@ -68,10 +92,25 @@ echo -e "${BLUE}🔌 Enabling required APIs${NC}"
 gcloud services enable \
     cloudbuild.googleapis.com \
     run.googleapis.com \
-    containerregistry.googleapis.com \
+    artifactregistry.googleapis.com \
     secretmanager.googleapis.com \
     logging.googleapis.com \
     monitoring.googleapis.com
+
+# Create Artifact Registry repository
+echo -e "${BLUE}📦 Creating Artifact Registry repository${NC}"
+if gcloud artifacts repositories create monolenz \
+    --repository-format=docker \
+    --location=$REGISTRY_LOCATION \
+    --description="Monolenz application Docker images"; then
+    echo -e "${GREEN}✅ Repository created successfully${NC}"
+else
+    echo -e "${YELLOW}⚠️  Repository may already exist, continuing...${NC}"
+fi
+
+# Configure Docker authentication
+echo -e "${BLUE}🔐 Configuring Docker authentication${NC}"
+gcloud auth configure-docker $REGISTRY_URL
 
 # Create service account for GitHub Actions
 echo -e "${BLUE}👤 Creating service account for GitHub Actions${NC}"
@@ -87,7 +126,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com" \
-    --role="roles/storage.admin"
+    --role="roles/artifactregistry.writer"
 
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com" \
@@ -138,7 +177,9 @@ echo -e "${GREEN}🎉 Setup completed successfully!${NC}"
 echo ""
 echo -e "${BLUE}📋 Summary:${NC}"
 echo "• Google Cloud Project: $PROJECT_ID"
-echo "• Region: $REGION"
+echo "• Registry Location: $REGISTRY_LOCATION"
+echo "• Registry URL: $REGISTRY_URL"
+echo "• Cloud Run Region: $CLOUDRUN_REGION"
 echo "• Service Account: $SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com"
 echo "• Service Account Key: $KEY_FILE"
 echo "• Service Suffix: $SERVICE_SUFFIX"
@@ -156,12 +197,19 @@ if [ "$GH_AVAILABLE" = false ] || ! git rev-parse --git-dir > /dev/null 2>&1; th
     echo ""
 fi
 
+echo -e "${YELLOW}🔧 Update your GitHub workflow environment variables:${NC}"
+echo "REGISTRY: $REGISTRY_URL"
+echo "REPOSITORY: monolenz" 
+echo "REGION: $CLOUDRUN_REGION"
+echo ""
+
 echo -e "${BLUE}🚀 Next steps:${NC}"
 echo "1. Set up Google Cloud Secret Manager secrets for your environment variables"
 echo "2. Set GitHub repository secrets (if not done automatically)"
-echo "3. Commit and push the workflow files to your repository"
-echo "4. Push to 'main' branch to trigger production deployment"
-echo "5. Push to 'stage' branch to trigger staging deployment"
+echo "3. Update your workflow files with the configuration above"
+echo "4. Commit and push the workflow files to your repository"
+echo "5. Push to 'main' branch to trigger production deployment"
+echo "6. Push to 'stage' branch to trigger staging deployment"
 echo ""
 
 echo -e "${YELLOW}🤐 Don't forget to create these Secret Manager secrets:${NC}"
