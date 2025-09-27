@@ -160,7 +160,7 @@ jobs:
             --min-instances 0 \
             --max-instances 5 \
             --no-traffic \
-            --tag candidate-${{ github.sha }} \
+            --tag candidate-${GITHUB_SHA::8} \
             --set-env-vars="NODE_ENV=staging"
 
       - name: Get candidate URL
@@ -171,7 +171,7 @@ jobs:
             --platform managed \
             --region ${{ env.REGION }} \
             --format 'value(status.traffic[0].url)' \
-            --filter="status.traffic.tag=candidate-${{ github.sha }}")
+            --filter="status.traffic.tag=candidate-${GITHUB_SHA::8}")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
       - name: Get service URL (new service)
@@ -210,7 +210,7 @@ jobs:
           gcloud run services update-traffic monolenz-web-staging \
             --platform managed \
             --region ${{ env.REGION }} \
-            --to-tags candidate-${{ github.sha }}=100
+            --to-tags candidate-${GITHUB_SHA::8}=100
 
       - name: Clean up old revisions
         run: |
@@ -299,7 +299,7 @@ jobs:
             --min-instances 0 \
             --max-instances 5 \
             --no-traffic \
-            --tag candidate-${{ github.sha }} \
+            --tag candidate-${GITHUB_SHA::8} \
             --set-env-vars="NODE_ENV=staging" \
             --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
@@ -311,7 +311,7 @@ jobs:
             --platform managed \
             --region ${{ env.REGION }} \
             --format 'value(status.traffic[0].url)' \
-            --filter="status.traffic.tag=candidate-${{ github.sha }}")
+            --filter="status.traffic.tag=candidate-${GITHUB_SHA::8}")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
       - name: Get service URL (new service)
@@ -350,7 +350,7 @@ jobs:
           gcloud run services update-traffic monolenz-api-staging \
             --platform managed \
             --region ${{ env.REGION }} \
-            --to-tags candidate-${{ github.sha }}=100
+            --to-tags candidate-${GITHUB_SHA::8}=100
 
       - name: Clean up old revisions
         run: |

@@ -153,7 +153,7 @@ jobs:
             --min-instances 0 \
             --max-instances 10 \
             --no-traffic \
-            --tag candidate-$GITHUB_SHA \
+            --tag candidate-${GITHUB_SHA::8} \
             --set-env-vars="NODE_ENV=production"
 
       - name: Get candidate URL
@@ -164,7 +164,7 @@ jobs:
             --platform managed \
             --region $REGION \
             --format 'value(status.traffic[0].url)' \
-            --filter="status.traffic.tag=candidate-$GITHUB_SHA")
+            --filter="status.traffic.tag=candidate-${GITHUB_SHA::8}")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
       - name: Get service URL (new service)
@@ -203,7 +203,7 @@ jobs:
           gcloud run services update-traffic monolenz-web-prod \
             --platform managed \
             --region $REGION \
-            --to-tags candidate-$GITHUB_SHA=100
+            --to-tags candidate-${GITHUB_SHA::8}=100
 
       - name: Clean up old revisions
         run: |
@@ -292,7 +292,7 @@ jobs:
             --min-instances 1 \
             --max-instances 10 \
             --no-traffic \
-            --tag candidate-$GITHUB_SHA \
+            --tag candidate-${GITHUB_SHA::8} \
             --set-env-vars="NODE_ENV=production" \
             --set-secrets="DATABASE_URL=DATABASE_URL_PROD:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_PROD:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
@@ -304,7 +304,7 @@ jobs:
             --platform managed \
             --region $REGION \
             --format 'value(status.traffic[0].url)' \
-            --filter="status.traffic.tag=candidate-$GITHUB_SHA")
+            --filter="status.traffic.tag=candidate-${GITHUB_SHA::8}")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
       - name: Get service URL (new service)
@@ -343,7 +343,7 @@ jobs:
           gcloud run services update-traffic monolenz-api-prod \
             --platform managed \
             --region $REGION \
-            --to-tags candidate-$GITHUB_SHA=100
+            --to-tags candidate-${GITHUB_SHA::8}=100
 
       - name: Clean up old revisions
         run: |
