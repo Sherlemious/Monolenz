@@ -44,7 +44,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -74,7 +74,13 @@ jobs:
         run: pnpm lint
 
       - name: Build packages
-        run: pnpm build
+        run: |
+          # Build shared packages first
+          pnpm --filter="@monolenz/*" build
+          # Build API without database
+          pnpm --filter=api build:without-db
+          # Build web normally
+          pnpm --filter=web build
 
       - name: Test (if tests exist)
         run: |
