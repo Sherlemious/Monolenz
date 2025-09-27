@@ -23,6 +23,7 @@ RUN pnpm --filter api build:without-db
 
 # Runtime stage
 FROM node:20-alpine AS runner
+RUN corepack enable
 WORKDIR /app
 
 ENV NODE_ENV=production
