@@ -112,16 +112,16 @@ jobs:
             --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL_STAGING }} \
             --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY_STAGING }} \
             --build-arg NEXT_PUBLIC_API_URL=https://monolenz-api-staging-${{ secrets.GCP_SERVICE_SUFFIX }}.a.run.app \
-            -t $REGISTRY/$PROJECT_ID/monolenz/monolenz-web-staging:$GITHUB_SHA \
+            -t $REGISTRY/$PROJECT_ID/monolenz-web-staging:$GITHUB_SHA \
             -f Dockerfile.web .
 
       - name: Push Web Docker image
-        run: docker push $REGISTRY/$PROJECT_ID/monolenz/monolenz-web-staging:$GITHUB_SHA
+        run: docker push $REGISTRY/$PROJECT_ID/monolenz-web-staging:$GITHUB_SHA
 
       - name: Deploy Web to Cloud Run (0% traffic)
         run: |
           gcloud run deploy monolenz-web-staging \
-            --image $REGISTRY/$PROJECT_ID/monolenz/monolenz-web-staging:$GITHUB_SHA \
+            --image $REGISTRY/$PROJECT_ID/monolenz-web-staging:$GITHUB_SHA \
             --platform managed \
             --region $REGION \
             --allow-unauthenticated \
@@ -199,12 +199,12 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Configure Docker to use gcloud as a credential helper
-        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
       - name: Build API Docker image
         run: |
           docker build \
-            -t $REGISTRY/$PROJECT_ID/monolenz/monolenz-api-staging:$GITHUB_SHA \
+            -t $REGISTRY/$PROJECT_ID/monolenz-api-staging:$GITHUB_SHA \
             -f Dockerfile.api .
 
       - name: Push API Docker image
@@ -213,7 +213,7 @@ jobs:
       - name: Deploy API to Cloud Run (0% traffic)
         run: |
           gcloud run deploy monolenz-api-staging \
-            --image $REGISTRY/$PROJECT_ID/monolenz/monolenz-api-staging:$GITHUB_SHA \
+            --image $REGISTRY/$PROJECT_ID/monolenz-api-staging:$GITHUB_SHA \
             --platform managed \
             --region $REGION \
             --allow-unauthenticated \
