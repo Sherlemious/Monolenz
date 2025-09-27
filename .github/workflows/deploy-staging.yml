@@ -7,9 +7,9 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGISTRY: europe-west3-docker.pkg.dev
+  REGISTRY: europe-west1-docker.pkg.dev
   REPOSITORY: monolenz
-  REGION: europe-west3
+  REGION: europe-west1
 
 jobs:
   changes:
@@ -277,12 +277,12 @@ jobs:
             --platform managed \
             --region ${{ env.REGION }} \
             --allow-unauthenticated \
-            --port 3001 \
+            --port 8080 \
             --memory 1Gi \
             --cpu 1 \
             --min-instances 0 \
             --max-instances 5 \
-            --set-env-vars="NODE_ENV=staging,PORT=3001" \
+            --set-env-vars="NODE_ENV=staging" \
             --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
       - name: Deploy API to Cloud Run (update with no traffic)
@@ -293,14 +293,14 @@ jobs:
             --platform managed \
             --region ${{ env.REGION }} \
             --allow-unauthenticated \
-            --port 3001 \
+            --port 8080 \
             --memory 1Gi \
             --cpu 1 \
             --min-instances 0 \
             --max-instances 5 \
             --no-traffic \
             --tag candidate-${{ github.sha }} \
-            --set-env-vars="NODE_ENV=staging,PORT=3001" \
+            --set-env-vars="NODE_ENV=staging" \
             --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
       - name: Get candidate URL

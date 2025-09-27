@@ -270,12 +270,12 @@ jobs:
             --platform managed \
             --region $REGION \
             --allow-unauthenticated \
-            --port 3001 \
+            --port 8080 \
             --memory 1Gi \
             --cpu 1 \
             --min-instances 1 \
             --max-instances 10 \
-            --set-env-vars="NODE_ENV=production,PORT=3001" \
+            --set-env-vars="NODE_ENV=production" \
             --set-secrets="DATABASE_URL=DATABASE_URL_PROD:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_PROD:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
       - name: Deploy API to Cloud Run (update with no traffic)
@@ -286,14 +286,14 @@ jobs:
             --platform managed \
             --region $REGION \
             --allow-unauthenticated \
-            --port 3001 \
+            --port 8080 \
             --memory 1Gi \
             --cpu 1 \
             --min-instances 1 \
             --max-instances 10 \
             --no-traffic \
             --tag candidate-$GITHUB_SHA \
-            --set-env-vars="NODE_ENV=production,PORT=3001" \
+            --set-env-vars="NODE_ENV=production" \
             --set-secrets="DATABASE_URL=DATABASE_URL_PROD:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_PROD:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
       - name: Get candidate URL
