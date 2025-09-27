@@ -240,7 +240,7 @@ jobs:
       - name: Test Docker build for ${{ matrix.app }}
         run: |
           docker build \
-            --target production \
+            --target runner \
             --tag monolenz-${{ matrix.app }}:test \
             -f ${{ matrix.dockerfile }} \
             .
