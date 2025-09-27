@@ -1,0 +1,64 @@
+# Root-level Dockerfile for API
+FROM node:20-alpine AS base
+RUN corepack enable
+WORKDIR /app
+
+# Install dependencies stage
+FROM base AS deps
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY packages ./packages
+COPY apps/api/package.json ./apps/api/
+RUN pnpm install --filter api... --frozen-lockfile
+
+# Build stage
+FROM base AS builder
+WORKDIR /app
+
+COPY --from=deps /app /app
+COPY . .
+RUN [ -f /app/apps/api/newrelic.cjs ] || printf "module.exports = {};\n" > /app/apps/api/newrelic.cjs
+
+# Build the API and shared packages
+RUN pnpm --filter api build
+
+# Runtime stage
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3001
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 apiuser
+# Copy built application
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/package.json ./apps/api/
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+COPY --from=builder /app/apps/api/newrelic.cjs ./apps/api/
+
+# Copy shared packages (built)
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/packages ./packages
+
+# Copy workspace files
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+
+# Install only production dependencies
+RUN pnpm install --filter api... --prod --frozen-lockfile
+
+# Ensure proper ownership
+RUN chown -R apiuser:nodejs /app
+USER apiuser
+
+EXPOSE 3001
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
+
+WORKDIR /app/apps/api
+
+# Generate Prisma client and start the app
+CMD ["sh", "-c", "npx prisma generate && node dist/server.js"]
