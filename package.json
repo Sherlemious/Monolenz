@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "build:without-db": "turbo run build:without-db",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-path .prettierignore",
@@ -13,7 +14,7 @@
   },
   "devDependencies": {
     "prettier": "^3.6.2",
-    "turbo": "^2.5.5",
+    "turbo": "^2.5.8",
     "typescript": "5.8.3"
   },
   "packageManager": "pnpm@10.14.0",
