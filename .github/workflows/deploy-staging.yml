@@ -119,7 +119,35 @@ jobs:
       - name: Push Web Docker image
         run: docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }}
 
-      - name: Deploy Web to Cloud Run (0% traffic)
+      - name: Check if Web service exists
+        id: check-web-service
+        run: |
+          if gcloud run services describe monolenz-web-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format="value(metadata.name)" 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy Web to Cloud Run (new service)
+        if: steps.check-web-service.outputs.exists == 'false'
+        run: |
+          gcloud run deploy monolenz-web-staging \
+            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars="NODE_ENV=staging"
+
+      - name: Deploy Web to Cloud Run (update with no traffic)
+        if: steps.check-web-service.outputs.exists == 'true'
         run: |
           gcloud run deploy monolenz-web-staging \
             --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }} \
@@ -136,6 +164,7 @@ jobs:
             --set-env-vars="NODE_ENV=staging"
 
       - name: Get candidate URL
+        if: steps.check-web-service.outputs.exists == 'true'
         id: get-url
         run: |
           CANDIDATE_URL=$(gcloud run services describe monolenz-web-staging \
@@ -145,11 +174,27 @@ jobs:
             --filter="status.traffic.tag=candidate-${{ github.sha }}")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
+      - name: Get service URL (new service)
+        if: steps.check-web-service.outputs.exists == 'false'
+        id: get-service-url
+        run: |
+          SERVICE_URL=$(gcloud run services describe monolenz-web-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
+
       - name: Health check Web
         run: |
-          echo "Testing candidate deployment: ${{ steps.get-url.outputs.candidate_url }}"
+          if [ "${{ steps.check-web-service.outputs.exists }}" = "true" ]; then
+            URL="${{ steps.get-url.outputs.candidate_url }}"
+          else
+            URL="${{ steps.get-service-url.outputs.service_url }}"
+          fi
+
+          echo "Testing deployment: $URL"
           for i in {1..30}; do
-            if curl -f "${{ steps.get-url.outputs.candidate_url }}/health" 2>/dev/null; then
+            if curl -f "$URL/health" 2>/dev/null; then
               echo "Health check passed!"
               exit 0
             fi
@@ -160,6 +205,7 @@ jobs:
           exit 1
 
       - name: Switch traffic to new revision
+        if: steps.check-web-service.outputs.exists == 'true'
         run: |
           gcloud run services update-traffic monolenz-web-staging \
             --platform managed \
@@ -211,7 +257,36 @@ jobs:
       - name: Push API Docker image
         run: docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }}
 
-      - name: Deploy API to Cloud Run (0% traffic)
+      - name: Check if API service exists
+        id: check-api-service
+        run: |
+          if gcloud run services describe monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format="value(metadata.name)" 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy API to Cloud Run (new service)
+        if: steps.check-api-service.outputs.exists == 'false'
+        run: |
+          gcloud run deploy monolenz-api-staging \
+            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --port 3001 \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars="NODE_ENV=staging,PORT=3001" \
+            --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
+
+      - name: Deploy API to Cloud Run (update with no traffic)
+        if: steps.check-api-service.outputs.exists == 'true'
         run: |
           gcloud run deploy monolenz-api-staging \
             --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }} \
@@ -229,6 +304,7 @@ jobs:
             --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
       - name: Get candidate URL
+        if: steps.check-api-service.outputs.exists == 'true'
         id: get-url
         run: |
           CANDIDATE_URL=$(gcloud run services describe monolenz-api-staging \
@@ -238,11 +314,27 @@ jobs:
             --filter="status.traffic.tag=candidate-${{ github.sha }}")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
+      - name: Get service URL (new service)
+        if: steps.check-api-service.outputs.exists == 'false'
+        id: get-service-url
+        run: |
+          SERVICE_URL=$(gcloud run services describe monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
+
       - name: Health check API
         run: |
-          echo "Testing candidate deployment: ${{ steps.get-url.outputs.candidate_url }}"
+          if [ "${{ steps.check-api-service.outputs.exists }}" = "true" ]; then
+            URL="${{ steps.get-url.outputs.candidate_url }}"
+          else
+            URL="${{ steps.get-service-url.outputs.service_url }}"
+          fi
+
+          echo "Testing deployment: $URL"
           for i in {1..30}; do
-            if curl -f "${{ steps.get-url.outputs.candidate_url }}/health" 2>/dev/null; then
+            if curl -f "$URL/health" 2>/dev/null; then
               echo "Health check passed!"
               exit 0
             fi
@@ -253,6 +345,7 @@ jobs:
           exit 1
 
       - name: Switch traffic to new revision
+        if: steps.check-api-service.outputs.exists == 'true'
         run: |
           gcloud run services update-traffic monolenz-api-staging \
             --platform managed \
