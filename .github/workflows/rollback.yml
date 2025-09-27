@@ -1,188 +1,188 @@
 name: Emergency Rollback
 
 on:
-    workflow_dispatch:
-        inputs:
-            service:
-                description: "Service to rollback"
-                required: true
-                type: choice
-                options:
-                    - monolenz-web-prod
-                    - monolenz-api-prod
-                    - monolenz-web-staging
-                    - monolenz-api-staging
-            rollback_to:
-                description: "Rollback strategy"
-                required: true
-                type: choice
-                options:
-                    - previous-revision
-                    - specific-tag
-                default: previous-revision
-            target_tag:
-                description: "Specific tag to rollback to (if rollback_to is specific-tag)"
-                required: false
-                type: string
-            environment:
-                description: "Environment"
-                required: true
-                type: choice
-                options:
-                    - production
-                    - staging
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to rollback'
+        required: true
+        type: choice
+        options:
+          - monolenz-web-prod
+          - monolenz-api-prod
+          - monolenz-web-staging
+          - monolenz-api-staging
+      rollback_to:
+        description: 'Rollback strategy'
+        required: true
+        type: choice
+        options:
+          - previous-revision
+          - specific-tag
+        default: previous-revision
+      target_tag:
+        description: 'Specific tag to rollback to (if rollback_to is specific-tag)'
+        required: false
+        type: string
+      environment:
+        description: 'Environment'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
 
 env:
-    PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-    REGION: us-central1
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
 
 jobs:
-    rollback:
-        runs-on: ubuntu-latest
-        environment: ${{ inputs.environment }}
-        steps:
-            - name: Authenticate to Google Cloud
-              uses: google-github-actions/auth@v2
-              with:
-                  credentials_json: ${{ secrets.GCP_SA_KEY }}
+  rollback:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-            - name: Show current traffic distribution
-              run: |
-                  echo "Current traffic distribution for ${{ inputs.service }}:"
-                  gcloud run services describe ${{ inputs.service }} \
-                    --platform managed \
-                    --region $REGION \
-                    --format="table(status.traffic.tag,status.traffic.percent,status.traffic.url)"
+      - name: Show current traffic distribution
+        run: |
+          echo "Current traffic distribution for ${{ inputs.service }}:"
+          gcloud run services describe ${{ inputs.service }} \
+            --platform managed \
+            --region $REGION \
+            --format="table(status.traffic.tag,status.traffic.percent,status.traffic.url)"
 
-            - name: Get rollback target
-              id: rollback-target
-              run: |
-                  if [ "${{ inputs.rollback_to }}" = "specific-tag" ]; then
-                    if [ -z "${{ inputs.target_tag }}" ]; then
-                      echo "Target tag is required when rollback_to is specific-tag"
-                      exit 1
-                    fi
-                    echo "target=${{ inputs.target_tag }}" >> $GITHUB_OUTPUT
-                  else
-                    # Get the previous revision that was receiving traffic
-                    PREVIOUS_REVISION=$(gcloud run revisions list \
-                      --service ${{ inputs.service }} \
-                      --platform managed \
-                      --region $REGION \
-                      --filter="status.conditions.type=Ready AND status.conditions.status=True" \
-                      --sort-by="~metadata.creationTimestamp" \
-                      --format="value(metadata.name)" \
-                      --limit=2 | tail -n 1)
-                    
-                    if [ -z "$PREVIOUS_REVISION" ]; then
-                      echo "No previous revision found"
-                      exit 1
-                    fi
-                    
-                    echo "target=$PREVIOUS_REVISION" >> $GITHUB_OUTPUT
-                  fi
+      - name: Get rollback target
+        id: rollback-target
+        run: |
+          if [ "${{ inputs.rollback_to }}" = "specific-tag" ]; then
+            if [ -z "${{ inputs.target_tag }}" ]; then
+              echo "Target tag is required when rollback_to is specific-tag"
+              exit 1
+            fi
+            echo "target=${{ inputs.target_tag }}" >> $GITHUB_OUTPUT
+          else
+            # Get the previous revision that was receiving traffic
+            PREVIOUS_REVISION=$(gcloud run revisions list \
+              --service ${{ inputs.service }} \
+              --platform managed \
+              --region $REGION \
+              --filter="status.conditions.type=Ready AND status.conditions.status=True" \
+              --sort-by="~metadata.creationTimestamp" \
+              --format="value(metadata.name)" \
+              --limit=2 | tail -n 1)
+            
+            if [ -z "$PREVIOUS_REVISION" ]; then
+              echo "No previous revision found"
+              exit 1
+            fi
+            
+            echo "target=$PREVIOUS_REVISION" >> $GITHUB_OUTPUT
+          fi
 
-            - name: Validate rollback target
-              run: |
-                  TARGET="${{ steps.rollback-target.outputs.target }}"
-                  echo "Validating rollback target: $TARGET"
+      - name: Validate rollback target
+        run: |
+          TARGET="${{ steps.rollback-target.outputs.target }}"
+          echo "Validating rollback target: $TARGET"
 
-                  # Check if the target revision exists
-                  if [ "${{ inputs.rollback_to }}" = "specific-tag" ]; then
-                    # For tags, check if tag exists
-                    TAG_EXISTS=$(gcloud run services describe ${{ inputs.service }} \
-                      --platform managed \
-                      --region $REGION \
-                      --format="value(status.traffic.tag)" | grep -c "^$TARGET$" || echo "0")
-                    
-                    if [ "$TAG_EXISTS" = "0" ]; then
-                      echo "Tag $TARGET not found in service"
-                      exit 1
-                    fi
-                  else
-                    # For revisions, check if revision exists
-                    REV_EXISTS=$(gcloud run revisions describe $TARGET \
-                      --platform managed \
-                      --region $REGION \
-                      --format="value(metadata.name)" 2>/dev/null || echo "")
-                      
-                    if [ -z "$REV_EXISTS" ]; then
-                      echo "Revision $TARGET not found"
-                      exit 1
-                    fi
-                  fi
+          # Check if the target revision exists
+          if [ "${{ inputs.rollback_to }}" = "specific-tag" ]; then
+            # For tags, check if tag exists
+            TAG_EXISTS=$(gcloud run services describe ${{ inputs.service }} \
+              --platform managed \
+              --region $REGION \
+              --format="value(status.traffic.tag)" | grep -c "^$TARGET$" || echo "0")
+            
+            if [ "$TAG_EXISTS" = "0" ]; then
+              echo "Tag $TARGET not found in service"
+              exit 1
+            fi
+          else
+            # For revisions, check if revision exists
+            REV_EXISTS=$(gcloud run revisions describe $TARGET \
+              --platform managed \
+              --region $REGION \
+              --format="value(metadata.name)" 2>/dev/null || echo "")
+              
+            if [ -z "$REV_EXISTS" ]; then
+              echo "Revision $TARGET not found"
+              exit 1
+            fi
+          fi
 
-            - name: Perform rollback
-              run: |
-                  TARGET="${{ steps.rollback-target.outputs.target }}"
-                  echo "🔄 Rolling back ${{ inputs.service }} to $TARGET"
+      - name: Perform rollback
+        run: |
+          TARGET="${{ steps.rollback-target.outputs.target }}"
+          echo "🔄 Rolling back ${{ inputs.service }} to $TARGET"
 
-                  if [ "${{ inputs.rollback_to }}" = "specific-tag" ]; then
-                    # Rollback to specific tag
-                    gcloud run services update-traffic ${{ inputs.service }} \
-                      --platform managed \
-                      --region $REGION \
-                      --to-tags $TARGET=100
-                  else
-                    # Rollback to specific revision
-                    gcloud run services update-traffic ${{ inputs.service }} \
-                      --platform managed \
-                      --region $REGION \
-                      --to-revisions $TARGET=100
-                  fi
+          if [ "${{ inputs.rollback_to }}" = "specific-tag" ]; then
+            # Rollback to specific tag
+            gcloud run services update-traffic ${{ inputs.service }} \
+              --platform managed \
+              --region $REGION \
+              --to-tags $TARGET=100
+          else
+            # Rollback to specific revision
+            gcloud run services update-traffic ${{ inputs.service }} \
+              --platform managed \
+              --region $REGION \
+              --to-revisions $TARGET=100
+          fi
 
-            - name: Verify rollback
-              run: |
-                  echo "Verifying rollback..."
-                  sleep 10
+      - name: Verify rollback
+        run: |
+          echo "Verifying rollback..."
+          sleep 10
 
-                  # Get the service URL and test health
-                  SERVICE_URL=$(gcloud run services describe ${{ inputs.service }} \
-                    --platform managed \
-                    --region $REGION \
-                    --format 'value(status.url)')
+          # Get the service URL and test health
+          SERVICE_URL=$(gcloud run services describe ${{ inputs.service }} \
+            --platform managed \
+            --region $REGION \
+            --format 'value(status.url)')
 
-                  echo "Testing service health: $SERVICE_URL/health"
+          echo "Testing service health: $SERVICE_URL/health"
 
-                  for i in {1..20}; do
-                    if curl -f "$SERVICE_URL/health" >/dev/null 2>&1; then
-                      echo "✅ Rollback successful! Service is healthy."
-                      break
-                    fi
-                    if [ $i -eq 20 ]; then
-                      echo "❌ Service health check failed after rollback"
-                      exit 1
-                    fi
-                    echo "Health check attempt $i failed, retrying in 10 seconds..."
-                    sleep 10
-                  done
+          for i in {1..20}; do
+            if curl -f "$SERVICE_URL/health" >/dev/null 2>&1; then
+              echo "✅ Rollback successful! Service is healthy."
+              break
+            fi
+            if [ $i -eq 20 ]; then
+              echo "❌ Service health check failed after rollback"
+              exit 1
+            fi
+            echo "Health check attempt $i failed, retrying in 10 seconds..."
+            sleep 10
+          done
 
-            - name: Show final traffic distribution
-              run: |
-                  echo "Final traffic distribution after rollback:"
-                  gcloud run services describe ${{ inputs.service }} \
-                    --platform managed \
-                    --region $REGION \
-                    --format="table(status.traffic.tag,status.traffic.percent,status.traffic.url)"
+      - name: Show final traffic distribution
+        run: |
+          echo "Final traffic distribution after rollback:"
+          gcloud run services describe ${{ inputs.service }} \
+            --platform managed \
+            --region $REGION \
+            --format="table(status.traffic.tag,status.traffic.percent,status.traffic.url)"
 
-            - name: Cleanup failed revisions
-              run: |
-                  echo "Cleaning up revisions that are no longer receiving traffic..."
+      - name: Cleanup failed revisions
+        run: |
+          echo "Cleaning up revisions that are no longer receiving traffic..."
 
-                  # List revisions not receiving traffic and delete them (keep last 2)
-                  gcloud run revisions list \
-                    --service ${{ inputs.service }} \
-                    --platform managed \
-                    --region $REGION \
-                    --filter="status.conditions.type=Ready AND status.conditions.status=True AND spec.traffic.percent=0" \
-                    --sort-by="~metadata.creationTimestamp" \
-                    --format="value(metadata.name)" \
-                    --limit=10 | tail -n +3 | while read revision; do
-                      if [ ! -z "$revision" ]; then
-                        echo "Deleting unused revision: $revision"
-                        gcloud run revisions delete $revision \
-                          --platform managed \
-                          --region $REGION \
-                          --quiet || echo "Failed to delete $revision"
-                      fi
-                    done
+          # List revisions not receiving traffic and delete them (keep last 2)
+          gcloud run revisions list \
+            --service ${{ inputs.service }} \
+            --platform managed \
+            --region $REGION \
+            --filter="status.conditions.type=Ready AND status.conditions.status=True AND spec.traffic.percent=0" \
+            --sort-by="~metadata.creationTimestamp" \
+            --format="value(metadata.name)" \
+            --limit=10 | tail -n +3 | while read revision; do
+              if [ ! -z "$revision" ]; then
+                echo "Deleting unused revision: $revision"
+                gcloud run revisions delete $revision \
+                  --platform managed \
+                  --region $REGION \
+                  --quiet || echo "Failed to delete $revision"
+              fi
+            done
