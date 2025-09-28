@@ -169,11 +169,11 @@ jobs:
         if: steps.check-web-service.outputs.exists == 'true'
         id: get-url
         run: |
+          # Get the URL for the specific traffic tag
           CANDIDATE_URL=$(gcloud run services describe monolenz-web-staging \
             --platform managed \
             --region ${{ env.REGION }} \
-            --format 'value(status.traffic[0].url)' \
-            --filter="status.traffic.tag=candidate-${GITHUB_SHA::8}")
+            --format json | jq -r ".status.traffic[] | select(.tag==\"candidate-${GITHUB_SHA::8}\") | .url")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
       - name: Get service URL (new service)
@@ -311,11 +311,11 @@ jobs:
         if: steps.check-api-service.outputs.exists == 'true'
         id: get-url
         run: |
+          # Get the URL for the specific traffic tag
           CANDIDATE_URL=$(gcloud run services describe monolenz-api-staging \
             --platform managed \
             --region ${{ env.REGION }} \
-            --format 'value(status.traffic[0].url)' \
-            --filter="status.traffic.tag=candidate-${GITHUB_SHA::8}")
+            --format json | jq -r ".status.traffic[] | select(.tag==\"candidate-${GITHUB_SHA::8}\") | .url")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
       - name: Get service URL (new service)
