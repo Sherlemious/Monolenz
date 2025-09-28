@@ -21,6 +21,9 @@ RUN [ -f /app/apps/api/newrelic.cjs ] || printf "module.exports = {};\n" > /app/
 # Build the API and shared packages
 RUN pnpm --filter api build:without-db
 
+# Generate Prisma client during build
+RUN cd apps/api && npx prisma generate
+
 # Runtime stage
 FROM node:20-alpine AS runner
 RUN corepack enable
@@ -52,13 +55,13 @@ RUN pnpm install --filter api... --prod --frozen-lockfile
 RUN chown -R apiuser:nodejs /app
 USER apiuser
 
-EXPOSE 3001
+EXPOSE 8080
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
 
 WORKDIR /app/apps/api
 
 # Generate Prisma client and start the app
-CMD ["sh", "-c", "npx prisma generate && node dist/server.js"]
+CMD ["node", "dist/server.js"]
