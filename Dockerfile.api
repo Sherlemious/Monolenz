@@ -16,13 +16,15 @@ WORKDIR /app
 
 COPY --from=deps /app /app
 COPY . .
+
+# Create a dummy newrelic.cjs if it doesn't exist
 RUN [ -f /app/apps/api/newrelic.cjs ] || printf "module.exports = {};\n" > /app/apps/api/newrelic.cjs
 
-# Build the API and shared packages
-RUN pnpm --filter api build:without-db
-
-# Generate Prisma client during build
+# Generate Prisma client BEFORE building (important!)
 RUN cd apps/api && npx prisma generate
+
+# Build the API and shared packages (now with Prisma client available)
+RUN pnpm --filter api build:without-db
 
 # Runtime stage
 FROM node:20-alpine AS runner
@@ -30,17 +32,22 @@ RUN corepack enable
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=8080
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 apiuser
+
 # Copy built application
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/apps/api/newrelic.cjs ./apps/api/
 
+# Copy the generated Prisma client (CRITICAL!)
+COPY --from=builder /app/apps/api/node_modules/.prisma ./apps/api/node_modules/.prisma
+COPY --from=builder /app/apps/api/node_modules/@prisma/client ./apps/api/node_modules/@prisma/client
+
 # Copy shared packages (built)
-COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/packages ./packages
 
 # Copy workspace files
@@ -51,15 +58,18 @@ COPY --from=builder /app/pnpm-lock.yaml ./
 # Install only production dependencies
 RUN pnpm install --filter api... --prod --frozen-lockfile
 
+# Generate Prisma client again in production (ensures it's available)
+RUN cd apps/api && npx prisma generate
+
 # Ensure proper ownership
 RUN chown -R apiuser:nodejs /app
 USER apiuser
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
+  CMD node -e "require('http').get('http://localhost:8080/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
 
 WORKDIR /app/apps/api
 
-# Generate Prisma client and start the app
+# Start the application
 CMD ["node", "dist/server.js"]
