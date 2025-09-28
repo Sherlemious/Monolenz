@@ -55,11 +55,9 @@ RUN pnpm install --filter api... --prod --frozen-lockfile
 RUN chown -R apiuser:nodejs /app
 USER apiuser
 
-EXPOSE 8080
-
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
+  CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
 WORKDIR /app/apps/api
 
