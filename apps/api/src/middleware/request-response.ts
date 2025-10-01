@@ -140,42 +140,56 @@ export const handleErrors = (err: any, req: Request, res: Response, next: NextFu
     timestamp: new Date().toISOString(),
   });
 
+  // Helper function to send error response (doesn't rely on res.error)
+  const sendError = (message: string, statusCode: number, errors?: string[]) => {
+    return res.status(statusCode).json({
+      success: false,
+      message,
+      errors,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: req.requestId,
+        version: '1.0.0',
+      },
+    });
+  };
+
   // Handle Zod validation errors
   if (err.name === 'ZodError') {
     const zodErrors = err.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`);
-    return res.error('Validation failed', HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY, zodErrors);
+    return sendError('Validation failed', HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY, zodErrors);
   }
 
   // Handle Prisma errors
   if (err.code === 'P2002') {
-    return res.error('Duplicate entry', HTTP_STATUS_CODES.CONFLICT, ['Resource already exists']);
+    return sendError('Duplicate entry', HTTP_STATUS_CODES.CONFLICT, ['Resource already exists']);
   }
 
   if (err.code === 'P2025') {
-    return res.error('Resource not found', HTTP_STATUS_CODES.NOT_FOUND);
+    return sendError('Resource not found', HTTP_STATUS_CODES.NOT_FOUND);
   }
 
   // Handle Supabase auth errors
   if (err.name === 'AuthError' || err.message?.includes('JWT')) {
-    return res.error('Authentication failed', HTTP_STATUS_CODES.UNAUTHORIZED);
+    return sendError('Authentication failed', HTTP_STATUS_CODES.UNAUTHORIZED);
   }
 
   // Handle specific error types
   if (err.name === 'ValidationError') {
-    return res.error('Validation failed', HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY, err.errors);
+    return sendError('Validation failed', HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY, err.errors);
   }
 
   if (err.name === 'UnauthorizedError') {
-    return res.error('Unauthorized access', HTTP_STATUS_CODES.UNAUTHORIZED);
+    return sendError('Unauthorized access', HTTP_STATUS_CODES.UNAUTHORIZED);
   }
 
   if (err.code === 'ECONNREFUSED') {
-    return res.error('Service temporarily unavailable', HTTP_STATUS_CODES.SERVICE_UNAVAILABLE);
+    return sendError('Service temporarily unavailable', HTTP_STATUS_CODES.SERVICE_UNAVAILABLE);
   }
 
   // Default error response
   const message =
     process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message || 'Unknown error occurred';
 
-  return res.error(message, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+  return sendError(message, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
 };

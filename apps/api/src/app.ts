@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
 import routes from './routes';
 import { handleErrors } from './middleware/request-response';
 import './types/express';

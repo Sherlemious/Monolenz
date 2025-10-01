@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
 import Header from '@/app/components/Header';
+import { Toaster } from '@/components/ui/toaster';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body className={montserrat.variable}>
         <Header />
         {children}
+        <Toaster />
       </body>
     </html>
   );
