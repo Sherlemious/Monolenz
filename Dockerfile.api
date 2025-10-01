@@ -43,10 +43,6 @@ COPY --from=builder /app/apps/api/package.json ./apps/api/
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/apps/api/newrelic.cjs ./apps/api/
 
-# Copy the generated Prisma client (CRITICAL!)
-COPY --from=builder /app/apps/api/node_modules/.prisma ./apps/api/node_modules/.prisma
-COPY --from=builder /app/apps/api/node_modules/@prisma/client ./apps/api/node_modules/@prisma/client
-
 # Copy shared packages (built)
 COPY --from=builder /app/packages ./packages
 
@@ -58,7 +54,7 @@ COPY --from=builder /app/pnpm-lock.yaml ./
 # Install only production dependencies
 RUN pnpm install --filter api... --prod --frozen-lockfile
 
-# Generate Prisma client again in production (ensures it's available)
+# Generate Prisma client in production (ensures it's available)
 RUN cd apps/api && npx prisma generate
 
 # Ensure proper ownership
