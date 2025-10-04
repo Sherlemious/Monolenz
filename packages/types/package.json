@@ -36,6 +36,7 @@
     "lint": "echo 'No linting configured for types package'"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
