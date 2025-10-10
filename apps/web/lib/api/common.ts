@@ -61,8 +61,10 @@ export function createApiClientWithTokenProvider(
 
     if (!res.ok) {
       const errorBody = await parseJsonSafe<unknown>(res);
-      throw new Error(
-        `API ${method} ${path} failed: ${res.status} ${res.statusText} — ${typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody)}`
+      throw new ApiError(
+        `API ${method} ${path} failed: ${res.status} ${res.statusText} — ${typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody)}`,
+        res.status,
+        res.statusText
       );
     }
     return parseJsonSafe<T>(res);
