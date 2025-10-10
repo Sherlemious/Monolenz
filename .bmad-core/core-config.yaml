@@ -1,4 +1,4 @@
-markdownExploder: true
+markdownExploder: false
 qa:
   qaLocation: docs/qa
 prd:

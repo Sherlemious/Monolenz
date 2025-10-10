@@ -1,5 +1,19 @@
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+export class ApiError extends Error{
+  status: number;
+  statusText: string;
+
+  constructor (message: string , status: number , statusText: string){
+    super(message);
+    this.status = status;
+    this.statusText = statusText;
+    this.name = 'ApiError';
+  }
+}
+
+
+
 export type ApiClient = {
   get<T>(path: string, init?: RequestInit): Promise<T>;
   post<T, B = unknown>(path: string, body?: B, init?: RequestInit): Promise<T>;
