@@ -8,11 +8,13 @@
 import { useState, useEffect } from 'react';
 import { profileApi } from '@/lib/api/profile';
 import type { BasicProfile, BasicProfileUpdate } from '@/lib/types/profile';
+import { ApiError } from '@/lib/api/common';
+
 
 export function useProfile() {
   const [profile, setProfile] = useState<BasicProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; status?: number } | null>(null);
 
   // Fetch profile
   const fetchProfile = async () => {
@@ -22,8 +24,11 @@ export function useProfile() {
       const data = await profileApi.getMyProfile();
       setProfile(data);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load profile';
-      setError(errorMessage);
+      if (err instanceof ApiError) {
+        setError({ message: err.message, status: err.status });
+      } else {
+        setError({ message: 'Failed to load profile' });
+      }
       console.error('Error fetching profile:', err);
     } finally {
       setLoading(false);
