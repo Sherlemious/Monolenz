@@ -2,10 +2,7 @@
 
 export type AuthMethod = 'email' | 'google' | 'github';
 
-export type EventProperties = Record<
-  string,
-  string | number | boolean | null | undefined
->;
+export type EventProperties = Record<string, string | number | boolean | null | undefined>;
 
 export interface UserTraits extends EventProperties {
   email?: string;
@@ -41,23 +38,22 @@ export const ANALYTICS_EVENTS = {
   USER_SIGNED_UP: 'user_signed_up',
   USER_SIGNED_IN: 'user_signed_in',
   USER_SIGNED_OUT: 'user_signed_out',
-  
+
   // Dashboard
   DASHBOARD_VIEWED: 'dashboard_viewed',
-  
+
   // Features
   FEATURE_USED: 'feature_used',
-  
+
   // Forms
   FORM_STARTED: 'form_started',
   FORM_SUBMITTED: 'form_submitted',
-  
+
   // Errors
   ERROR_OCCURRED: 'error_occurred',
-  
+
   // Navigation
   PAGE_VIEW: '$pageview',
 } as const;
 
-export type AnalyticsEventName =
-  (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];
+export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];

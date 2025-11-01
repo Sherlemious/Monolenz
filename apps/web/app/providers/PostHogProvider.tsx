@@ -19,9 +19,9 @@ export function PostHogPageview(): null {
       if (searchParams && searchParams.toString()) {
         url = url + `?${searchParams.toString()}`;
       }
-      
+
       posthog.capture('$pageview', {
-        '$current_url': url,
+        $current_url: url,
       });
     }
   }, [pathname, searchParams]);
