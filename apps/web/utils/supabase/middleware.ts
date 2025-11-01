@@ -31,9 +31,22 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: DO NOT REMOVE auth.getUser()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      // Only log if it's not the common "Auth session missing" message
+      if (error.message !== 'Auth session missing!') {
+        console.warn('Supabase auth error:', error.message);
+      }
+    }
+    user = data?.user || null;
+  } catch (error) {
+    console.warn('Failed to get Supabase user:', error);
+    // Clear invalid cookies
+    supabaseResponse.cookies.delete('sb-access-token');
+    supabaseResponse.cookies.delete('sb-refresh-token');
+  }
 
   // Public routes should be accessible to unauthenticated users
   const isPublicRoute =
