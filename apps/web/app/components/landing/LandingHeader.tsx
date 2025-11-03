@@ -73,16 +73,10 @@ const LandingHeader: React.FC = () => {
       {mobileOpen && (
         <div className='md:hidden'>
           <div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
-            <Link
-              href='/#features'
-              className='block px-3 py-2 rounded-md text-base font-medium text-foreground'
-            >
+            <Link href='/#features' className='block px-3 py-2 rounded-md text-base font-medium text-foreground'>
               Features
             </Link>
-            <Link
-              href='/#pricing'
-              className='block px-3 py-2 rounded-md text-base font-medium text-muted-foreground'
-            >
+            <Link href='/#pricing' className='block px-3 py-2 rounded-md text-base font-medium text-muted-foreground'>
               Pricing
             </Link>
             <div className='border-t border-border pt-4 mt-4'>
