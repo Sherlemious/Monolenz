@@ -195,52 +195,52 @@ const HeroSection = () => {
               <div className='bg-card border rounded-lg shadow-xl p-5 w-[280px]'>
                 {/* Document Header */}
                 <div className='flex items-center justify-between mb-4'>
-                  <div className='flex items-center gap-2'>
-                    <span className='w-1.5 h-1.5 rounded-full bg-muted' />
-                    <span className='w-1.5 h-1.5 rounded-full bg-muted' />
-                    <span className='w-1.5 h-1.5 rounded-full bg-muted' />
-                  </div>
-                  <span className='text-[10px] font-mono uppercase tracking-[0.1em] text-muted-foreground'>
-                    Master Profile
-                  </span>
+                <div className='flex items-center gap-2'>
+                  <span className='w-1.5 h-1.5 rounded-full bg-muted' />
+                  <span className='w-1.5 h-1.5 rounded-full bg-muted' />
+                  <span className='w-1.5 h-1.5 rounded-full bg-muted' />
+                </div>
+                <span className='text-[10px] font-mono uppercase tracking-[0.1em] text-muted-foreground'>
+                  Master Profile
+                </span>
+              </div>
+
+              {/* Content Blocks */}
+              <div className='mb-3'>
+                <div className='text-center mb-3'>
+                  <h3 className='text-[11px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1'>
+                    Content Blocks
+                  </h3>
+                  <span className='text-[11px] text-muted-foreground'>18+ sections</span>
                 </div>
 
-                {/* Content Blocks */}
-                <div className='mb-3'>
-                  <div className='text-center mb-3'>
-                    <h3 className='text-[11px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1'>
-                      Content Blocks
-                    </h3>
-                    <span className='text-[11px] text-muted-foreground'>18+ sections</span>
-                  </div>
-
-                  <div className='flex flex-col gap-1.5'>
-                    {contentBlocks.map((block, index) => (
+                <div className='flex flex-col gap-1.5'>
+                  {contentBlocks.map((block, index) => (
+                    <div
+                      key={block.name}
+                      className='cursor-pointer'
+                      onMouseEnter={() => setHoveredBlock(index)}
+                      onMouseLeave={() => setHoveredBlock(null)}
+                    >
                       <div
-                        key={block.name}
-                        className='cursor-pointer'
-                        onMouseEnter={() => setHoveredBlock(index)}
-                        onMouseLeave={() => setHoveredBlock(null)}
+                        className={`w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all ${
+                          block.filled ? 'bg-muted' : 'border border-dashed'
+                        } ${hoveredBlock === index ? 'scale-[1.02] shadow-xs' : ''}`}
                       >
-                        <div
-                          className={`w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all ${
-                            block.filled ? 'bg-muted' : 'border border-dashed'
-                          } ${hoveredBlock === index ? 'scale-[1.02] shadow-xs' : ''}`}
-                        >
-                          <span className='text-[11px] font-medium text-card-foreground'>{block.name}</span>
-                          {!block.filled && <Plus className='w-2.5 h-2.5 text-muted-foreground' />}
-                        </div>
+                        <span className='text-[11px] font-medium text-card-foreground'>{block.name}</span>
+                        {!block.filled && <Plus className='w-2.5 h-2.5 text-muted-foreground' />}
                       </div>
-                    ))}
-                  </div>
-
-                  <div className='flex items-center justify-center pt-2'>
-                    <div className='flex gap-1'>
-                      <span className='w-1 h-1 rounded-full bg-muted' />
-                      <span className='w-1 h-1 rounded-full bg-muted' />
-                      <span className='w-1 h-1 rounded-full bg-muted' />
                     </div>
+                  ))}
+                </div>
+
+                <div className='flex items-center justify-center pt-2'>
+                  <div className='flex gap-1'>
+                    <span className='w-1 h-1 rounded-full bg-muted' />
+                    <span className='w-1 h-1 rounded-full bg-muted' />
+                    <span className='w-1 h-1 rounded-full bg-muted' />
                   </div>
+                </div>
                 </div>
               </div>
             </div>

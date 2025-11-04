@@ -7,6 +7,7 @@ export default function MarketingLayout({
 }>) {
   return (
     <div>
+      <div className='grid-pattern' />
       <LandingHeader />
       <main>{children}</main>
     </div>
