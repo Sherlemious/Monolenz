@@ -16,13 +16,15 @@ WORKDIR /app
 
 COPY --from=deps /app /app
 COPY . .
+
+# Create a dummy newrelic.cjs if it doesn't exist
 RUN [ -f /app/apps/api/newrelic.cjs ] || printf "module.exports = {};\n" > /app/apps/api/newrelic.cjs
+
+# Generate Prisma client first (before building)
+RUN cd apps/api && pnpm prisma generate
 
 # Build the API and shared packages
 RUN pnpm --filter api build:without-db
-
-# Generate Prisma client during build
-RUN cd apps/api && npx prisma generate
 
 # Runtime stage
 FROM node:20-alpine AS runner
@@ -30,17 +32,22 @@ RUN corepack enable
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=8080
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 apiuser
+
 # Copy built application
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/apps/api/newrelic.cjs ./apps/api/
 
+# Copy the generated Prisma client from builder
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client* ./node_modules/.pnpm/
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
 # Copy shared packages (built)
-COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/packages ./packages
 
 # Copy workspace files
@@ -57,9 +64,9 @@ USER apiuser
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
+  CMD node -e "require('http').get('http://localhost:8080/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
 
 WORKDIR /app/apps/api
 
-# Generate Prisma client and start the app
+# Start the application
 CMD ["node", "dist/server.js"]
