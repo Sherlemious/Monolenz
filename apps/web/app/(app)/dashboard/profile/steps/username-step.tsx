@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input"
 type FormData = z.infer<typeof profileSchemas.createForm>
 
 interface UsernameStepProps {
-  form: UseFormReturn<FormData>
+  form: UseFormReturn<any>
 }
 
 export function UsernameStep({ form }: UsernameStepProps) {

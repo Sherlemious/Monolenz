@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input"
 type FormData = z.infer<typeof profileSchemas.createForm>
 
 interface LinksStepProps {
-  form: UseFormReturn<FormData>
+  form: UseFormReturn<any>
 }
 
 export function LinksStep({ form }: LinksStepProps) {

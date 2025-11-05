@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 type FormData = z.infer<typeof profileSchemas.createForm>
 
 interface BioStepProps {
-  form: UseFormReturn<FormData>
+  form: UseFormReturn<any>
 }
 
 export function BioStep({ form }: BioStepProps) {
