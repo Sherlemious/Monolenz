@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card"
 import { Field } from "@/components/ui/field"
 import { UsernameStep } from "./steps/username-step"
-import { BioStep } from "./steps/bio-setup"
+import { BioStep } from "./steps/bio-step"
 import { LinksStep } from "./steps/links-step"
 
 const formSchema = profileSchemas.createForm
