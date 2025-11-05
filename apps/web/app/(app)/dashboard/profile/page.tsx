@@ -100,7 +100,7 @@ export default function FormRhfInput() {
 
   return (
     <main className="flex min-h-[100svh] items-center justify-center p-4 ">
-    <Card className="w-full sm:max-w-md -translate-y-20">
+    <Card className="w-full sm:max-w-2xl -translate-y-20">
       <CardHeader>
         <CardTitle>Initial Profile Creation</CardTitle>
         <CardDescription>
