@@ -22,12 +22,31 @@ import { UsernameStep } from "./steps/username-step"
 import { BioStep } from "./steps/bio-step"
 import { LinksStep } from "./steps/links-step"
 import { EducationStep } from "./steps/education-step"
+import { WorkExperienceStep } from "./steps/work-experience"
 
-const formSchema = profileSchemas.createForm.merge(educationSchemas.createForm)
-const totalSteps = 4
+// Work experience schema
+const workExperienceFormSchema = z.object({
+  company_name: z.string().min(1, "Company name is required").max(255).optional(),
+  position_title: z.string().min(1, "Position title is required").max(255).optional(),
+  employment_type: z.enum(["full-time", "part-time", "contract", "internship", "freelance"]).optional(),
+  location: z.string().max(255).optional(),
+  location_type: z.enum(["on-site", "remote", "hybrid"]).optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
+  description: z.string().optional(),
+  achievements: z.array(z.string()).optional(),
+  responsibilities: z.array(z.string()).optional(),
+  technologies: z.array(z.string()).optional(),
+})
+
+const formSchema = profileSchemas.createForm
+  .merge(educationSchemas.createForm)
+  .merge(workExperienceFormSchema)
+  .partial()
+const totalSteps = 5
 
 export default function FormRhfInput() {
-  const [step, setStep] = useState(1) // 1: Username, 2: Bio, 3: Links, 4: Education
+  const [step, setStep] = useState(1) // 1: Username, 2: Bio, 3: Links, 4: Education, 5: Work Experience
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,6 +71,14 @@ export default function FormRhfInput() {
       honors: [],
       relevant_coursework: [],
       activities: [],
+      company_name: "",
+      position_title: "",
+      employment_type: undefined,
+      location_type: undefined,
+      description: "",
+      achievements: [],
+      responsibilities: [],
+      technologies: [],
     },
   })
 
@@ -67,6 +94,8 @@ export default function FormRhfInput() {
       fieldsToValidate = ["linkedin_url", "github_url", "portfolio_url"]
     } else if (step === 4) {
       fieldsToValidate = ["institution_name"]
+    } else if (step === 5) {
+      fieldsToValidate = ["company_name", "position_title", "start_date"]
     }
     
     if (fieldsToValidate.length > 0) {
@@ -107,11 +136,12 @@ export default function FormRhfInput() {
           Input your profile information below.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="max-h-[600px] overflow-y-auto">
         {step === 1 && <UsernameStep form={form} />}
         {step === 2 && <BioStep form={form} />}
         {step === 3 && <LinksStep form={form} />}
         {step === 4 && <EducationStep form={form} />}
+        {step === 5 && <WorkExperienceStep form={form} />}
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal" className="justify-between w-full">
