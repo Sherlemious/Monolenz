@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import * as z from "zod"
 import { profileSchemas } from "@monolenz/types/validation"
 import { educationSchemas } from "@monolenz/types/validation"
+import { createBrowserApiClient } from "@/lib/api/client"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -47,7 +48,7 @@ const totalSteps = 5
 
 export default function FormRhfInput() {
   const [step, setStep] = useState(1) // 1: Username, 2: Bio, 3: Links, 4: Education, 5: Work Experience
-
+  const apiClient = createBrowserApiClient()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -85,7 +86,7 @@ export default function FormRhfInput() {
   async function handleNext() {
     // Validate current step before moving to next
     let fieldsToValidate: string[] = []
-    
+
     if (step === 1) {
       fieldsToValidate = ["username"]
     } else if (step === 2) {
@@ -97,14 +98,80 @@ export default function FormRhfInput() {
     } else if (step === 5) {
       fieldsToValidate = ["company_name", "position_title", "start_date"]
     }
-    
+
     if (fieldsToValidate.length > 0) {
       const isValid = await form.trigger(fieldsToValidate as any)
       if (isValid) {
-        setStep(step + 1)
+        // If moving from step 3 to step 4, create the profile silently
+        if (step === 3) {
+          try {
+            const formData = form.getValues()
+            const profileData = {
+              username: formData.username,
+              bio: formData.bio || undefined,
+              linkedin_url: formData.linkedin_url || undefined,
+              github_url: formData.github_url || undefined,
+              portfolio_url: formData.portfolio_url || undefined,
+            }
+
+            // Use the API client to send the data
+            await apiClient.post("/api/v1/profiles", profileData)
+
+            // On success, silently proceed to the next step
+            setStep(step + 1)
+          } catch (error) {
+            // On failure, log the error for debugging but do nothing else.
+            // The user will remain on the current step without an error message.
+            console.error("Silent profile creation failed:", error)
+          }
+        } else if (step === 4) {
+          try {
+            const formData = form.getValues()
+            const educationPayload = {
+              blocks: [
+                {
+                  block_type_id: 2, // The ID for "Education"
+                  data: {
+                    institution_name: formData.institution_name,
+                    degree_type: formData.degree_type,
+                    field_of_study: formData.field_of_study,
+                    start_date: formData.start_date,
+                    end_date: formData.end_date,
+                    gpa: formData.gpa,
+                  },
+                },
+              ],
+            }
+
+            // Remove any undefined or empty string fields from the data object
+            const educationBlock = educationPayload.blocks[0]
+            if (educationBlock) {
+              Object.keys(educationBlock.data).forEach((key) => {
+                const k = key as keyof typeof educationBlock.data
+                if (educationBlock.data[k] === undefined || educationBlock.data[k] === "") {
+                  delete educationBlock.data[k]
+                }
+              })
+            }
+
+            await apiClient.post(
+              "/api/v1/profiles/me/versions",
+              educationPayload,
+            )
+
+            // On success, silently proceed
+            setStep(step + 1)
+          } catch (error) {
+            console.error("Silent education block creation failed:", error)
+          }
+        } else {
+          // For all other steps, just advance to the next one
+          setStep(step + 1)
+        }
       }
+      // If validation is NOT valid, do nothing, keeping the user on the current step.
     } else {
-      // No fields to validate, just advance
+      // For steps with no validation, just advance
       setStep(step + 1)
     }
   }
