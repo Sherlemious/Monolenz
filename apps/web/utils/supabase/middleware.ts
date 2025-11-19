@@ -44,8 +44,15 @@ export async function updateSession(request: NextRequest) {
   } catch (error) {
     console.warn('Failed to get Supabase user:', error);
     // Clear invalid cookies
-    supabaseResponse.cookies.delete('sb-access-token');
-    supabaseResponse.cookies.delete('sb-refresh-token');
+    // Dynamically delete all Supabase auth-related cookies
+    supabaseResponse.cookies.getAll().forEach(({ name }) => {
+      if (
+        name.startsWith('sb-') &&
+        (name.endsWith('-auth-token') || name.endsWith('-refresh-token'))
+      ) {
+        supabaseResponse.cookies.delete(name);
+      }
+    });
   }
 
   // Public routes should be accessible to unauthenticated users
