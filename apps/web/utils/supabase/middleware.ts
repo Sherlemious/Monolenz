@@ -46,10 +46,7 @@ export async function updateSession(request: NextRequest) {
     // Clear invalid cookies
     // Dynamically delete all Supabase auth-related cookies
     supabaseResponse.cookies.getAll().forEach(({ name }) => {
-      if (
-        name.startsWith('sb-') &&
-        (name.endsWith('-auth-token') || name.endsWith('-refresh-token'))
-      ) {
+      if (name.startsWith('sb-') && (name.endsWith('-auth-token') || name.endsWith('-refresh-token'))) {
         supabaseResponse.cookies.delete(name);
       }
     });
