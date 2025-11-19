@@ -9,21 +9,17 @@ export const analytics = {
   trackSignUp: (method: 'email' | 'google' | 'github') => {
     trackEvent('user_signed_up', {
       method,
-      timestamp: new Date().toISOString(),
     });
   },
 
   trackSignIn: (method: 'email' | 'google' | 'github') => {
     trackEvent('user_signed_in', {
       method,
-      timestamp: new Date().toISOString(),
     });
   },
 
   trackSignOut: () => {
-    trackEvent('user_signed_out', {
-      timestamp: new Date().toISOString(),
-    });
+    trackEvent('user_signed_out');
     resetUser();
   },
 

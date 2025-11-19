@@ -31,6 +31,10 @@ export const initPostHog = () => {
         if (process.env.NODE_ENV === 'development') {
           posthog.debug();
         }
+        // Dispatch custom event when PostHog is loaded
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('posthog-loaded'));
+        }
       },
     });
   } catch (error) {
@@ -48,5 +52,3 @@ export const getPostHog = () => {
   }
   return posthog;
 };
-
-export { posthog };

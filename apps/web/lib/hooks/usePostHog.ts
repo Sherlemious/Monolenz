@@ -13,6 +13,16 @@ export function usePostHog() {
     if (posthog && posthog.__loaded) {
       setIsReady(true);
     }
+
+    const handlePostHogLoaded = () => {
+      setIsReady(true);
+    };
+
+    window.addEventListener('posthog-loaded', handlePostHogLoaded);
+
+    return () => {
+      window.removeEventListener('posthog-loaded', handlePostHogLoaded);
+    };
   }, []);
 
   return {

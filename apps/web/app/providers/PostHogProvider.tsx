@@ -15,13 +15,13 @@ export function PostHogPageview(): null {
   useEffect(() => {
     const posthog = getPostHog();
     if (pathname && posthog && posthog.__loaded) {
-      let url = window.origin + pathname;
+      const url = new URL(pathname, window.origin);
       if (searchParams && searchParams.toString()) {
-        url = url + `?${searchParams.toString()}`;
+        url.search = searchParams.toString();
       }
 
       posthog.capture('$pageview', {
-        $current_url: url,
+        $current_url: url.toString(),
       });
     }
   }, [pathname, searchParams]);
