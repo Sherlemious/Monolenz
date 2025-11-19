@@ -38,7 +38,7 @@ export async function trackServerEvent(
     properties,
   });
 
-  await client.shutdown();
+  await client.flush();
 }
 
 export async function identifyServerUser(
@@ -53,5 +53,12 @@ export async function identifyServerUser(
     properties,
   });
 
-  await client.shutdown();
+  await client.flush();
+}
+
+export async function shutdownPostHog() {
+  if (posthogClient) {
+    await posthogClient.shutdown();
+    posthogClient = null;
+  }
 }
