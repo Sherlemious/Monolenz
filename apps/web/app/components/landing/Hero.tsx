@@ -140,10 +140,10 @@ const HeroSection = () => {
         {/* Document Flow Visualization */}
         <div
           ref={containerRef}
-          className='relative max-w-[1000px] mx-auto mb-20 h-[500px] flex items-center justify-between px-5'
+          className='relative max-w-[1000px] mx-auto mb-20 h-auto md:h-[500px] flex flex-col md:flex-row items-center justify-between px-5'
         >
           {/* Connection Lines */}
-          <svg className='absolute inset-0 w-full h-full pointer-events-none z-10'>
+          <svg className='absolute inset-0 w-full h-full pointer-events-none z-10 hidden md:block'>
             {linePositions.map((pos, index) => {
               const output = outputs[index];
               if (!output) return null;
@@ -180,71 +180,81 @@ const HeroSection = () => {
             })}
           </svg>
 
-          {/* Master Document - Left Side */}
-          <div
-            ref={masterRef}
-            style={{
-              transform: `perspective(1000px) rotateY(${mousePosition.x * 0.5}deg) rotateX(${-mousePosition.y * 0.5}deg)`,
-              transition: 'transform 0.1s ease-out',
-            }}
-            className='relative z-20 shrink-0'
-          >
-            <div className='bg-card border rounded-lg shadow-xl p-5 w-[280px]'>
-              {/* Document Header */}
-              <div className='flex items-center justify-between mb-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='w-1.5 h-1.5 rounded-full bg-muted' />
-                  <span className='w-1.5 h-1.5 rounded-full bg-muted' />
-                  <span className='w-1.5 h-1.5 rounded-full bg-muted' />
-                </div>
-                <span className='text-[10px] font-mono uppercase tracking-[0.1em] text-muted-foreground'>
-                  Master Profile
-                </span>
-              </div>
-
-              {/* Content Blocks */}
-              <div className='mb-3'>
-                <div className='text-center mb-3'>
-                  <h3 className='text-[11px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1'>
-                    Content Blocks
-                  </h3>
-                  <span className='text-[11px] text-muted-foreground'>18+ sections</span>
+          <div className='w-full md:w-auto flex flex-col items-center'>
+            {/* Master Document - Left Side */}
+            <div
+              ref={masterRef}
+              style={{
+                transform: `perspective(1000px) rotateY(${mousePosition.x * 0.5}deg) rotateX(${
+                  -mousePosition.y * 0.5
+                }deg)`,
+                transition: 'transform 0.1s ease-out',
+              }}
+              className='relative z-20 shrink-0 mb-8 md:mb-0'
+            >
+              <div className='bg-card border rounded-lg shadow-xl p-5 w-[280px]'>
+                {/* Document Header */}
+                <div className='flex items-center justify-between mb-4'>
+                  <div className='flex items-center gap-2'>
+                    <span className='w-1.5 h-1.5 rounded-full bg-muted' />
+                    <span className='w-1.5 h-1.5 rounded-full bg-muted' />
+                    <span className='w-1.5 h-1.5 rounded-full bg-muted' />
+                  </div>
+                  <span className='text-[10px] font-mono uppercase tracking-[0.1em] text-muted-foreground'>
+                    Master Profile
+                  </span>
                 </div>
 
-                <div className='flex flex-col gap-1.5'>
-                  {contentBlocks.map((block, index) => (
-                    <div
-                      key={block.name}
-                      className='cursor-pointer'
-                      onMouseEnter={() => setHoveredBlock(index)}
-                      onMouseLeave={() => setHoveredBlock(null)}
-                    >
+                {/* Content Blocks */}
+                <div className='mb-3'>
+                  <div className='text-center mb-3'>
+                    <h3 className='text-[11px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1'>
+                      Content Blocks
+                    </h3>
+                    <span className='text-[11px] text-muted-foreground'>18+ sections</span>
+                  </div>
+
+                  <div className='flex flex-col gap-1.5'>
+                    {contentBlocks.map((block, index) => (
                       <div
-                        className={`w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all ${
-                          block.filled ? 'bg-muted' : 'border border-dashed'
-                        } ${hoveredBlock === index ? 'scale-[1.02] shadow-xs' : ''}`}
+                        key={block.name}
+                        className='cursor-pointer'
+                        onMouseEnter={() => setHoveredBlock(index)}
+                        onMouseLeave={() => setHoveredBlock(null)}
                       >
-                        <span className='text-[11px] font-medium text-card-foreground'>{block.name}</span>
-                        {!block.filled && <Plus className='w-2.5 h-2.5 text-muted-foreground' />}
+                        <div
+                          className={`w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all ${
+                            block.filled ? 'bg-muted' : 'border border-dashed'
+                          } ${hoveredBlock === index ? 'scale-[1.02] shadow-xs' : ''}`}
+                        >
+                          <span className='text-[11px] font-medium text-card-foreground'>{block.name}</span>
+                          {!block.filled && <Plus className='w-2.5 h-2.5 text-muted-foreground' />}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                <div className='flex items-center justify-center pt-2'>
-                  <div className='flex gap-1'>
-                    <span className='w-1 h-1 rounded-full bg-muted' />
-                    <span className='w-1 h-1 rounded-full bg-muted' />
-                    <span className='w-1 h-1 rounded-full bg-muted' />
+                  <div className='flex items-center justify-center pt-2'>
+                    <div className='flex gap-1'>
+                      <span className='w-1 h-1 rounded-full bg-muted' />
+                      <span className='w-1 h-1 rounded-full bg-muted' />
+                      <span className='w-1 h-1 rounded-full bg-muted' />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            {/* Center Label for mobile */}
+            <div className='block md:hidden my-4 text-center'>
+              <div className='text-[12px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1'>
+                Generates
+              </div>
+              <ArrowRight className='w-4 h-4 text-muted-foreground mx-auto rotate-90' />
+            </div>
           </div>
-
           {/* Output Documents - Right Side */}
-          <div className='relative z-20 shrink-0 ml-auto'>
-            <div className='flex flex-col gap-4'>
+          <div className='relative z-20 shrink-0 w-full md:w-auto ml-auto'>
+            <div className='flex flex-col gap-4 items-center'>
               {outputs.map((output, index) => (
                 <div
                   key={output.id}
@@ -295,7 +305,7 @@ const HeroSection = () => {
           </div>
 
           {/* Center Label */}
-          <div className='absolute inset-0 flex items-center justify-center z-10 text-center pointer-events-none'>
+          <div className='absolute inset-0 hidden md:flex items-center justify-center z-10 text-center pointer-events-none'>
             <div>
               <div className='text-[12px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1'>
                 Generates

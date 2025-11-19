@@ -40,3 +40,6 @@ yarn-error.log*
 .idea/
 
 github-actions-deploy-key.json
+
+# Log files
+*.log
