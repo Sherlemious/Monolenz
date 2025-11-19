@@ -1,2 +1,2 @@
-export { posthog, initPostHog } from './posthog';
+export { getPostHog, initPostHog } from './posthog';
 export { analytics } from './events';
