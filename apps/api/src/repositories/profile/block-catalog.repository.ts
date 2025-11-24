@@ -70,6 +70,3 @@ export class BlockCatalogRepository {
     });
   }
 }
-
-
-
