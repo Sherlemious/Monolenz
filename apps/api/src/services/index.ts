@@ -1,11 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/prisma';
 import { ProfileRepository } from '../repositories/profile/profile';
 import { ProfileService } from './domain/profile.service';
 import { Logger } from '../utils/logger';
 import { MetricsCollector } from '../utils/metrics';
 
 // Initialize shared dependencies
-const prisma = new PrismaClient();
 const logger = new Logger('ServiceContainer');
 const metrics = new MetricsCollector();
 // const cache = new CacheManager();

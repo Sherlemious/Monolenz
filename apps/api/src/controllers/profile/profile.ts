@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
-import { ProfileService } from '../services/domain/profile.service';
-import { ProfileRepository } from '../repositories/profile/profile';
-import { PrismaClient } from '@prisma/client';
-import { asyncHandler } from '../utils/async-handler';
-import { ServiceContext } from '../services/base.service';
+import { ProfileService } from '../../services/domain/profile.service';
+import { ProfileRepository } from '../../repositories/profile/profile';
+import { prisma } from '../../config/prisma';
+import { asyncHandler } from '../../utils/async-handler';
+import { ServiceContext } from '../../services/base.service';
 import { HTTP_STATUS_CODES } from '@monolenz/types/api';
 import { ProfileCreateData, ProfileUpdateData } from '@monolenz/types/validation';
 
-// Initialize dependencies
-const prisma = new PrismaClient();
 const profileRepository = new ProfileRepository(prisma);
 const profileService = new ProfileService(profileRepository);
 

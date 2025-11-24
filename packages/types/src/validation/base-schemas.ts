@@ -15,6 +15,15 @@ export const baseParamSchemas = {
     .refine((val) => !isNaN(val) && val > 0, 'Invalid link ID'),
 };
 
+// Common numeric ID schemas
+export const baseIdSchemas = {
+  intId: z.number().int().positive('Invalid id'),
+  intIdParam: z
+    .string()
+    .regex(/^\d+$/, 'Invalid id')
+    .transform((v) => parseInt(v, 10)),
+};
+
 // Pagination schemas
 export const basePaginationSchemas = {
   // For API query params (strings that need parsing)
