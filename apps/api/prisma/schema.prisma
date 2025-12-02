@@ -237,6 +237,7 @@ model sessions {
   oauth_client_id        String?          @db.Uuid
   refresh_token_hmac_key String?
   refresh_token_counter  BigInt?
+  scopes                 String?
   mfa_amr_claims         mfa_amr_claims[]
   refresh_tokens         refresh_tokens[]
   oauth_clients          oauth_clients?   @relation(fields: [oauth_client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -329,182 +330,75 @@ model users {
   oauth_consents              oauth_consents[]
   one_time_tokens             one_time_tokens[]
   sessions                    sessions[]
-  profiles                    profiles?
 
   @@index([instance_id])
   @@index([is_anonymous])
   @@schema("auth")
 }
 
-model block_types {
-  id               Int                @id @default(autoincrement())
-  name             String             @unique @db.VarChar(100)
-  display_name     String             @db.VarChar(255)
-  description      String?
-  category         String?            @db.VarChar(100)
-  sort_order       Int?               @default(0)
-  icon             String?            @db.VarChar(100)
-  is_active        Boolean?           @default(true)
-  schema_version   Int?               @default(1)
-  created_at       DateTime?          @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime?          @default(now()) @db.Timestamptz(6)
-  block_properties block_properties[]
-  blocks           blocks[]
-
-  @@schema("public")
-}
-
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model blocks {
   id                                                      Int                     @id @default(autoincrement())
-  block_type_id                                           Int
-  data                                                    Json                    @default("{}")
+  block_type                                              String                  @db.VarChar(50)
   content_hash                                            String                  @unique @db.VarChar(64)
   created_at                                              DateTime?               @default(now()) @db.Timestamptz(6)
-  block_property_values                                   block_property_values[]
-  block_types                                             block_types             @relation(fields: [block_type_id], references: [id], onUpdate: NoAction)
+  block_awards                                            block_awards?
+  block_certifications                                    block_certifications?
+  block_educations                                        block_educations?
+  block_languages                                         block_languages?
+  block_projects                                          block_projects?
+  block_skills                                            block_skills?
+  block_volunteers                                        block_volunteers?
+  block_work_experiences                                  block_work_experiences?
   version_blocks_version_blocks_block_idToblocks          version_blocks[]        @relation("version_blocks_block_idToblocks")
   version_blocks_version_blocks_previous_block_idToblocks version_blocks[]        @relation("version_blocks_previous_block_idToblocks")
 
-  @@index([content_hash], map: "idx_blocks_content_hash")
-  @@index([block_type_id], map: "idx_blocks_type_id")
-  @@index([data], map: "idx_blocks_data_gin", type: Gin)
-  @@schema("public")
-}
-
-model link_platforms {
-  id            Int             @id @default(autoincrement())
-  name          String          @unique @db.VarChar(100)
-  display_name  String          @db.VarChar(255)
-  category      String?         @db.VarChar(100)
-  icon          String?         @db.VarChar(100)
-  base_url      String?         @db.VarChar(255)
-  url_pattern   String?         @db.VarChar(255)
-  is_active     Boolean?        @default(true)
-  created_at    DateTime?       @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
-  profile_links profile_links[]
-
-  @@schema("public")
-}
-
-model profile_links {
-  id             Int             @id @default(autoincrement())
-  profile_id     String?         @db.Uuid
-  platform_id    Int?
-  url            String          @db.VarChar(500)
-  category       String?         @db.VarChar(100)
-  is_public      Boolean?        @default(true)
-  sort_order     Int?            @default(0)
-  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime?       @default(now()) @db.Timestamptz(6)
-  link_platforms link_platforms? @relation(fields: [platform_id], references: [id], onUpdate: NoAction)
-  profiles       profiles?       @relation(fields: [profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([category, is_public], map: "idx_profile_links_category")
-  @@index([profile_id, is_public], map: "idx_profile_links_profile_public")
   @@schema("public")
 }
 
 model profiles {
-  id                  String          @id @db.Uuid
-  username            String          @unique @db.VarChar(50)
+  id                  String     @id @db.Uuid
+  username            String     @unique @db.VarChar(50)
   bio                 String?
-  profile_picture_url String?         @db.VarChar(500)
-  linkedin_url        String?         @db.VarChar(500)
-  github_url          String?         @db.VarChar(500)
-  portfolio_url       String?         @db.VarChar(500)
-  created_at          DateTime?       @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime?       @default(now()) @db.Timestamptz(6)
-  profile_links       profile_links[]
-  users               users           @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profile_picture_url String?    @db.VarChar(500)
+  linkedin_url        String?    @db.VarChar(500)
+  github_url          String?    @db.VarChar(500)
+  portfolio_url       String?    @db.VarChar(500)
+  created_at          DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?  @default(now()) @db.Timestamptz(6)
   versions            versions[]
 
-  @@index([username], map: "idx_profiles_username")
   @@schema("public")
 }
 
 model version_blocks {
-  version_id                                            Int
-  block_id                                              Int
-  previous_version_id                                   Int?
-  previous_block_id                                     Int?
-  is_visible                                            Boolean?  @default(true)
-  section_name                                          String?   @db.VarChar(255)
-  sort_order                                            Int?      @default(0)
-  created_at                                            DateTime? @default(now()) @db.Timestamptz(6)
-  blocks_version_blocks_block_idToblocks                blocks    @relation("version_blocks_block_idToblocks", fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  blocks_version_blocks_previous_block_idToblocks       blocks?   @relation("version_blocks_previous_block_idToblocks", fields: [previous_block_id], references: [id], onUpdate: NoAction)
-  versions_version_blocks_previous_version_idToversions versions? @relation("version_blocks_previous_version_idToversions", fields: [previous_version_id], references: [id], onUpdate: NoAction)
-  versions_version_blocks_version_idToversions          versions  @relation("version_blocks_version_idToversions", fields: [version_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  version_id                                      Int
+  block_id                                        Int
+  previous_block_id                               Int?
+  is_visible                                      Boolean?  @default(true)
+  section_name                                    String?   @db.VarChar(255)
+  sort_order                                      Int?      @default(0)
+  created_at                                      DateTime? @default(now()) @db.Timestamptz(6)
+  blocks_version_blocks_block_idToblocks          blocks    @relation("version_blocks_block_idToblocks", fields: [block_id], references: [id], onDelete: Cascade)
+  blocks_version_blocks_previous_block_idToblocks blocks?   @relation("version_blocks_previous_block_idToblocks", fields: [previous_block_id], references: [id])
+  versions_version_blocks_version_idToversions    versions  @relation("version_blocks_version_idToversions", fields: [version_id], references: [id], onDelete: Cascade)
 
   @@id([version_id, block_id])
-  @@index([block_id], map: "idx_version_blocks_block_id")
-  @@index([version_id], map: "idx_version_blocks_version_id")
-  @@index([version_id, section_name, sort_order], map: "idx_version_blocks_section_order")
   @@schema("public")
 }
 
 model versions {
-  id                                                          Int              @id @default(autoincrement())
-  parent_version_id                                           Int?
-  profile_id                                                  String?          @db.Uuid
-  name                                                        String?          @db.VarChar(255)
-  description                                                 String?
-  metadata                                                    Json?            @default("{}")
-  created_at                                                  DateTime?        @default(now()) @db.Timestamptz(6)
-  version_blocks_version_blocks_previous_version_idToversions version_blocks[] @relation("version_blocks_previous_version_idToversions")
-  version_blocks_version_blocks_version_idToversions          version_blocks[] @relation("version_blocks_version_idToversions")
-  versions                                                    versions?        @relation("versionsToversions", fields: [parent_version_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_versions                                              versions[]       @relation("versionsToversions")
-  profiles                                                    profiles?        @relation(fields: [profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                                                 Int              @id @default(autoincrement())
+  profile_id                                         String?          @db.Uuid
+  parent_version_id                                  Int?
+  name                                               String?          @db.VarChar(255)
+  description                                        String?
+  created_at                                         DateTime?        @default(now()) @db.Timestamptz(6)
+  version_blocks_version_blocks_version_idToversions version_blocks[] @relation("version_blocks_version_idToversions")
+  versions                                           versions?        @relation("versionsToversions", fields: [parent_version_id], references: [id])
+  other_versions                                     versions[]       @relation("versionsToversions")
+  profiles                                           profiles?        @relation(fields: [profile_id], references: [id], onDelete: Cascade)
 
-  @@index([created_at], map: "idx_versions_created_at")
-  @@index([parent_version_id], map: "idx_versions_parent")
-  @@index([profile_id, created_at(sort: Desc)], map: "idx_versions_profile_created")
-  @@index([profile_id], map: "idx_versions_profile_id")
-  @@schema("public")
-}
-
-model block_properties {
-  id                    Int                     @id @default(autoincrement())
-  block_type_id         Int?
-  property_name         String                  @db.VarChar(100)
-  property_type         String                  @db.VarChar(50)
-  display_name          String                  @db.VarChar(255)
-  description           String?
-  is_required           Boolean?                @default(false)
-  is_searchable         Boolean?                @default(true)
-  validation_rules      Json?                   @default("{}")
-  default_value         Json?
-  sort_order            Int?                    @default(0)
-  group_name            String?                 @db.VarChar(100)
-  placeholder_text      String?                 @db.VarChar(255)
-  help_text             String?
-  is_active             Boolean?                @default(true)
-  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
-  updated_at            DateTime?               @default(now()) @db.Timestamptz(6)
-  block_types           block_types?            @relation(fields: [block_type_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  block_property_values block_property_values[]
-
-  @@unique([block_type_id, property_name])
-  @@index([block_type_id, is_active], map: "idx_block_properties_type_active")
-  @@index([block_type_id, property_name], map: "idx_block_properties_type_name")
-  @@schema("public")
-}
-
-model block_property_values {
-  block_id         Int
-  property_id      Int
-  value            Json
-  is_active        Boolean?         @default(true)
-  is_public        Boolean?         @default(true)
-  created_at       DateTime?        @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime?        @default(now()) @db.Timestamptz(6)
-  blocks           blocks           @relation(fields: [block_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  block_properties block_properties @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@id([block_id, property_id])
   @@schema("public")
 }
 
@@ -548,6 +442,7 @@ model oauth_authorizations {
   created_at            DateTime                   @default(now()) @db.Timestamptz(6)
   expires_at            DateTime                   @default(dbgenerated("(now() + '00:03:00'::interval)")) @db.Timestamptz(6)
   approved_at           DateTime?                  @db.Timestamptz(6)
+  nonce                 String?
   oauth_clients         oauth_clients              @relation(fields: [client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users                 users?                     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
@@ -568,6 +463,125 @@ model oauth_consents {
   @@unique([user_id, client_id], map: "oauth_consents_user_client_unique")
   @@index([user_id, granted_at(sort: Desc)], map: "oauth_consents_user_order_idx")
   @@schema("auth")
+}
+
+model block_awards {
+  block_id      Int       @id
+  title         String    @db.VarChar(255)
+  issuer        String?   @db.VarChar(255)
+  date_received DateTime? @db.Date
+  description   String?
+  url           String?   @db.VarChar(500)
+  blocks        blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model block_certifications {
+  block_id             Int       @id
+  name                 String    @db.VarChar(255)
+  issuing_organization String    @db.VarChar(255)
+  organization_url     String?   @db.VarChar(500)
+  credential_id        String?   @db.VarChar(255)
+  credential_url       String?   @db.VarChar(500)
+  issue_date           DateTime? @db.Date
+  expiration_date      DateTime? @db.Date
+  does_not_expire      Boolean?  @default(false)
+  blocks               blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model block_educations {
+  block_id            Int       @id
+  institution_name    String    @db.VarChar(255)
+  institution_url     String?   @db.VarChar(500)
+  degree_type         String?   @db.VarChar(50)
+  degree_name         String?   @db.VarChar(255)
+  field_of_study      String?   @db.VarChar(255)
+  start_date          DateTime? @db.Date
+  end_date            DateTime? @db.Date
+  is_current          Boolean?  @default(false)
+  gpa                 Decimal?  @db.Decimal(3, 2)
+  gpa_scale           Decimal?  @default(4.0) @db.Decimal(3, 1)
+  honors              String[]
+  relevant_coursework String[]
+  location            String?   @db.VarChar(255)
+  blocks              blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model block_languages {
+  block_id    Int    @id
+  language    String @db.VarChar(100)
+  proficiency String @db.VarChar(50)
+  blocks      blocks @relation(fields: [block_id], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model block_projects {
+  block_id       Int       @id
+  name           String    @db.VarChar(255)
+  description    String?
+  url            String?   @db.VarChar(500)
+  repository_url String?   @db.VarChar(500)
+  image_url      String?   @db.VarChar(500)
+  start_date     DateTime? @db.Date
+  end_date       DateTime? @db.Date
+  is_ongoing     Boolean?  @default(false)
+  technologies   String[]
+  highlights     String[]
+  blocks         blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model block_skills {
+  block_id          Int      @id
+  name              String   @db.VarChar(255)
+  category          String   @db.VarChar(50)
+  proficiency_level String?  @db.VarChar(50)
+  years_experience  Decimal? @db.Decimal(4, 1)
+  blocks            blocks   @relation(fields: [block_id], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model block_volunteers {
+  block_id          Int       @id
+  organization_name String    @db.VarChar(255)
+  role              String    @db.VarChar(255)
+  cause             String?   @db.VarChar(255)
+  start_date        DateTime? @db.Date
+  end_date          DateTime? @db.Date
+  is_current        Boolean?  @default(false)
+  description       String?
+  highlights        String[]
+  blocks            blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model block_work_experiences {
+  block_id         Int       @id
+  company_name     String    @db.VarChar(255)
+  company_url      String?   @db.VarChar(500)
+  company_logo_url String?   @db.VarChar(500)
+  position_title   String    @db.VarChar(255)
+  employment_type  String?   @db.VarChar(50)
+  location         String?   @db.VarChar(255)
+  location_type    String?   @db.VarChar(50)
+  start_date       DateTime  @db.Date
+  end_date         DateTime? @db.Date
+  is_current       Boolean?  @default(false)
+  description      String?
+  achievements     String[]
+  technologies     String[]
+  blocks           blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 enum aal_level {
