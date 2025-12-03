@@ -3,10 +3,8 @@
  * Handles all block-related API calls
  */
 
-import type { ApiClient } from './common';
 import type {
   BlockType,
-  BlockProperty,
   VersionBlockDetail,
   BatchUpdatePayload,
   BatchUpdateResponse,
@@ -14,11 +12,21 @@ import type {
 import type { ApiResponse } from '@monolenz/types/api';
 
 // ============================================================================
+// API Client Interface
+// ============================================================================
+
+export interface ApiClient {
+  get: <T>(url: string, init?: RequestInit) => Promise<T>;
+  post: <T>(url: string, body?: unknown, init?: RequestInit) => Promise<T>;
+  put?: <T>(url: string, body?: unknown, init?: RequestInit) => Promise<T>;
+  delete?: <T>(url: string, init?: RequestInit) => Promise<T>;
+}
+
+// ============================================================================
 // API Response Wrappers
 // ============================================================================
 
 type BlockTypesResponse = ApiResponse<BlockType[]>;
-type BlockPropertiesResponse = ApiResponse<BlockProperty[]>;
 type VersionBlocksResponse = ApiResponse<VersionBlockDetail[]>;
 type BatchUpdateApiResponse = ApiResponse<BatchUpdateResponse>;
 
@@ -36,18 +44,21 @@ export function createProfileBlocksApi(client: ApiClient) {
 
     /**
      * List all active block types
+     * In the new system, BlockType is an enum with predefined values
      */
     async listBlockTypes(): Promise<BlockType[]> {
-      const response = await client.get<BlockTypesResponse>(`${BASE_PATH}/block-types`);
-      return response.data ?? [];
-    },
-
-    /**
-     * Get properties for a specific block type
-     */
-    async getBlockTypeProperties(blockTypeId: number): Promise<BlockProperty[]> {
-      const response = await client.get<BlockPropertiesResponse>(`${BASE_PATH}/block-types/${blockTypeId}/properties`);
-      return response.data ?? [];
+      // Return all available block types from the enum
+      // In a real implementation, this might fetch from an endpoint
+      return [
+        'work_experience' as BlockType,
+        'education' as BlockType,
+        'skill' as BlockType,
+        'project' as BlockType,
+        'certification' as BlockType,
+        'language' as BlockType,
+        'volunteer' as BlockType,
+        'award' as BlockType,
+      ];
     },
 
     // ========================================================================
@@ -85,52 +96,6 @@ export function createProfileBlocksApi(client: ApiClient) {
       return response.data;
     },
 
-    // ========================================================================
-    // Convenience Methods
-    // ========================================================================
-
-    /**
-     * Get block type with its properties in one call
-     */
-    async getBlockTypeWithProperties(
-      blockTypeId: number
-    ): Promise<{ type: BlockType; properties: BlockProperty[] } | null> {
-      const [types, properties] = await Promise.all([this.listBlockTypes(), this.getBlockTypeProperties(blockTypeId)]);
-
-      const type = types.find((t) => t.id === blockTypeId);
-      if (!type) return null;
-
-      return { type, properties };
-    },
-
-    /**
-     * Get all block types with their properties
-     * Useful for pre-loading the entire catalog
-     */
-    async getFullCatalog(): Promise<Map<number, { type: BlockType; properties: BlockProperty[] }>> {
-      const types = await this.listBlockTypes();
-      const catalog = new Map<number, { type: BlockType; properties: BlockProperty[] }>();
-
-      // Fetch properties in parallel
-      const propertiesPromises = types.map((type) =>
-        this.getBlockTypeProperties(type.id).then((properties) => ({
-          typeId: type.id,
-          properties,
-        }))
-      );
-
-      const allProperties = await Promise.all(propertiesPromises);
-
-      for (const type of types) {
-        const propsResult = allProperties.find((p) => p.typeId === type.id);
-        catalog.set(type.id, {
-          type,
-          properties: propsResult?.properties ?? [],
-        });
-      }
-
-      return catalog;
-    },
   };
 }
 

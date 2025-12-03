@@ -6,18 +6,7 @@
 
 import { useMemo } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { createProfileBlocksApi, type ProfileBlocksApi } from '@/lib/api/profile-blocks';
-
-// ============================================================================
-// API Client Types
-// ============================================================================
-
-export interface ApiClient {
-  get: <T>(url: string) => Promise<T>;
-  post: <T>(url: string, body?: unknown) => Promise<T>;
-  put: <T>(url: string, body?: unknown) => Promise<T>;
-  delete: <T>(url: string) => Promise<T>;
-}
+import { createProfileBlocksApi, type ProfileBlocksApi, type ApiClient } from '@/lib/api/profile-blocks';
 
 // ============================================================================
 // Hook

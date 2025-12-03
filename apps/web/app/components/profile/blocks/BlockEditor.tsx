@@ -13,7 +13,7 @@ import {
   useHasUnsavedChanges,
 } from '@/lib/stores/profile-editor-store';
 import { PropertyField } from './PropertyField';
-import { groupPropertiesByGroup, BlockType, DraftBlock } from '@monolenz/types/entities';
+import { BlockType, DraftBlock } from '@monolenz/types/entities';
 
 // ============================================================================
 // Types
@@ -23,7 +23,6 @@ interface BlockEditorProps {
   /** API client instance */
   apiClient: {
     listBlockTypes: () => Promise<BlockType[]>;
-    getBlockTypeProperties: (typeId: number) => Promise<import('@monolenz/types/entities').BlockProperty[]>;
     listVersionBlocks: (
       identifier: string,
       versionId: number
@@ -85,16 +84,9 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
         // Load block types
         const types = await apiClient.listBlockTypes();
 
-        // Load properties for all types
-        const propertiesMap = new Map<number, import('@monolenz/types/entities').BlockProperty[]>();
-        await Promise.all(
-          types.map(async (type) => {
-            const props = await apiClient.getBlockTypeProperties(type.id);
-            propertiesMap.set(type.id, props);
-          })
-        );
-
-        setCatalog(types, propertiesMap);
+        // In the new typed system, block types are predefined enums
+        // No need to load properties separately
+        setCatalog(types);
 
         // Load version blocks if we have a version
         if (initialVersionId) {
@@ -216,10 +208,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
         {/* Right: Selected block editor */}
         <div className="block-editor__detail">
           {selectedBlock ? (
-            <BlockForm
-              block={selectedBlock}
-              properties={catalog.propertiesByTypeId.get(selectedBlock.blockTypeId) ?? []}
-            />
+            <BlockForm block={selectedBlock} properties={[]} />
           ) : (
             <div className="block-editor__placeholder">Select a block to edit</div>
           )}
@@ -366,6 +355,17 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
 }
 
 // ============================================================================
+// Helper Functions
+// ============================================================================
+
+function formatBlockType(blockType: string): string {
+  return blockType
+    .split(/[-_]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// ============================================================================
 // Sub-components
 // ============================================================================
 
@@ -427,7 +427,7 @@ function BlockCard({ block, isSelected, onClick, onDelete }: BlockCardProps) {
     >
       <div className="flex justify-between items-start">
         <div>
-          <p className="font-medium text-sm">{block.blockTypeDisplayName}</p>
+          <p className="font-medium text-sm">{formatBlockType(block.blockType)}</p>
           <p className="text-xs text-gray-500 mt-0.5">{getBlockSummary(block)}</p>
         </div>
 
@@ -476,13 +476,11 @@ function getBlockSummary(block: DraftBlock): string {
 
 interface BlockFormProps {
   block: DraftBlock;
-  properties: import('@monolenz/types/entities').BlockProperty[];
+  properties: any[];
 }
 
 function BlockForm({ block, properties }: BlockFormProps) {
   const { updateBlockField, setBlockErrors, clearBlockErrors } = useProfileEditorStore();
-
-  const groups = groupPropertiesByGroup(properties);
 
   const handleFieldChange = useCallback(
     (propertyName: string, value: unknown) => {
@@ -491,28 +489,21 @@ function BlockForm({ block, properties }: BlockFormProps) {
     [block.clientId, updateBlockField]
   );
 
+  const displayName = formatBlockType(block.blockType);
+
   return (
     <div className="block-form">
       <div className="block-form__header">
-        <h3>{block.blockTypeDisplayName}</h3>
-        {block.blockTypeCategory && <span className="block-form__category">{block.blockTypeCategory}</span>}
+        <h3>{displayName}</h3>
       </div>
 
-      {groups.map((group) => (
-        <div key={group.name} className="block-form__section">
-          <h4 className="block-form__section-title">{group.displayName}</h4>
-
-          {group.properties.map((prop) => (
-            <PropertyField
-              key={prop.property_name}
-              property={prop}
-              value={block.data[prop.property_name]}
-              onChange={(value) => handleFieldChange(prop.property_name, value)}
-              error={block.errors?.[prop.property_name]}
-            />
-          ))}
-        </div>
-      ))}
+      {/* TODO: Implement typed field rendering for new block system */}
+      <div className="block-form__placeholder">
+        <p>Block editing UI needs to be updated for the new typed block system</p>
+        <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.5rem' }}>
+          Data: {JSON.stringify(block.data, null, 2)}
+        </p>
+      </div>
 
       <style jsx>{`
         .block-form {
@@ -570,12 +561,23 @@ interface BlockTypeSelectorProps {
 }
 
 function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps) {
-  // Group by category
+  // Group block types by category
+  const BLOCK_CATEGORIES: Record<string, string> = {
+    work_experience: 'Experience',
+    education: 'Education',
+    skill: 'Skills',
+    project: 'Projects',
+    certification: 'Certifications',
+    language: 'Languages',
+    volunteer: 'Volunteer',
+    award: 'Awards',
+  };
+
   const byCategory = new Map<string, BlockType[]>();
   for (const type of types) {
-    const cat = type.category ?? 'other';
-    if (!byCategory.has(cat)) byCategory.set(cat, []);
-    byCategory.get(cat)!.push(type);
+    const category = BLOCK_CATEGORIES[type as string] || 'Other';
+    if (!byCategory.has(category)) byCategory.set(category, []);
+    byCategory.get(category)!.push(type);
   }
 
   return (
@@ -591,13 +593,12 @@ function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps)
         <div className="modal__content">
           {Array.from(byCategory.entries()).map(([category, categoryTypes]) => (
             <div key={category} className="type-category">
-              <h4 className="type-category__title">{category.charAt(0).toUpperCase() + category.slice(1)}</h4>
+              <h4 className="type-category__title">{category}</h4>
 
               <div className="type-grid">
                 {categoryTypes.map((type) => (
-                  <button key={type.id} type="button" onClick={() => onSelect(type)} className="type-card">
-                    <span className="type-card__name">{type.display_name}</span>
-                    {type.description && <span className="type-card__desc">{type.description}</span>}
+                  <button key={type} type="button" onClick={() => onSelect(type)} className="type-card">
+                    <span className="type-card__name">{formatBlockType(type)}</span>
                   </button>
                 ))}
               </div>

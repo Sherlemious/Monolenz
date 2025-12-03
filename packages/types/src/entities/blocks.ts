@@ -1,70 +1,147 @@
 /**
  * Block system type definitions
- * Shared between frontend and backend
+ * Typed, immutable block architecture
  */
 
 // ============================================================================
-// Block Type Catalog
+// Block Type Enum
 // ============================================================================
 
-export interface BlockType {
-  id: number;
+export enum BlockType {
+  WORK_EXPERIENCE = 'work_experience',
+  EDUCATION = 'education',
+  SKILL = 'skill',
+  PROJECT = 'project',
+  CERTIFICATION = 'certification',
+  LANGUAGE = 'language',
+  VOLUNTEER = 'volunteer',
+  AWARD = 'award',
+}
+
+// ============================================================================
+// Typed Data Interfaces (8 block types)
+// ============================================================================
+
+export interface WorkExperienceData {
+  company_name: string;
+  company_url?: string | null;
+  company_logo_url?: string | null;
+  position_title: string;
+  employment_type?: string | null;
+  location?: string | null;
+  location_type?: string | null;
+  start_date: string;
+  end_date?: string | null;
+  is_current: boolean;
+  description?: string | null;
+  achievements: string[];
+  technologies: string[];
+}
+
+export interface EducationData {
+  institution_name: string;
+  institution_url?: string | null;
+  degree_type?: string | null;
+  degree_name?: string | null;
+  field_of_study?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  is_current: boolean;
+  gpa?: number | null;
+  gpa_scale?: number;
+  honors: string[];
+  relevant_coursework: string[];
+  location?: string | null;
+}
+
+export interface SkillData {
   name: string;
-  display_name: string;
-  description?: string | null;
-  category?: string | null;
-  sort_order?: number | null;
-  icon?: string | null;
-  is_active?: boolean | null;
-  schema_version?: number | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  category: string;
+  proficiency_level?: string | null;
+  years_experience?: number | null;
 }
 
-export interface BlockProperty {
-  id: number;
-  block_type_id: number | null;
-  property_name: string;
-  property_type: PropertyType;
-  display_name: string;
+export interface ProjectData {
+  name: string;
   description?: string | null;
-  is_required?: boolean | null;
-  is_searchable?: boolean | null;
-  validation_rules?: ValidationRules | null;
-  default_value?: unknown | null;
-  sort_order?: number | null;
-  group_name?: string | null;
-  placeholder_text?: string | null;
-  help_text?: string | null;
-  is_active?: boolean | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  url?: string | null;
+  repository_url?: string | null;
+  image_url?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  is_ongoing: boolean;
+  technologies: string[];
+  highlights: string[];
 }
 
-export type PropertyType = 'string' | 'text' | 'integer' | 'decimal' | 'date' | 'boolean' | 'array' | 'object';
+export interface CertificationData {
+  name: string;
+  issuing_organization: string;
+  organization_url?: string | null;
+  credential_id?: string | null;
+  credential_url?: string | null;
+  issue_date?: string | null;
+  expiration_date?: string | null;
+  does_not_expire: boolean;
+}
 
-export interface ValidationRules {
-  minLength?: number;
-  maxLength?: number;
-  minimum?: number;
-  maximum?: number;
-  pattern?: string;
-  format?: 'uri' | 'email' | 'date';
-  enum?: string[];
-  items?: { type: string };
+export interface LanguageData {
+  language: string;
+  proficiency: string;
+}
+
+export interface VolunteerData {
+  organization_name: string;
+  role: string;
+  cause?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  is_current: boolean;
+  description?: string | null;
+  highlights: string[];
+}
+
+export interface AwardData {
+  title: string;
+  issuer?: string | null;
+  date_received?: string | null;
+  description?: string | null;
+  url?: string | null;
 }
 
 // ============================================================================
-// Blocks & Versions
+// Base Block Entity
 // ============================================================================
 
-export interface Block {
+export interface BlockEntity {
   id: number;
-  block_type_id: number;
-  data: Record<string, unknown>;
+  block_type: BlockType;
   content_hash: string;
-  created_at?: string | null;
+  created_at: Date;
 }
+
+// ============================================================================
+// Discriminated Union Types
+// ============================================================================
+
+export type TypedBlockData =
+  | { block_type: BlockType.WORK_EXPERIENCE; data: WorkExperienceData }
+  | { block_type: BlockType.EDUCATION; data: EducationData }
+  | { block_type: BlockType.SKILL; data: SkillData }
+  | { block_type: BlockType.PROJECT; data: ProjectData }
+  | { block_type: BlockType.CERTIFICATION; data: CertificationData }
+  | { block_type: BlockType.LANGUAGE; data: LanguageData }
+  | { block_type: BlockType.VOLUNTEER; data: VolunteerData }
+  | { block_type: BlockType.AWARD; data: AwardData };
+
+export type TypedBlock = BlockEntity & TypedBlockData & {
+  section_name?: string | null;
+  sort_order?: number;
+};
+
+// ============================================================================
+// Version & VersionBlock (preserved from old system)
+// ============================================================================
 
 export interface Version {
   id: number;
@@ -88,74 +165,31 @@ export interface VersionBlock {
 }
 
 // ============================================================================
-// API Response Types (what frontend receives from list endpoints)
+// API Response Types
 // ============================================================================
 
-export interface VersionBlockDetail {
+export type VersionBlockDetail = TypedBlock & {
   version_id: number;
-  block_id: number;
-  section_name?: string | null;
-  sort_order?: number | null;
   is_visible?: boolean | null;
-  block_type_name: string;
-  block_type_display_name: string;
-  block_type_category?: string | null;
-  data: Record<string, unknown>;
-  content_hash: string;
-  block_created_at?: string | null;
-  added_to_version_at?: string | null;
-}
+};
 
 // ============================================================================
-// Editor State Types (for frontend state management)
-// ============================================================================
-
-export type DraftBlockStatus = 'unchanged' | 'created' | 'modified' | 'deleted';
-
-export interface DraftBlock {
-  /** Temporary client-side ID for new blocks, or server block_id for existing */
-  clientId: string;
-  /** Server block_id if this is an existing block, undefined for new */
-  serverId?: number;
-  /** Block type identifier */
-  blockTypeId: number;
-  blockTypeName: string;
-  blockTypeDisplayName: string;
-  blockTypeCategory?: string | null;
-  /** Current form data */
-  data: Record<string, unknown>;
-  /** Original data from server (for diff calculation) */
-  originalData?: Record<string, unknown>;
-  /** Display/grouping */
-  sectionName?: string | null;
-  sortOrder: number;
-  /** Track what changed */
-  status: DraftBlockStatus;
-  /** Property-level visibility */
-  propertyVisibility?: Record<string, boolean>;
-  /** Validation errors keyed by property_name */
-  errors?: Record<string, string>;
-}
-
-// ============================================================================
-// Batch Update Payload (what frontend sends to save)
+// Batch Update Payload Types
 // ============================================================================
 
 export interface BatchUpdateCreation {
-  blockTypeId?: number;
-  blockTypeName?: string;
-  data: Record<string, unknown>;
-  sectionName?: string | null;
-  sortOrder?: number | null;
+  block_type: BlockType;
+  data: WorkExperienceData | EducationData | SkillData | ProjectData | CertificationData | LanguageData | VolunteerData | AwardData;
+  section_name?: string | null;
+  sort_order?: number | null;
 }
 
 export interface BatchUpdateUpdate {
-  parentBlockId: number;
-  blockTypeId?: number;
-  blockTypeName?: string;
-  data: Record<string, unknown>;
-  sectionName?: string | null;
-  sortOrder?: number | null;
+  parent_block_id: number;
+  block_type: BlockType;
+  data: WorkExperienceData | EducationData | SkillData | ProjectData | CertificationData | LanguageData | VolunteerData | AwardData;
+  section_name?: string | null;
+  sort_order?: number | null;
 }
 
 export interface BatchUpdatePayload {
@@ -169,64 +203,26 @@ export interface BatchUpdateResponse {
 }
 
 // ============================================================================
-// Grouped Properties (for form rendering)
+// Editor State Types (for frontend state management)
 // ============================================================================
 
-export interface PropertyGroup {
-  name: string;
-  displayName: string;
-  properties: BlockProperty[];
+export type DraftBlockStatus = 'unchanged' | 'created' | 'modified' | 'deleted';
+
+export interface DraftBlock {
+  clientId: string;
+  serverId?: number;
+  blockType: BlockType;
+  data: Record<string, unknown>;
+  originalData?: Record<string, unknown>;
+  sectionName?: string | null;
+  sortOrder: number;
+  status: DraftBlockStatus;
+  errors?: Record<string, string>;
 }
-
-// ============================================================================
-// Block Type Categories
-// ============================================================================
-
-export const BLOCK_TYPE_CATEGORIES = {
-  experience: 'Experience',
-  education: 'Education',
-  skills: 'Skills',
-  credentials: 'Credentials',
-  research: 'Research',
-  achievements: 'Achievements',
-  networking: 'Networking',
-  personal: 'Personal',
-} as const;
-
-export type BlockTypeCategory = keyof typeof BLOCK_TYPE_CATEGORIES;
 
 // ============================================================================
 // Helpers
 // ============================================================================
-
-export function groupPropertiesByGroup(properties: BlockProperty[]): PropertyGroup[] {
-  const groups = new Map<string, BlockProperty[]>();
-
-  // Sort by sort_order first
-  const sorted = [...properties].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-
-  for (const prop of sorted) {
-    const groupName = prop.group_name ?? 'general';
-    if (!groups.has(groupName)) {
-      groups.set(groupName, []);
-    }
-    groups.get(groupName)!.push(prop);
-  }
-
-  // Convert to array and format display names
-  return Array.from(groups.entries()).map(([name, props]) => ({
-    name,
-    displayName: formatGroupName(name),
-    properties: props,
-  }));
-}
-
-export function formatGroupName(name: string): string {
-  return name
-    .split(/[-_]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 export function generateClientId(): string {
   return `draft-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

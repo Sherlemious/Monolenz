@@ -159,11 +159,22 @@ interface BlocksGridProps {
 }
 
 function BlocksGrid({ blocks }: BlocksGridProps) {
-  // Group blocks by category
+  // Group blocks by category (map block_type to category)
+  const BLOCK_CATEGORIES: Record<string, string> = {
+    work_experience: 'Experience',
+    education: 'Education',
+    skill: 'Skills',
+    project: 'Projects',
+    certification: 'Certifications',
+    language: 'Languages',
+    volunteer: 'Volunteer',
+    award: 'Awards',
+  };
+
   const byCategory = new Map<string, VersionBlockDetail[]>();
-  
+
   for (const block of blocks) {
-    const category = block.block_type_category ?? 'other';
+    const category = BLOCK_CATEGORIES[block.block_type as string] ?? 'Other';
     if (!byCategory.has(category)) {
       byCategory.set(category, []);
     }
@@ -180,7 +191,7 @@ function BlocksGrid({ blocks }: BlocksGridProps) {
           
           <div className="block-category__items">
             {categoryBlocks.map((block) => (
-              <BlockPreview key={block.block_id} block={block} />
+              <BlockPreview key={block.id} block={block} />
             ))}
           </div>
         </section>
@@ -226,7 +237,7 @@ function BlockPreview({ block }: BlockPreviewProps) {
   return (
     <article className="block-preview">
       <div className="block-preview__header">
-        <span className="block-preview__type">{block.block_type_display_name}</span>
+        <span className="block-preview__type">{formatBlockType(block.block_type)}</span>
         {!block.is_visible && (
           <span className="block-preview__hidden" title="Hidden from public profile">
             <EyeOffIcon className="w-3.5 h-3.5" />
@@ -305,6 +316,13 @@ function BlockPreview({ block }: BlockPreviewProps) {
 // Helpers
 // ============================================================================
 
+function formatBlockType(blockType: string): string {
+  return blockType
+    .split(/[-_]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 function formatCategoryName(category: string): string {
   return category
     .split(/[-_]/)
@@ -313,38 +331,43 @@ function formatCategoryName(category: string): string {
 }
 
 function getBlockTitle(block: VersionBlockDetail): string {
-  const data = block.data;
+  const data = block.data as any;
   return String(
-    data.title || 
-    data.name || 
-    data.company_name || 
-    data.institution || 
+    data.title ||
+    data.name ||
+    data.company_name ||
+    data.institution_name ||
     data.organization_name ||
-    data.skill_name ||
-    block.block_type_display_name
+    data.language ||
+    data.position_title ||
+    data.degree_name ||
+    formatBlockType(block.block_type)
   );
 }
 
 function getBlockSubtitle(block: VersionBlockDetail): string | null {
-  const data = block.data;
+  const data = block.data as any;
   return (
+    data.position_title ||
     data.job_title ||
+    data.degree_name ||
     data.degree ||
     data.issuing_organization ||
-    data.publisher ||
+    data.role ||
+    data.proficiency ||
     data.proficiency_level ||
     null
   ) as string | null;
 }
 
 function getBlockDates(block: VersionBlockDetail): string | null {
-  const data = block.data;
-  const start = data.start_date || data.issue_date || data.date_awarded;
-  const end = data.end_date;
-  const current = data.is_current;
-  
+  const data = block.data as any;
+  const start = data.start_date || data.issue_date || data.date_received;
+  const end = data.end_date || data.expiration_date;
+  const current = data.is_current || data.is_ongoing;
+
   if (!start) return null;
-  
+
   const startStr = formatDate(start as string);
   if (current) return `${startStr} - Present`;
   if (end) return `${startStr} - ${formatDate(end as string)}`;

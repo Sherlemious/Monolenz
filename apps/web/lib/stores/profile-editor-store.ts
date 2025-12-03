@@ -8,7 +8,6 @@ import { immer } from 'zustand/middleware/immer';
 import { useShallow } from 'zustand/react/shallow';
 import type {
   BlockType,
-  BlockProperty,
   DraftBlock,
   VersionBlockDetail,
   BatchUpdatePayload,
@@ -23,7 +22,6 @@ import { generateClientId } from '@monolenz/types/entities';
 
 interface BlockCatalog {
   types: BlockType[];
-  propertiesByTypeId: Map<number, BlockProperty[]>;
   loading: boolean;
   error: string | null;
 }
@@ -47,7 +45,7 @@ interface EditorState {
 
 interface EditorActions {
   // Catalog
-  setCatalog: (types: BlockType[], propertiesByTypeId: Map<number, BlockProperty[]>) => void;
+  setCatalog: (types: BlockType[]) => void;
   setCatalogLoading: (loading: boolean) => void;
   setCatalogError: (error: string | null) => void;
 
@@ -92,7 +90,6 @@ const initialState: EditorState = {
   selectedBlockId: null,
   catalog: {
     types: [],
-    propertiesByTypeId: new Map(),
     loading: false,
     error: null,
   },
@@ -113,10 +110,9 @@ export const useProfileEditorStore = create<EditorStore>()(
     // Catalog Actions
     // ========================================================================
 
-    setCatalog: (types, propertiesByTypeId) => {
+    setCatalog: (types) => {
       set((state) => {
         state.catalog.types = types;
-        state.catalog.propertiesByTypeId = propertiesByTypeId;
         state.catalog.loading = false;
         state.catalog.error = null;
       });
@@ -175,16 +171,12 @@ export const useProfileEditorStore = create<EditorStore>()(
         const newBlock: DraftBlock = {
           clientId,
           serverId: undefined,
-          blockTypeId: blockType.id,
-          blockTypeName: blockType.name,
-          blockTypeDisplayName: blockType.display_name,
-          blockTypeCategory: blockType.category,
+          blockType,
           data: initialData,
           originalData: undefined,
           sectionName: null,
           sortOrder: maxSortOrder + 1,
           status: 'created',
-          propertyVisibility: {},
           errors: {},
         };
 
@@ -356,21 +348,21 @@ export const useProfileEditorStore = create<EditorStore>()(
         switch (block.status) {
           case 'created':
             creations.push({
-              blockTypeName: block.blockTypeName,
-              data: block.data,
-              sectionName: block.sectionName,
-              sortOrder: block.sortOrder,
+              block_type: block.blockType,
+              data: block.data as any,
+              section_name: block.sectionName,
+              sort_order: block.sortOrder,
             });
             break;
 
           case 'modified':
             if (block.serverId) {
               updates.push({
-                parentBlockId: block.serverId,
-                blockTypeName: block.blockTypeName,
-                data: block.data,
-                sectionName: block.sectionName,
-                sortOrder: block.sortOrder,
+                parent_block_id: block.serverId,
+                block_type: block.blockType,
+                data: block.data as any,
+                section_name: block.sectionName,
+                sort_order: block.sortOrder,
               });
             }
             break;
@@ -405,18 +397,14 @@ export const useProfileEditorStore = create<EditorStore>()(
 
 function convertToDraft(block: VersionBlockDetail): DraftBlock {
   return {
-    clientId: `server-${block.block_id}`,
-    serverId: block.block_id,
-    blockTypeId: 0, // We'd need to look this up from catalog
-    blockTypeName: block.block_type_name,
-    blockTypeDisplayName: block.block_type_display_name,
-    blockTypeCategory: block.block_type_category,
-    data: block.data,
-    originalData: { ...block.data },
+    clientId: `server-${block.id}`,
+    serverId: block.id,
+    blockType: block.block_type,
+    data: block.data as unknown as Record<string, unknown>,
+    originalData: { ...(block.data as any) },
     sectionName: block.section_name,
     sortOrder: block.sort_order ?? 0,
     status: 'unchanged',
-    propertyVisibility: {},
     errors: {},
   };
 }
@@ -428,6 +416,20 @@ function hasDataChanged(original: Record<string, unknown> | undefined, current: 
 
 function calculateIsDirty(blocks: DraftBlock[]): boolean {
   return blocks.some((b) => b.status !== 'unchanged');
+}
+
+function getBlockTypeCategory(blockType: BlockType): string {
+  const BLOCK_TYPE_CATEGORIES: Record<string, string> = {
+    work_experience: 'Experience',
+    education: 'Education',
+    skill: 'Skills',
+    project: 'Projects',
+    certification: 'Certifications',
+    language: 'Languages',
+    volunteer: 'Volunteer',
+    award: 'Awards',
+  };
+  return BLOCK_TYPE_CATEGORIES[blockType] ?? 'Other';
 }
 
 // ============================================================================
@@ -456,7 +458,7 @@ export const useBlocksByCategory = () =>
       const byCategory = new Map<string, DraftBlock[]>();
 
       for (const block of visible) {
-        const category = block.blockTypeCategory ?? 'other';
+        const category = getBlockTypeCategory(block.blockType);
         if (!byCategory.has(category)) {
           byCategory.set(category, []);
         }
@@ -465,11 +467,6 @@ export const useBlocksByCategory = () =>
 
       return byCategory;
     })
-  );
-
-export const useBlockTypeProperties = (blockTypeId: number) =>
-  useProfileEditorStore(
-    useShallow((state) => state.catalog.propertiesByTypeId.get(blockTypeId) ?? [])
   );
 
 export const useHasUnsavedChanges = () => useProfileEditorStore((state) => state.isDirty);
