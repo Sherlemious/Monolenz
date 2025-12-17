@@ -1,0 +1,76 @@
+meta {
+  name: Get Latest Version
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{v1link}}/profiles/:identifier/versions/latest
+  body: none
+  auth: none
+}
+
+params:path {
+  identifier: johndoe
+}
+
+docs {
+  # Get Latest Version with Blocks
+  
+  Retrieves the latest version of a profile along with all its blocks.
+  Authentication is optional.
+  
+  ## Path Parameters
+  
+  | Parameter | Type | Description |
+  |-----------|------|-------------|
+  | `identifier` | string | Profile ID (UUID) or username |
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "success": true,
+    "message": "Latest version retrieved",
+    "data": {
+      "version": {
+        "id": 5,
+        "profile_id": "uuid-here",
+        "version_number": 5,
+        "created_at": "2024-01-15T10:30:00Z"
+      },
+      "blocks": [
+        {
+          "id": 42,
+          "block_type": "work_experience",
+          "section_name": "experience",
+          "sort_order": 0,
+          "data": {
+            "company_name": "Tech Corp",
+            "position_title": "Senior Developer",
+            "start_date": "2022-01-15",
+            "is_current": true
+          }
+        },
+        {
+          "id": 43,
+          "block_type": "education",
+          "section_name": "education",
+          "sort_order": 0,
+          "data": {
+            "institution_name": "MIT",
+            "degree_name": "Computer Science"
+          }
+        }
+      ]
+    }
+  }
+  ```
+  
+  ## Error Response (404)
+  ```json
+  {
+    "success": false,
+    "message": "No versions found for this profile"
+  }
+  ```
+}

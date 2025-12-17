@@ -1,0 +1,70 @@
+meta {
+  name: Login (Get Token)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{supabaseUrl}}/auth/v1/token?grant_type=password
+  body: json
+  auth: none
+}
+
+headers {
+  apikey: {{supabaseAnonKey}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.access_token) {
+    bru.setEnvVar("testJWT", res.body.access_token);
+    console.log("✅ Token saved to testJWT");
+  }
+}
+
+docs {
+  # Login (Get Token)
+  
+  Authenticates with Supabase and retrieves an access token.
+  The token is automatically saved to the `testJWT` environment variable.
+  
+  ## Setup
+  
+  1. Copy `environments/local.bru.example` to `environments/local.bru`
+  2. Fill in your Supabase credentials
+  
+  ## Request Body
+  
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | `email` | string | User email |
+  | `password` | string | User password |
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "access_token": "eyJhbG...",
+    "token_type": "bearer",
+    "expires_in": 3600,
+    "refresh_token": "...",
+    "user": {
+      "id": "uuid",
+      "email": "test@test.com"
+    }
+  }
+  ```
+  
+  ## Auto-refresh
+  
+  Run this request before testing authenticated endpoints.
+  The post-response script automatically saves the token to `testJWT`.
+  
+  **Token expires in ~1 hour.** Re-run this request to get a fresh token.
+}

@@ -1,0 +1,229 @@
+meta {
+  name: Batch Update Blocks
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{v1link}}/profiles/me/versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "creations": [
+      {
+        "block_type": "work_experience",
+        "section_name": "experience",
+        "sort_order": 0,
+        "data": {
+          "company_name": "Acme Inc",
+          "position_title": "Software Engineer",
+          "employment_type": "full-time",
+          "location": "San Francisco, CA",
+          "location_type": "hybrid",
+          "start_date": "2023-06-01",
+          "is_current": true,
+          "description": "Building scalable web applications",
+          "achievements": ["Led migration to microservices", "Reduced latency by 40%"],
+          "technologies": ["TypeScript", "React", "Node.js", "PostgreSQL"]
+        }
+      },
+      {
+        "block_type": "skill",
+        "section_name": "skills",
+        "sort_order": 0,
+        "data": {
+          "name": "TypeScript",
+          "category": "Programming Languages",
+          "proficiency_level": "expert",
+          "years_experience": 4
+        }
+      }
+    ],
+    "updates": [
+      {
+        "parent_block_id": 42,
+        "block_type": "work_experience",
+        "section_name": "experience",
+        "sort_order": 1,
+        "data": {
+          "company_name": "Previous Corp",
+          "position_title": "Junior Developer",
+          "start_date": "2021-01-15",
+          "end_date": "2023-05-31",
+          "is_current": false
+        }
+      }
+    ],
+    "deletions": [15, 16]
+  }
+}
+
+docs {
+  # Batch Update Blocks
+  
+  Creates a new version with batch block operations: create new blocks, 
+  update existing blocks, and delete blocks - all in a single atomic transaction.
+  
+  This is the primary way to modify profile content. Each call creates a new
+  immutable version, preserving history.
+  
+  ## Request Body
+  
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | `creations` | array | New blocks to create |
+  | `updates` | array | Existing blocks to update |
+  | `deletions` | array | Block IDs to delete (integers) |
+  
+  ### Creation Object
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `block_type` | string | ✅ | Type of block (see below) |
+  | `data` | object | ✅ | Block-specific data |
+  | `section_name` | string | ❌ | Section to place block in |
+  | `sort_order` | number | ❌ | Order within section |
+  
+  ### Update Object
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `parent_block_id` | number | ✅ | ID of existing block to update |
+  | `block_type` | string | ✅ | Type of block |
+  | `data` | object | ✅ | Updated block data |
+  | `section_name` | string | ❌ | Section to place block in |
+  | `sort_order` | number | ❌ | Order within section |
+  
+  ## Block Types & Data Schemas
+  
+  ### work_experience
+  ```json
+  {
+    "company_name": "required, string",
+    "position_title": "required, string",
+    "employment_type": "full-time|part-time|contract|internship|freelance",
+    "location": "string",
+    "location_type": "on-site|remote|hybrid",
+    "start_date": "YYYY-MM-DD, required",
+    "end_date": "YYYY-MM-DD (optional if current)",
+    "is_current": "boolean, default false",
+    "description": "string",
+    "achievements": ["array", "of", "strings"],
+    "technologies": ["array", "of", "strings"]
+  }
+  ```
+  
+  ### education
+  ```json
+  {
+    "institution_name": "required, string",
+    "degree_type": "string (e.g., Bachelor's, Master's)",
+    "degree_name": "string",
+    "field_of_study": "string",
+    "start_date": "YYYY-MM-DD",
+    "end_date": "YYYY-MM-DD",
+    "is_current": "boolean",
+    "gpa": "number 0-10",
+    "gpa_scale": "number, default 4.0",
+    "honors": ["array", "of", "strings"],
+    "relevant_coursework": ["array", "of", "strings"]
+  }
+  ```
+  
+  ### skill
+  ```json
+  {
+    "name": "required, string",
+    "category": "required, string (e.g., Programming Languages)",
+    "proficiency_level": "beginner|intermediate|advanced|expert",
+    "years_experience": "number 0-100"
+  }
+  ```
+  
+  ### project
+  ```json
+  {
+    "name": "required, string",
+    "description": "string",
+    "url": "valid URL",
+    "repository_url": "valid URL",
+    "image_url": "valid URL",
+    "start_date": "YYYY-MM-DD",
+    "end_date": "YYYY-MM-DD",
+    "is_ongoing": "boolean",
+    "technologies": ["array"],
+    "highlights": ["array"]
+  }
+  ```
+  
+  ### certification
+  ```json
+  {
+    "name": "required, string",
+    "issuing_organization": "required, string",
+    "credential_id": "string",
+    "credential_url": "valid URL",
+    "issue_date": "YYYY-MM-DD",
+    "expiration_date": "YYYY-MM-DD",
+    "does_not_expire": "boolean"
+  }
+  ```
+  
+  ### language
+  ```json
+  {
+    "language": "required, string",
+    "proficiency": "native|fluent|professional|intermediate|basic"
+  }
+  ```
+  
+  ### volunteer
+  ```json
+  {
+    "organization_name": "required, string",
+    "role": "required, string",
+    "cause": "string",
+    "start_date": "YYYY-MM-DD",
+    "end_date": "YYYY-MM-DD",
+    "is_current": "boolean",
+    "description": "string",
+    "highlights": ["array"]
+  }
+  ```
+  
+  ### award
+  ```json
+  {
+    "title": "required, string",
+    "issuer": "string",
+    "date_received": "YYYY-MM-DD",
+    "description": "string",
+    "url": "valid URL"
+  }
+  ```
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "success": true,
+    "message": "Version updated successfully",
+    "data": {
+      "version": {
+        "id": 6,
+        "version_number": 6,
+        "created_at": "2024-01-16T15:00:00Z"
+      },
+      "created_blocks": [101, 102],
+      "updated_blocks": [42],
+      "deleted_blocks": [15, 16]
+    }
+  }
+  ```
+}
