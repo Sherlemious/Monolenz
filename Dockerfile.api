@@ -8,7 +8,7 @@ FROM base AS deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages ./packages
 COPY apps/api/package.json ./apps/api/
-RUN pnpm install --filter api... --frozen-lockfile
+RUN pnpm install --filter api... --filter "@monolenz/*" --frozen-lockfile
 
 # Build stage
 FROM base AS builder
