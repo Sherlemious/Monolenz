@@ -8,7 +8,7 @@ FROM base AS deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages ./packages
 COPY apps/api/package.json ./apps/api/
-RUN pnpm install --filter api... --filter "@monolenz/*" --frozen-lockfile
+RUN pnpm install --filter api... --frozen-lockfile
 
 # Build stage
 FROM base AS builder
@@ -19,9 +19,6 @@ COPY . .
 
 # Create a dummy newrelic.cjs if it doesn't exist
 RUN [ -f /app/apps/api/newrelic.cjs ] || printf "module.exports = {};\n" > /app/apps/api/newrelic.cjs
-
-# Build packages first (required for @monolenz/types)
-RUN pnpm --filter="@monolenz/*" build
 
 # Generate Prisma client first (before building)
 RUN cd apps/api && pnpm prisma generate
@@ -46,12 +43,12 @@ COPY --from=builder /app/apps/api/package.json ./apps/api/
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/apps/api/newrelic.cjs ./apps/api/
 
+# Copy the generated Prisma client from builder
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client* ./node_modules/.pnpm/
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
 # Copy shared packages (built)
 COPY --from=builder /app/packages ./packages
-
-# Copy generated Prisma client
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Copy workspace files
 COPY --from=builder /app/package.json ./

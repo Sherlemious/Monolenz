@@ -8,7 +8,7 @@ FROM base AS deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages ./packages
 COPY apps/web/package.json ./apps/web/
-RUN pnpm install --filter web... --filter "@monolenz/*" --frozen-lockfile
+RUN pnpm install --filter web... --frozen-lockfile
 
 # Build stage
 FROM base AS builder
@@ -27,11 +27,8 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY --from=deps /app /app
 COPY . .
 
-# Build packages first (required for @monolenz/types)
-RUN pnpm --filter="@monolenz/*" build
-
 # Build the web app
-RUN pnpm --filter web... build
+RUN pnpm --filter web build
 
 # Runtime stage
 FROM node:20-alpine AS runner
