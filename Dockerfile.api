@@ -20,6 +20,9 @@ COPY . .
 # Create a dummy newrelic.cjs if it doesn't exist
 RUN [ -f /app/apps/api/newrelic.cjs ] || printf "module.exports = {};\n" > /app/apps/api/newrelic.cjs
 
+# Build packages first (required for @monolenz/types)
+RUN pnpm --filter="@monolenz/*" build
+
 # Generate Prisma client first (before building)
 RUN cd apps/api && pnpm prisma generate
 
@@ -45,7 +48,7 @@ COPY --from=builder /app/apps/api/newrelic.cjs ./apps/api/
 
 # Copy the generated Prisma client from builder
 COPY --from=builder /app/node_modules/.pnpm/@prisma+client* ./node_modules/.pnpm/
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Note: @prisma symlink will be created by pnpm install --prod below
 
 # Copy shared packages (built)
 COPY --from=builder /app/packages ./packages

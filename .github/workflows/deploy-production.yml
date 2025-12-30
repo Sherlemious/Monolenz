@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGISTRY: gcr.io
-  REGION: us-central1
+  REGION: europe-west1
 
 jobs:
   changes:
@@ -107,7 +107,7 @@ jobs:
             --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} \
             --build-arg NEXT_PUBLIC_API_URL=https://monolenz-api-prod-${{ secrets.GCP_SERVICE_SUFFIX }}.a.run.app \
             -t $REGISTRY/$PROJECT_ID/monolenz-web-prod:$GITHUB_SHA \
-            -f apps/web/Dockerfile .
+            -f Dockerfile.web .
 
       - name: Push Web Docker image
         run: docker push $REGISTRY/$PROJECT_ID/monolenz-web-prod:$GITHUB_SHA
@@ -247,7 +247,7 @@ jobs:
         run: |
           docker build \
             -t $REGISTRY/$PROJECT_ID/monolenz-api-prod:$GITHUB_SHA \
-            -f apps/api/Dockerfile .
+            -f Dockerfile.api .
 
       - name: Push API Docker image
         run: docker push $REGISTRY/$PROJECT_ID/monolenz-api-prod:$GITHUB_SHA
