@@ -24,6 +24,7 @@ export default [
         console: 'readonly',
         crypto: 'readonly',
         Buffer: 'readonly',
+        URL: 'readonly',
         __dirname: 'readonly',
         __filename: 'readonly',
         global: 'readonly',
