@@ -23,8 +23,11 @@ RUN [ -f /app/apps/api/newrelic.cjs ] || printf "module.exports = {};\n" > /app/
 # Generate Prisma client first (before building)
 RUN cd apps/api && pnpm prisma generate
 
+RUN pnpm --filter "@monolenz/types" build
+
 # Build the API and shared packages
 RUN pnpm --filter api build:without-db
+
 
 # Runtime stage
 FROM node:20-alpine AS runner
