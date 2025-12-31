@@ -20,11 +20,13 @@ This document maps each component from the [CI/CD Pipeline Flow Diagrams](./cicd
 All workflow files are located in `.github/workflows/`. These are the "recipes" that GitHub Actions follows when triggered.
 
 ### 1. **CI Workflow (Build & Test)**
+
 **File:** `.github/workflows/build-test.yml`
 
 **What it does:** Runs on every push to `dev` branch and PRs to `dev`/`main`. Validates code quality before merging.
 
 **Key Sections:**
+
 - **Lines 7-12:** Triggers (push to dev, PRs)
 - **Lines 62-93:** Linting job (`pnpm lint`)
 - **Lines 95-126:** Type checking job (`pnpm check-types`)
@@ -37,11 +39,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### 2. **Staging Deployment**
+
 **File:** `.github/workflows/deploy-staging.yml`
 
 **What it does:** Deploys to staging environment when code is pushed to `stage` branch.
 
 **Key Sections:**
+
 - **Lines 3-6:** Trigger (push to `stage` branch)
 - **Lines 15-37:** Path filtering (detects if web/api changed)
 - **Lines 39-92:** Build and test before deployment
@@ -58,11 +62,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### 3. **Production Deployment**
+
 **File:** `.github/workflows/deploy-production.yml`
 
 **What it does:** Deploys to production when code is pushed to `main` branch.
 
 **Key Sections:**
+
 - **Lines 3-6:** Trigger (push to `main` branch)
 - **Lines 14-36:** Path filtering
 - **Lines 87-228:** Web deployment (Blue/Green)
@@ -77,11 +83,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### 4. **Rollback Workflow**
+
 **File:** `.github/workflows/rollback.yml`
 
 **What it does:** Manual workflow to rollback to a previous revision or tag.
 
 **Key Sections:**
+
 - **Lines 3-33:** Manual trigger with inputs (service, rollback strategy, tag)
 - **Lines 57-83:** Determine rollback target (previous revision or specific tag)
 - **Lines 115-132:** Perform rollback (switch traffic)
@@ -93,11 +101,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### 5. **Security Audit**
+
 **File:** `.github/workflows/audit-packages.yml`
 
 **What it does:** Runs daily at 2 AM UTC to check for security vulnerabilities.
 
 **Key Sections:**
+
 - **Lines 4-6:** Schedule trigger (`0 2 * * *` = daily at 2 AM)
 - **Line 25:** Runs `pnpm audit --prod --audit-level=high` (fails on high severity)
 
@@ -106,11 +116,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### 6. **Code Formatting**
+
 **File:** `.github/workflows/auto-format.yml`
 
 **What it does:** Checks code formatting on all pushes/PRs.
 
 **Key Sections:**
+
 - **Lines 4-7:** Triggers (all pushes/PRs to main branches)
 - **Lines 54-74:** Runs `pnpm format:check` (Prettier)
 
@@ -121,18 +133,21 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ## 🐳 Docker Configuration
 
 ### API Dockerfile
+
 **File:** `Dockerfile.api` (root directory)
 
 **What it does:** Defines how to build the API Docker image.
 
 **Key Sections:**
+
 - **Lines 1-11:** Base image and dependency installation
 - **Lines 13-27:** Build stage (compiles TypeScript)
 - **Lines 29-72:** Runtime stage (production image)
   - **Lines 65-67:** Health check definition (`/health` endpoint)
   - **Line 72:** Start command (`node dist/server.js`)
 
-**Used by:** 
+**Used by:**
+
 - `.github/workflows/build-test.yml` (line 230)
 - `.github/workflows/deploy-staging.yml` (line 117)
 - `.github/workflows/deploy-production.yml` (line 250)
@@ -140,11 +155,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### Web Dockerfile
+
 **File:** `Dockerfile.web` (root directory)
 
 **What it does:** Defines how to build the Web Docker image.
 
 **Key Sections:**
+
 - **Lines 1-11:** Base image and dependency installation
 - **Lines 13-31:** Build stage (Next.js build with build args)
   - **Lines 18-20:** Build args for environment variables
@@ -154,6 +171,7 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
   - **Line 59:** Start command (`node server.js`)
 
 **Used by:**
+
 - `.github/workflows/build-test.yml` (line 232)
 - `.github/workflows/deploy-staging.yml` (line 117)
 - `.github/workflows/deploy-production.yml` (line 110)
@@ -163,9 +181,11 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ## 🔨 Build & Test Scripts
 
 ### Root Package.json
+
 **File:** `package.json` (root directory)
 
 **Scripts:**
+
 - **Line 5:** `build` → Runs `turbo run build` (builds all apps)
 - **Line 6:** `build:without-db` → Builds without database (for CI)
 - **Line 8:** `lint` → Runs `turbo run lint` (lints all apps)
@@ -178,16 +198,19 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### API Package.json
+
 **File:** `apps/api/package.json`
 
 **Scripts:**
+
 - **Line 8:** `build` → Full build with database
 - **Line 9:** `build:without-db` → Build without database (used in CI)
 - **Line 12:** `type-check` → TypeScript type checking
 - **Line 13:** `lint` → ESLint
 - **⚠️ Missing:** `test` script (mentioned in workflows but doesn't exist)
 
-**Used by:** 
+**Used by:**
+
 - `.github/workflows/build-test.yml` (lines 167, 214)
 - `.github/workflows/deploy-staging.yml` (line 82)
 - `.github/workflows/deploy-production.yml` (line 77)
@@ -195,15 +218,18 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### Web Package.json
+
 **File:** `apps/web/package.json`
 
 **Scripts:**
+
 - **Line 9:** `build` → Next.js build
 - **Line 11:** `lint` → Next.js linting
 - **Line 12:** `check-types` → TypeScript type checking
 - **⚠️ Missing:** `test` script (mentioned in workflows but doesn't exist)
 
 **Used by:**
+
 - `.github/workflows/build-test.yml` (lines 169, 214)
 - `.github/workflows/deploy-staging.yml` (line 84)
 - `.github/workflows/deploy-production.yml` (line 77)
@@ -211,11 +237,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### Turbo Configuration
+
 **File:** `turbo.json` (root directory)
 
 **What it does:** Defines build pipeline and caching for TurboRepo.
 
 **Key Sections:**
+
 - **Lines 5-10:** `build` task configuration
 - **Lines 11-15:** `build:without-db` task (for CI)
 - **Lines 16-18:** `lint` task
@@ -228,11 +256,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ## 🏥 Health Check Endpoints
 
 ### Web Health Check
+
 **File:** `apps/web/app/health/route.ts`
 
 **What it does:** Returns health status for the web application.
 
 **Key Sections:**
+
 - **Lines 4-18:** GET handler that returns health status
 - **Line 18:** Returns 200 OK with health info
 - **Lines 19-27:** Error handling (returns 503 on error)
@@ -240,6 +270,7 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 **Endpoint:** `GET /health`
 
 **Used by:**
+
 - Dockerfile.web health check (line 56)
 - `.github/workflows/deploy-staging.yml` (line 199)
 - `.github/workflows/deploy-production.yml` (line 192)
@@ -247,11 +278,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### API Health Check
+
 **File:** `apps/api/src/app.ts` (lines 74-81)
 
 **What it does:** Simple health check endpoint for the API.
 
 **Key Sections:**
+
 - **Line 74:** Route definition (`app.get('/health', ...)`)
 - **Lines 75-80:** Returns JSON with status, timestamp, uptime, environment
 
@@ -260,6 +293,7 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 **Endpoint:** `GET /health`
 
 **Used by:**
+
 - Dockerfile.api health check (line 67)
 - `.github/workflows/deploy-staging.yml` (line 341)
 - `.github/workflows/deploy-production.yml` (line 334)
@@ -269,11 +303,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ## 🚀 Deployment Scripts
 
 ### Setup Deployment Script
+
 **File:** `scripts/gcp/setup-deployment.sh`
 
 **What it does:** Interactive script to set up Google Cloud resources for deployment.
 
 **Key Sections:**
+
 - **Lines 40-84:** Prompts for GCP project configuration
 - **Lines 90-98:** Enables required GCP APIs
 - **Lines 100-109:** Creates Artifact Registry repository
@@ -286,11 +322,13 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### Setup Artifact Registry Script
+
 **File:** `scripts/gcp/setup-artifact-registry.sh`
 
 **What it does:** Sets up Docker image registry in Google Cloud.
 
 **Key Sections:**
+
 - **Lines 16-19:** Prompts for project ID and region
 - **Lines 25-26:** Enables Artifact Registry API
 - **Lines 29-33:** Creates Docker repository
@@ -301,6 +339,7 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### Check Allowed Regions Script
+
 **File:** `scripts/gcp/check-allowed-regions.sh`
 
 **What it does:** Checks which regions are allowed for Artifact Registry in your GCP project.
@@ -312,6 +351,7 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ## ⚙️ Configuration Files
 
 ### ESLint Configuration (API)
+
 **File:** `apps/api/eslint.config.js`
 
 **Used by:** `pnpm lint` command in API
@@ -319,6 +359,7 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### ESLint Configuration (Web)
+
 **File:** `apps/web/eslint.config.js`
 
 **Used by:** `pnpm lint` command in Web
@@ -326,6 +367,7 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### TypeScript Configuration (API)
+
 **File:** `apps/api/tsconfig.json`
 
 **Used by:** `pnpm check-types` command in API
@@ -333,6 +375,7 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ---
 
 ### TypeScript Configuration (Web)
+
 **File:** `apps/web/tsconfig.json`
 
 **Used by:** `pnpm check-types` command in Web
@@ -342,9 +385,11 @@ All workflow files are located in `.github/workflows/`. These are the "recipes" 
 ## 🔐 Secrets & Environment Variables
 
 ### GitHub Secrets (Set in GitHub UI)
+
 These are referenced in workflows but stored in GitHub Secrets:
 
 **From `.github/workflows/deploy-staging.yml`:**
+
 - `GCP_PROJECT_ID` (line 9)
 - `GCP_SA_KEY` (line 105) - Service account JSON key
 - `GCP_SERVICE_SUFFIX` (line 115) - Unique service suffix
@@ -353,6 +398,7 @@ These are referenced in workflows but stored in GitHub Secrets:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY_STAGING` (line 114)
 
 **From `.github/workflows/deploy-production.yml`:**
+
 - `GCP_PROJECT_ID` (line 9)
 - `GCP_SA_KEY` (line 98)
 - `GCP_SERVICE_SUFFIX` (line 108)
@@ -361,6 +407,7 @@ These are referenced in workflows but stored in GitHub Secrets:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (line 107)
 
 **Google Cloud Secret Manager Secrets:**
+
 - `DATABASE_URL_STAGING` (referenced in deploy-staging.yml line 289)
 - `DATABASE_URL_PROD` (referenced in deploy-production.yml line 282)
 - `SUPABASE_SERVICE_ROLE_KEY_STAGING` (line 289)
@@ -372,12 +419,14 @@ These are referenced in workflows but stored in GitHub Secrets:
 ## 📊 Quick Reference: What Happens When...
 
 ### You push to `dev` branch:
+
 1. `.github/workflows/build-test.yml` runs
 2. `.github/workflows/auto-format.yml` runs
 3. Code is linted, type-checked, built, and Docker images are tested
 4. ✅ If all pass → Ready to merge
 
 ### You push to `stage` branch:
+
 1. `.github/workflows/deploy-staging.yml` runs
 2. Code is built and tested
 3. Docker images are built with staging build args
@@ -388,6 +437,7 @@ These are referenced in workflows but stored in GitHub Secrets:
 8. Old revisions cleaned up
 
 ### You push to `main` branch:
+
 1. `.github/workflows/deploy-production.yml` runs
 2. Same process as staging, but:
    - Uses production build args
@@ -395,11 +445,13 @@ These are referenced in workflows but stored in GitHub Secrets:
    - More conservative (keeps 3 revisions vs 2)
 
 ### Daily at 2 AM UTC:
+
 1. `.github/workflows/audit-packages.yml` runs
 2. Checks for security vulnerabilities
 3. Fails if high severity issues found
 
 ### Manual rollback:
+
 1. Go to GitHub Actions → "Emergency Rollback" workflow
 2. Click "Run workflow"
 3. Select service, rollback strategy, and environment
@@ -410,20 +462,20 @@ These are referenced in workflows but stored in GitHub Secrets:
 
 ## 🎯 Key Files Summary
 
-| Component | File Location | Purpose |
-|-----------|--------------|---------|
-| **CI Pipeline** | `.github/workflows/build-test.yml` | Validates code before merge |
-| **Staging Deploy** | `.github/workflows/deploy-staging.yml` | Deploys to staging |
-| **Production Deploy** | `.github/workflows/deploy-production.yml` | Deploys to production |
-| **Rollback** | `.github/workflows/rollback.yml` | Manual rollback workflow |
-| **Security Audit** | `.github/workflows/audit-packages.yml` | Daily security checks |
-| **Formatting** | `.github/workflows/auto-format.yml` | Code formatting checks |
-| **API Dockerfile** | `Dockerfile.api` | API container definition |
-| **Web Dockerfile** | `Dockerfile.web` | Web container definition |
-| **Build Config** | `turbo.json` | TurboRepo build pipeline |
-| **Web Health** | `apps/web/app/health/route.ts` | Web health endpoint |
-| **API Health** | `apps/api/src/app.ts` (line 74) | API health endpoint |
-| **Setup Script** | `scripts/gcp/setup-deployment.sh` | Initial GCP setup |
+| Component             | File Location                             | Purpose                     |
+| --------------------- | ----------------------------------------- | --------------------------- |
+| **CI Pipeline**       | `.github/workflows/build-test.yml`        | Validates code before merge |
+| **Staging Deploy**    | `.github/workflows/deploy-staging.yml`    | Deploys to staging          |
+| **Production Deploy** | `.github/workflows/deploy-production.yml` | Deploys to production       |
+| **Rollback**          | `.github/workflows/rollback.yml`          | Manual rollback workflow    |
+| **Security Audit**    | `.github/workflows/audit-packages.yml`    | Daily security checks       |
+| **Formatting**        | `.github/workflows/auto-format.yml`       | Code formatting checks      |
+| **API Dockerfile**    | `Dockerfile.api`                          | API container definition    |
+| **Web Dockerfile**    | `Dockerfile.web`                          | Web container definition    |
+| **Build Config**      | `turbo.json`                              | TurboRepo build pipeline    |
+| **Web Health**        | `apps/web/app/health/route.ts`            | Web health endpoint         |
+| **API Health**        | `apps/api/src/app.ts` (line 74)           | API health endpoint         |
+| **Setup Script**      | `scripts/gcp/setup-deployment.sh`         | Initial GCP setup           |
 
 ---
 
@@ -444,4 +496,4 @@ These are referenced in workflows but stored in GitHub Secrets:
 
 ---
 
-*Last Updated: Based on current codebase analysis*
+_Last Updated: Based on current codebase analysis_

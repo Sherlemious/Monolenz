@@ -10,10 +10,10 @@ if (!supabaseUrl || !supabaseServiceKey) {
   const missing: string[] = [];
   if (!supabaseUrl) missing.push('SUPABASE_URL');
   if (!supabaseServiceKey) missing.push('SUPABASE_SERVICE_ROLE_KEY');
-  
+
   throw new Error(
     `Missing Supabase environment variables: ${missing.join(', ')}. ` +
-    `Please ensure these are set in your environment or Google Cloud Secret Manager.`
+      `Please ensure these are set in your environment or Google Cloud Secret Manager.`
   );
 }
 
