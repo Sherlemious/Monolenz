@@ -37,23 +37,29 @@ ENV PORT=8080
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 apiuser
 
-# Copy built application
+# Copy workspace files first (needed for pnpm to understand workspace structure)
+COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
+COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-lock.yaml
+
+# Copy shared packages (built outputs + package.json for each)
+# Need to copy ALL package.json files for pnpm workspace to be valid
+COPY --from=builder /app/packages/types/dist /app/packages/types/dist
+COPY --from=builder /app/packages/types/package.json /app/packages/types/package.json
+COPY --from=builder /app/packages/shared/package.json /app/packages/shared/package.json
+COPY --from=builder /app/packages/eslint-config/package.json /app/packages/eslint-config/package.json
+COPY --from=builder /app/packages/typescript-config/package.json /app/packages/typescript-config/package.json
+
+# Copy built API application
 COPY --from=builder /app/apps/api/dist /app/apps/api/dist
 COPY --from=builder /app/apps/api/package.json /app/apps/api/package.json
 COPY --from=builder /app/apps/api/prisma /app/apps/api/prisma
 COPY --from=builder /app/apps/api/newrelic.cjs /app/apps/api/newrelic.cjs
 
-# Copy shared packages (built)
-COPY --from=builder /app/packages /app/packages
-
-# Copy workspace files
-COPY --from=builder /app/package.json /app/package.json
-COPY --from=builder /app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
-COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-lock.yaml
-
-# Install only production dependencies
+# Install production dependencies
 # This installs @prisma/client and auto-generates the Prisma client
 # thanks to onlyBuiltDependencies in pnpm-workspace.yaml
+# The '...' includes dependencies, ensuring workspace packages are properly linked
 RUN pnpm install --filter api... --prod --frozen-lockfile
 
 # Ensure proper ownership
