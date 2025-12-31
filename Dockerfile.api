@@ -44,8 +44,8 @@ COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/apps/api/newrelic.cjs ./apps/api/
 
 # Copy the generated Prisma client from builder
-COPY --from=builder /app/node_modules/.pnpm/@prisma+client* ./node_modules/.pnpm/
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+#COPY --from=builder /app/node_modules/.pnpm/@prisma+client* ./node_modules/.pnpm/
+#COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Copy shared packages (built)
 COPY --from=builder /app/packages ./packages
