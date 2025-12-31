@@ -247,11 +247,19 @@ jobs:
 
       - name: Test Docker container starts
         run: |
-          # Start container in background
+          # Start container in background with test environment variables
           docker run -d --name test-${{ matrix.app }} \
+            -e SUPABASE_URL="https://test.supabase.co" \
+            -e SUPABASE_SERVICE_ROLE_KEY="test-key" \
+            -e SUPABASE_ANON_KEY="test-anon-key" \
+            -e DATABASE_URL="postgresql://test:test@localhost:5432/test" \
             -p 3000:3000 \
             monolenz-${{ matrix.app }}:test || \
           docker run -d --name test-${{ matrix.app }} \
+            -e SUPABASE_URL="https://test.supabase.co" \
+            -e SUPABASE_SERVICE_ROLE_KEY="test-key" \
+            -e SUPABASE_ANON_KEY="test-anon-key" \
+            -e DATABASE_URL="postgresql://test:test@localhost:5432/test" \
             -p 3001:3001 \
             monolenz-${{ matrix.app }}:test
 
