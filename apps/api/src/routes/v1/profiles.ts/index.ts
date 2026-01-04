@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import profileRoutes from './profiles';
+import blockRoutes from '../../../blocks/routes/blocks.routes';
 import { rateLimit } from 'express-rate-limit';
-import { profileBlockRouter } from './blocks';
 
 const router: Router = Router();
 
@@ -17,6 +17,6 @@ router.use(profileRateLimit);
 
 // Main profile routes
 router.use('/', profileRoutes);
-router.use('/', profileBlockRouter);
+router.use('/', blockRoutes);
 
 export default router;

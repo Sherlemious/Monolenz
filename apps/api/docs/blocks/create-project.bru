@@ -1,0 +1,262 @@
+meta {
+  name: Create Project
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{v1link}}/profiles/me/versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "creations": [
+      {
+        "block_type": "project",
+        "section_name": "projects",
+        "sort_order": 0,
+        "data": {
+          "name": "E-Commerce Platform",
+          "description": "A full-stack e-commerce platform with real-time inventory management, payment processing, and order tracking.",
+          "url": "https://example-store.com",
+          "repository_url": "https://github.com/username/ecommerce-platform",
+          "image_url": "https://example-store.com/preview.png",
+          "start_date": "2023-01-15",
+          "end_date": "2023-06-30",
+          "is_ongoing": false,
+          "technologies": ["React", "Node.js", "PostgreSQL", "Stripe API", "AWS"],
+          "highlights": [
+            "Processed $500K+ in transactions",
+            "Reduced page load time by 60%",
+            "Implemented real-time inventory updates"
+          ]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+}
+
+docs {
+  # Create Project
+  
+  Creates a new project block for your profile. This endpoint uses the batch update system, so you can create multiple projects in a single request.
+  
+  ## Request Body
+  
+  The request uses the batch update format with a `creations` array. Each creation object contains:
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `block_type` | string | ✅ | Must be `"project"` |
+  | `section_name` | string | ❌ | Section name (e.g., "projects", "portfolio") |
+  | `sort_order` | number | ❌ | Order within section (0 = first) |
+  | `data` | object | ✅ | Project data (see below) |
+  
+  ### Project Data Fields
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `name` | string | ✅ | Project name (max 255 chars) |
+  | `description` | string | ❌ | Project description |
+  | `url` | string | ❌ | Live project URL |
+  | `repository_url` | string | ❌ | Source code repository URL (e.g., GitHub, GitLab) |
+  | `image_url` | string | ❌ | Project preview/image URL |
+  | `start_date` | string | ❌ | Start date in `YYYY-MM-DD` format |
+  | `end_date` | string | ❌ | End date in `YYYY-MM-DD` format |
+  | `is_ongoing` | boolean | ❌ | Whether project is currently ongoing (default: `false`) |
+  | `technologies` | array | ❌ | Array of technology/tool names used in the project |
+  | `highlights` | array | ❌ | Array of project highlights/achievements |
+  
+  ## Example: Completed Project
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "project",
+        "section_name": "projects",
+        "sort_order": 0,
+        "data": {
+          "name": "Task Management App",
+          "description": "A collaborative task management application with real-time updates, drag-and-drop functionality, and team collaboration features.",
+          "url": "https://taskapp.example.com",
+          "repository_url": "https://github.com/username/task-app",
+          "start_date": "2023-03-01",
+          "end_date": "2023-08-15",
+          "is_ongoing": false,
+          "technologies": ["TypeScript", "React", "Node.js", "MongoDB", "Socket.io"],
+          "highlights": [
+            "Supports 1000+ concurrent users",
+            "Real-time collaboration with WebSockets",
+            "Mobile-responsive design"
+          ]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Ongoing Project
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "project",
+        "section_name": "projects",
+        "sort_order": 0,
+        "data": {
+          "name": "Open Source Library",
+          "description": "A utility library for data processing with 500+ GitHub stars.",
+          "repository_url": "https://github.com/username/data-lib",
+          "start_date": "2022-01-01",
+          "is_ongoing": true,
+          "technologies": ["TypeScript", "Jest", "ESLint"],
+          "highlights": [
+            "500+ GitHub stars",
+            "Used by 50+ projects",
+            "Comprehensive test coverage"
+          ]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Portfolio Project with Image
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "project",
+        "section_name": "projects",
+        "sort_order": 0,
+        "data": {
+          "name": "Design System",
+          "description": "A comprehensive design system with reusable components, documentation, and design tokens.",
+          "url": "https://design.example.com",
+          "repository_url": "https://github.com/username/design-system",
+          "image_url": "https://design.example.com/preview.jpg",
+          "start_date": "2023-09-01",
+          "end_date": "2024-01-15",
+          "is_ongoing": false,
+          "technologies": ["React", "Storybook", "Figma", "CSS-in-JS"],
+          "highlights": [
+            "50+ reusable components",
+            "Full accessibility compliance",
+            "Used across 10+ products"
+          ]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Multiple Projects
+  
+  You can create multiple projects in a single request:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "project",
+        "section_name": "projects",
+        "sort_order": 0,
+        "data": {
+          "name": "API Gateway",
+          "description": "High-performance API gateway with rate limiting and authentication",
+          "repository_url": "https://github.com/username/api-gateway",
+          "start_date": "2023-01-01",
+          "end_date": "2023-05-30",
+          "is_ongoing": false,
+          "technologies": ["Go", "Redis", "Docker"],
+          "highlights": ["Handles 10K+ requests/second"]
+        }
+      },
+      {
+        "block_type": "project",
+        "section_name": "projects",
+        "sort_order": 1,
+        "data": {
+          "name": "Mobile App",
+          "description": "Cross-platform mobile application for fitness tracking",
+          "url": "https://apps.apple.com/app/fitness-tracker",
+          "start_date": "2023-06-01",
+          "is_ongoing": true,
+          "technologies": ["React Native", "Firebase", "Redux"],
+          "highlights": ["10K+ downloads", "4.8 star rating"]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Minimal Project Entry
+  
+  Only `name` is required:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "project",
+        "section_name": "projects",
+        "data": {
+          "name": "Personal Website",
+          "url": "https://mywebsite.com"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Response (200 OK)
+  
+  ```json
+  {
+    "success": true,
+    "message": "Version updated successfully",
+    "data": {
+      "version": {
+        "id": 8,
+        "version_number": 8,
+        "created_at": "2024-01-16T15:00:00Z"
+      },
+      "created_blocks": [104],
+      "updated_blocks": [],
+      "deleted_blocks": []
+    }
+  }
+  ```
+  
+  ## Notes
+  
+  - Only `name` is required; all other fields are optional
+  - Dates must be in `YYYY-MM-DD` format
+  - If `is_ongoing` is `true`, `end_date` is not required
+  - Arrays (`technologies`, `highlights`) default to empty arrays if not provided
+  - `url` is for the live project, `repository_url` is for source code
+  - `image_url` can be used for project previews/thumbnails
+  - Each request creates a new version, preserving history
+}
+

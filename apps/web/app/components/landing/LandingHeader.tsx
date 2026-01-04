@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 
 const LandingHeader: React.FC = () => {
@@ -24,7 +25,7 @@ const LandingHeader: React.FC = () => {
           {/* Logo */}
           <div className='flex-shrink-0'>
             <Link href='/' className='flex items-center gap-3 text-decoration-none'>
-              <img src='/logo.svg' alt='Monolenz' width={32} height={32} />
+              <Image src='/logo.svg' alt='Monolenz' width={32} height={32} />
               <span className='text-xl font-semibold text-foreground'>Monolenz</span>
             </Link>
           </div>

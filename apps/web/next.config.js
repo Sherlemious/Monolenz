@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable standalone output for Docker/Cloud Run deployment
-  output: 'standalone',
+  // Disabled on Windows due to symlink permission issues - re-enable in CI/CD
+  output: process.env.CI ? 'standalone' : undefined,
 
   // Optimize for production
   poweredByHeader: false,

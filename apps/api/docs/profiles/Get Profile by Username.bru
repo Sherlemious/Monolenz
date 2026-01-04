@@ -1,0 +1,56 @@
+meta {
+  name: Get Profile by Username
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{v1link}}/profiles/:username
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~include_links: true
+}
+
+params:path {
+  username: johndoe
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+docs {
+  # Get Profile by Identifier
+  
+  Retrieves a profile by its ID or username.
+  Requires authentication. For public access, use the `/public/:identifier` endpoint.
+  
+  ## Path Parameters
+  
+  | Parameter | Type | Description |
+  |-----------|------|-------------|
+  | `identifier` | string | Profile ID (UUID) or username |
+  
+  ## Query Parameters
+  
+  | Parameter | Type | Default | Description |
+  |-----------|------|---------|-------------|
+  | `include_links` | boolean | false | Include social links in response |
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "success": true,
+    "message": "Profile retrieved successfully",
+    "data": {
+      "id": "uuid-here",
+      "username": "johndoe",
+      "bio": "Full-stack developer...",
+      "profile_picture_url": "https://example.com/avatar.jpg"
+    }
+  }
+  ```
+}

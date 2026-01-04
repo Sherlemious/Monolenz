@@ -39,7 +39,11 @@ yarn-error.log*
 
 .idea/
 
+.claude/
+.vscode/
 github-actions-deploy-key.json
 
 # Log files
 *.log
+
+apps/api/docs/environments

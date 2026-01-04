@@ -1,0 +1,232 @@
+meta {
+  name: Create Education
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{v1link}}/profiles/me/versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "creations": [
+      {
+        "block_type": "education",
+        "section_name": "education",
+        "sort_order": 0,
+        "data": {
+          "institution_name": "Stanford University",
+          "institution_url": "https://stanford.edu",
+          "degree_type": "Bachelor's",
+          "degree_name": "Bachelor of Science",
+          "field_of_study": "Computer Science",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-15",
+          "is_current": false,
+          "gpa": 3.8,
+          "gpa_scale": 4.0,
+          "honors": [
+            "Summa Cum Laude",
+            "Dean's List (4 semesters)"
+          ],
+          "relevant_coursework": [
+            "Data Structures and Algorithms",
+            "Database Systems",
+            "Machine Learning",
+            "Software Engineering"
+          ],
+          "location": "Stanford, CA"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+}
+
+docs {
+  # Create Education
+  
+  Creates a new education block for your profile. This endpoint uses the batch update system, so you can create multiple education entries in a single request.
+  
+  ## Request Body
+  
+  The request uses the batch update format with a `creations` array. Each creation object contains:
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `block_type` | string | ✅ | Must be `"education"` |
+  | `section_name` | string | ❌ | Section name (e.g., "education", "academics") |
+  | `sort_order` | number | ❌ | Order within section (0 = first) |
+  | `data` | object | ✅ | Education data (see below) |
+  
+  ### Education Data Fields
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `institution_name` | string | ✅ | Institution name (max 255 chars) |
+  | `institution_url` | string | ❌ | Institution website URL |
+  | `degree_type` | string | ❌ | Degree type (e.g., "Bachelor's", "Master's", "PhD") (max 50 chars) |
+  | `degree_name` | string | ❌ | Full degree name (e.g., "Bachelor of Science") (max 255 chars) |
+  | `field_of_study` | string | ❌ | Major/field of study (max 255 chars) |
+  | `start_date` | string | ❌ | Start date in `YYYY-MM-DD` format |
+  | `end_date` | string | ❌ | End date in `YYYY-MM-DD` format |
+  | `is_current` | boolean | ❌ | Whether currently enrolled (default: `false`) |
+  | `gpa` | number | ❌ | Grade point average (0-10) |
+  | `gpa_scale` | number | ❌ | GPA scale (default: 4.0) |
+  | `honors` | array | ❌ | Array of honor/award strings |
+  | `relevant_coursework` | array | ❌ | Array of relevant course names |
+  | `location` | string | ❌ | Institution location (max 255 chars) |
+  
+  ## Example: Completed Degree
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "education",
+        "section_name": "education",
+        "sort_order": 0,
+        "data": {
+          "institution_name": "MIT",
+          "degree_type": "Master's",
+          "degree_name": "Master of Science",
+          "field_of_study": "Computer Science",
+          "start_date": "2020-09-01",
+          "end_date": "2022-05-15",
+          "is_current": false,
+          "gpa": 3.9,
+          "gpa_scale": 4.0,
+          "honors": ["Graduated with Distinction"],
+          "relevant_coursework": ["Advanced Algorithms", "Distributed Systems"],
+          "location": "Cambridge, MA"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Current Enrollment
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "education",
+        "section_name": "education",
+        "sort_order": 0,
+        "data": {
+          "institution_name": "Harvard University",
+          "degree_type": "PhD",
+          "degree_name": "Doctor of Philosophy",
+          "field_of_study": "Artificial Intelligence",
+          "start_date": "2023-09-01",
+          "is_current": true,
+          "location": "Cambridge, MA"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Multiple Degrees
+  
+  You can create multiple education entries in a single request:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "education",
+        "section_name": "education",
+        "sort_order": 0,
+        "data": {
+          "institution_name": "University of California, Berkeley",
+          "degree_type": "Master's",
+          "field_of_study": "Computer Science",
+          "start_date": "2020-09-01",
+          "end_date": "2022-05-15",
+          "is_current": false
+        }
+      },
+      {
+        "block_type": "education",
+        "section_name": "education",
+        "sort_order": 1,
+        "data": {
+          "institution_name": "UC Berkeley",
+          "degree_type": "Bachelor's",
+          "field_of_study": "Electrical Engineering",
+          "start_date": "2016-09-01",
+          "end_date": "2020-05-15",
+          "is_current": false,
+          "gpa": 3.7,
+          "gpa_scale": 4.0
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Minimal Education Entry
+  
+  Only `institution_name` is required:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "education",
+        "section_name": "education",
+        "data": {
+          "institution_name": "Community College",
+          "field_of_study": "General Studies"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Response (200 OK)
+  
+  ```json
+  {
+    "success": true,
+    "message": "Version updated successfully",
+    "data": {
+      "version": {
+        "id": 6,
+        "version_number": 6,
+        "created_at": "2024-01-16T15:00:00Z"
+      },
+      "created_blocks": [102],
+      "updated_blocks": [],
+      "deleted_blocks": []
+    }
+  }
+  ```
+  
+  ## Notes
+  
+  - Dates must be in `YYYY-MM-DD` format
+  - Only `institution_name` is required; all other fields are optional
+  - If `is_current` is `true`, you're indicating ongoing enrollment
+  - GPA values are numbers (e.g., 3.8, not "3.8")
+  - Arrays (`honors`, `relevant_coursework`) default to empty arrays if not provided
+  - Each request creates a new version, preserving history
+}

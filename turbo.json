@@ -20,7 +20,7 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["@monolenz/types#build"],
       "cache": false,
       "persistent": true
     }

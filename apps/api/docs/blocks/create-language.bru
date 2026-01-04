@@ -1,0 +1,241 @@
+meta {
+  name: Create Language
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{v1link}}/profiles/me/versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "creations": [
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 0,
+        "data": {
+          "language": "English",
+          "proficiency": "Native"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+}
+
+docs {
+  # Create Language
+  
+  Creates a new language block for your profile. This endpoint uses the batch update system, so you can create multiple languages in a single request.
+  
+  ## Request Body
+  
+  The request uses the batch update format with a `creations` array. Each creation object contains:
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `block_type` | string | ✅ | Must be `"language"` |
+  | `section_name` | string | ❌ | Section name (e.g., "languages", "spoken-languages") |
+  | `sort_order` | number | ❌ | Order within section (0 = first) |
+  | `data` | object | ✅ | Language data (see below) |
+  
+  ### Language Data Fields
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `language` | string | ✅ | Language name (e.g., "English", "Spanish", "French") (max 255 chars) |
+  | `proficiency` | string | ✅ | Proficiency level (e.g., "Native", "Fluent", "Conversational", "Basic") (max 255 chars) |
+  
+  ## Example: Native Language
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 0,
+        "data": {
+          "language": "English",
+          "proficiency": "Native"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Fluent Language
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 1,
+        "data": {
+          "language": "Spanish",
+          "proficiency": "Fluent"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Conversational Language
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 2,
+        "data": {
+          "language": "French",
+          "proficiency": "Conversational"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Multiple Languages
+  
+  You can create multiple languages in a single request:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 0,
+        "data": {
+          "language": "English",
+          "proficiency": "Native"
+        }
+      },
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 1,
+        "data": {
+          "language": "Mandarin Chinese",
+          "proficiency": "Fluent"
+        }
+      },
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 2,
+        "data": {
+          "language": "Japanese",
+          "proficiency": "Conversational"
+        }
+      },
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 3,
+        "data": {
+          "language": "German",
+          "proficiency": "Basic"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Professional Proficiency Levels
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 0,
+        "data": {
+          "language": "English",
+          "proficiency": "Native or Bilingual"
+        }
+      },
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 1,
+        "data": {
+          "language": "Portuguese",
+          "proficiency": "Professional Working"
+        }
+      },
+      {
+        "block_type": "language",
+        "section_name": "languages",
+        "sort_order": 2,
+        "data": {
+          "language": "Italian",
+          "proficiency": "Limited Working"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Response (200 OK)
+  
+  ```json
+  {
+    "success": true,
+    "message": "Version updated successfully",
+    "data": {
+      "version": {
+        "id": 10,
+        "version_number": 10,
+        "created_at": "2024-01-16T15:00:00Z"
+      },
+      "created_blocks": [106],
+      "updated_blocks": [],
+      "deleted_blocks": []
+    }
+  }
+  ```
+  
+  ## Notes
+  
+  - Both `language` and `proficiency` are required fields
+  - Common proficiency levels include:
+    - "Native" or "Native Speaker"
+    - "Fluent" or "Fluent Speaker"
+    - "Conversational" or "Conversational Speaker"
+    - "Intermediate"
+    - "Basic" or "Elementary"
+  - You can also use professional levels like:
+    - "Native or Bilingual"
+    - "Professional Working"
+    - "Limited Working"
+    - "Elementary"
+  - Language names should be in their native form or English (e.g., "Español" or "Spanish")
+  - Each request creates a new version, preserving history
+}
+

@@ -1,0 +1,251 @@
+meta {
+  name: Create Award
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{v1link}}/profiles/me/versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "creations": [
+      {
+        "block_type": "award",
+        "section_name": "awards",
+        "sort_order": 0,
+        "data": {
+          "title": "Employee of the Year",
+          "issuer": "Tech Corp",
+          "date_received": "2023-12-15",
+          "description": "Recognized for outstanding contributions to the team, including leading a critical project that increased company revenue by 25%.",
+          "url": "https://techcorp.com/awards/2023"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+}
+
+docs {
+  # Create Award
+  
+  Creates a new award block for your profile. This endpoint uses the batch update system, so you can create multiple awards in a single request.
+  
+  ## Request Body
+  
+  The request uses the batch update format with a `creations` array. Each creation object contains:
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `block_type` | string | ✅ | Must be `"award"` |
+  | `section_name` | string | ❌ | Section name (e.g., "awards", "honors", "recognition") |
+  | `sort_order` | number | ❌ | Order within section (0 = first) |
+  | `data` | object | ✅ | Award data (see below) |
+  
+  ### Award Data Fields
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `title` | string | ✅ | Award title/name (max 255 chars) |
+  | `issuer` | string | ❌ | Organization or person who issued the award (max 255 chars) |
+  | `date_received` | string | ❌ | Date award was received in `YYYY-MM-DD` format |
+  | `description` | string | ❌ | Description of the award and why it was received |
+  | `url` | string | ❌ | URL to more information about the award |
+  
+  ## Example: Professional Award
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "award",
+        "section_name": "awards",
+        "sort_order": 0,
+        "data": {
+          "title": "Innovation Award",
+          "issuer": "Tech Industry Association",
+          "date_received": "2023-11-20",
+          "description": "Recognized for developing an innovative solution that improved system efficiency by 50%.",
+          "url": "https://techindustry.org/awards/2023"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Academic Award
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "award",
+        "section_name": "awards",
+        "sort_order": 0,
+        "data": {
+          "title": "Dean's List",
+          "issuer": "University of California",
+          "date_received": "2022-05-15",
+          "description": "Achieved Dean's List recognition for maintaining a GPA of 3.8 or higher for three consecutive semesters."
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Competition Award
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "award",
+        "section_name": "awards",
+        "sort_order": 0,
+        "data": {
+          "title": "First Place - Hackathon 2023",
+          "issuer": "Tech Conference",
+          "date_received": "2023-09-10",
+          "description": "Won first place in the annual hackathon competition with a team of 4, building a real-time collaboration tool in 24 hours.",
+          "url": "https://techconference.com/hackathon/2023"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Scholarship Award
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "award",
+        "section_name": "awards",
+        "sort_order": 0,
+        "data": {
+          "title": "Merit Scholarship",
+          "issuer": "National Science Foundation",
+          "date_received": "2021-08-01",
+          "description": "Awarded full-tuition scholarship for academic excellence and research contributions in computer science.",
+          "url": "https://nsf.gov/scholarships/2021"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Multiple Awards
+  
+  You can create multiple awards in a single request:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "award",
+        "section_name": "awards",
+        "sort_order": 0,
+        "data": {
+          "title": "Best Paper Award",
+          "issuer": "International Conference on Software Engineering",
+          "date_received": "2023-06-15",
+          "description": "Recognized for outstanding research paper on distributed systems architecture.",
+          "url": "https://icse2023.org/awards"
+        }
+      },
+      {
+        "block_type": "award",
+        "section_name": "awards",
+        "sort_order": 1,
+        "data": {
+          "title": "Outstanding Contributor",
+          "issuer": "Open Source Foundation",
+          "date_received": "2022-12-10",
+          "description": "Recognized for significant contributions to open source projects, including 1000+ commits and mentoring new contributors."
+        }
+      },
+      {
+        "block_type": "award",
+        "section_name": "awards",
+        "sort_order": 2,
+        "data": {
+          "title": "Excellence in Leadership",
+          "issuer": "Company Leadership Team",
+          "date_received": "2023-03-20",
+          "description": "Awarded for exceptional leadership in managing cross-functional teams and delivering high-impact projects."
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Minimal Award Entry
+  
+  Only `title` is required:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "award",
+        "section_name": "awards",
+        "data": {
+          "title": "Certificate of Achievement"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Response (200 OK)
+  
+  ```json
+  {
+    "success": true,
+    "message": "Version updated successfully",
+    "data": {
+      "version": {
+        "id": 12,
+        "version_number": 12,
+        "created_at": "2024-01-16T15:00:00Z"
+      },
+      "created_blocks": [108],
+      "updated_blocks": [],
+      "deleted_blocks": []
+    }
+  }
+  ```
+  
+  ## Notes
+  
+  - Only `title` is required; all other fields are optional
+  - Dates must be in `YYYY-MM-DD` format
+  - Common award types include: professional recognition, academic honors, competition wins, scholarships, certifications of achievement, etc.
+  - `issuer` can be an organization, company, institution, or individual
+  - `url` is useful for linking to award announcements, press releases, or verification pages
+  - Awards can be sorted chronologically using `sort_order` (most recent first is common)
+  - Each request creates a new version, preserving history
+}
+

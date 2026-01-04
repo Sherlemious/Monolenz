@@ -1,0 +1,31 @@
+meta {
+  name: Delete My Profile
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{v1link}}/profiles/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+docs {
+  # Delete My Profile
+  
+  Soft-deletes the profile of the currently authenticated user.
+  The profile data is retained but marked as deleted.
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "success": true,
+    "message": "Profile deleted successfully",
+    "data": null
+  }
+  ```
+}

@@ -129,7 +129,7 @@ export const logRequestResponse = (req: Request, res: Response, next: NextFuncti
 /**
  * Global error handling middleware
  */
-export const handleErrors = (err: any, req: Request, res: Response, next: NextFunction) => {
+export const handleErrors = (err: unknown, req: Request, res: Response, _next: NextFunction) => {
   console.error('Request Error:', {
     requestId: req.requestId,
     error: err.message,

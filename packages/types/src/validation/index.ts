@@ -8,6 +8,7 @@ export * from './profile-schemas';
 export * from './profile-link-schemas';
 export * from './auth-schemas';
 export * from './profile-block-schemas';
+export * from './block-schemas';
 
 // Type helpers for extracting types from schemas
 export type ProfileCreateData = z.infer<typeof profileSchemas.create>;

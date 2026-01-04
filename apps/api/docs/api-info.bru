@@ -1,0 +1,44 @@
+meta {
+  name: API Info
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{link}}/
+  body: none
+  auth: none
+}
+
+docs {
+  # API Root Information
+  
+  Returns general information about the Monolenz API, including available endpoints and version information.
+  
+  ## Response (200 OK)
+  
+  ```json
+  {
+    "success": true,
+    "message": "API information retrieved successfully",
+    "data": {
+      "name": "Monolenz API",
+      "version": "1.0.0",
+      "description": "Resume and portfolio management platform",
+      "endpoints": {
+        "v1": "/api/v1",
+        "health": "/health",
+        "docs": "/api/docs"
+      },
+      "timestamp": "2024-01-16T15:00:00Z"
+    }
+  }
+  ```
+  
+  ## Notes
+  
+  - This endpoint does not require authentication
+  - Use this endpoint to discover available API versions and endpoints
+  - The `health` endpoint can be used for monitoring and health checks
+}
+

@@ -1,0 +1,52 @@
+meta {
+  name: Check Username Availability
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{v1link}}/profiles/username/:username/availability
+  body: none
+  auth: none
+}
+
+params:path {
+  username: newusername
+}
+
+docs {
+  # Check Username Availability
+  
+  Checks if a username is available for registration.
+  Authentication is optional - if authenticated, excludes the current user's username.
+  
+  ## Path Parameters
+  
+  | Parameter | Type | Description |
+  |-----------|------|-------------|
+  | `username` | string | Username to check (3-50 chars, alphanumeric/-/_) |
+  
+  ## Response (200 OK) - Available
+  ```json
+  {
+    "success": true,
+    "message": "Username is available",
+    "data": {
+      "username": "newusername",
+      "available": true
+    }
+  }
+  ```
+  
+  ## Response (200 OK) - Not Available
+  ```json
+  {
+    "success": true,
+    "message": "Username is not available",
+    "data": {
+      "username": "existinguser",
+      "available": false
+    }
+  }
+  ```
+}

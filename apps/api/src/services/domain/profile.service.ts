@@ -161,7 +161,7 @@ export class ProfileService extends BaseService<ProfileEntity> {
     data: Partial<ProfileEntity>,
     operation: 'create' | 'update',
     context?: ServiceContext,
-    existing?: ProfileEntity
+    _existing?: ProfileEntity
   ): Promise<Partial<ProfileEntity>> {
     const processedData: Partial<ProfileEntity> = { ...data };
 
@@ -186,9 +186,9 @@ export class ProfileService extends BaseService<ProfileEntity> {
   }
 
   protected async applyServiceFilters(
-    filters?: Record<string, any>,
-    context?: ServiceContext
-  ): Promise<Record<string, any>> {
+    filters?: Record<string, unknown>,
+    _context?: ServiceContext
+  ): Promise<Record<string, unknown>> {
     const serviceFilters = { ...filters };
 
     // Add global filters here if needed

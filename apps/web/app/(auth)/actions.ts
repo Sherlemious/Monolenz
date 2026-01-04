@@ -20,7 +20,9 @@ export async function login(_prevState: AuthActionState, formData: FormData): Pr
       keySet: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
       nodeEnv: process.env.NODE_ENV,
     });
-  } catch {}
+  } catch {
+    // Ignore logging errors
+  }
 
   const supabase = await createClient();
   const email = formData.get('email') as string;
@@ -30,11 +32,13 @@ export async function login(_prevState: AuthActionState, formData: FormData): Pr
   if (error) {
     try {
       console.error('[auth/login] signInWithPassword error', {
-        code: (error as any)?.code,
+        code: (error as { code?: string })?.code,
         message: error.message,
-        status: (error as any)?.status,
+        status: (error as { status?: number })?.status,
       });
-    } catch {}
+    } catch {
+      // Ignore logging errors
+    }
     return { error: error.message };
   }
 

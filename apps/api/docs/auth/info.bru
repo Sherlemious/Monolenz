@@ -1,0 +1,33 @@
+meta {
+  name: Auth Info
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{v1link}}/auth
+  body: none
+  auth: none
+}
+
+docs {
+  # Authentication Info
+  
+  Returns information about authentication endpoints.
+  
+  Note: Monolenz uses Supabase for authentication. All login/register/logout
+  operations should be performed directly through the Supabase client.
+  
+  ## Response Example
+  ```json
+  {
+    "message": "Authentication endpoints",
+    "note": "Using Supabase for authentication",
+    "endpoints": {
+      "login": "Use Supabase client",
+      "register": "Use Supabase client",
+      "logout": "Use Supabase client"
+    }
+  }
+  ```
+}
