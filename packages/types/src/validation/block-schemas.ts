@@ -10,14 +10,22 @@ import { BlockType } from '../entities/blocks';
 // ============================================================================
 
 const isoDateSchema = z
-  .union([
-    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use YYYY-MM-DD'),
-    z.date().transform((d) => d.toISOString().split('T')[0]),
-  ])
+  .union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use YYYY-MM-DD'), z.date()])
   .refine((d) => {
-    if (typeof d !== 'string') return false;
-    return !isNaN(new Date(d).getTime());
-  }, 'Invalid date');
+    if (typeof d === 'string') {
+      const date = new Date(d);
+      return !isNaN(date.getTime());
+    }
+    return true; // Date objects are always valid
+  }, 'Invalid date')
+  .transform((d) => {
+    // Transform string dates to Date objects for Prisma
+    if (typeof d === 'string') {
+      return new Date(d);
+    }
+    // Date objects pass through as-is
+    return d;
+  });
 
 const urlSchema = z.string().url('Invalid URL').max(500, 'URL must be 500 characters or less').optional().nullable();
 
