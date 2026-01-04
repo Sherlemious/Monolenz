@@ -1,21 +1,21 @@
 meta {
-  name: Get Profile by Identifier
+  name: Get Profile by Username
   type: http
   seq: 5
 }
 
 get {
-  url: {{v1link}}/profiles/:identifier
+  url: {{v1link}}/profiles/:username
   body: none
   auth: bearer
 }
 
-params:path {
-  identifier: johndoe
-}
-
 params:query {
   ~include_links: true
+}
+
+params:path {
+  username: johndoe
 }
 
 auth:bearer {
