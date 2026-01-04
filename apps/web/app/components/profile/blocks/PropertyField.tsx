@@ -14,8 +14,8 @@
 
 export function PropertyField() {
   return (
-    <div className="property-field">
-      <div className="property-field__notice">
+    <div className='property-field'>
+      <div className='property-field__notice'>
         <p>This component needs to be rewritten for the new typed block system</p>
       </div>
 
