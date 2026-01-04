@@ -24,20 +24,14 @@ interface PropertyFieldProps {
 // Main Component
 // ============================================================================
 
-export function PropertyField({
-  value,
-  onChange,
-  onBlur,
-  error,
-  disabled = false,
-}: PropertyFieldProps) {
+export function PropertyField() {
   return (
     <div className="property-field">
       <div className="property-field__notice">
         <p>This component needs to be rewritten for the new typed block system</p>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .property-field {
           margin-bottom: 1.25rem;
           padding: 1rem;

@@ -12,7 +12,6 @@ import {
   useSelectedBlock,
   useHasUnsavedChanges,
 } from '@/lib/stores/profile-editor-store';
-import { PropertyField } from './PropertyField';
 import { BlockType, DraftBlock } from '@monolenz/types/entities';
 
 // ============================================================================
@@ -58,7 +57,6 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
     loadVersion,
     addBlock,
     deleteBlock,
-    restoreBlock,
     selectBlock,
     setSaving,
     setSaveError,
@@ -220,7 +218,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
         <BlockTypeSelector types={catalog.types} onSelect={handleAddBlock} onClose={() => setShowTypeSelector(false)} />
       )}
 
-      <style jsx>{`
+      <style>{`
         .block-editor {
           display: flex;
           flex-direction: column;
@@ -361,7 +359,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
 function formatBlockType(blockType: string): string {
   return blockType
     .split(/[-_]/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
 
@@ -476,19 +474,10 @@ function getBlockSummary(block: DraftBlock): string {
 
 interface BlockFormProps {
   block: DraftBlock;
-  properties: any[];
+  properties: unknown[];
 }
 
-function BlockForm({ block, properties }: BlockFormProps) {
-  const { updateBlockField, setBlockErrors, clearBlockErrors } = useProfileEditorStore();
-
-  const handleFieldChange = useCallback(
-    (propertyName: string, value: unknown) => {
-      updateBlockField(block.clientId, propertyName, value);
-    },
-    [block.clientId, updateBlockField]
-  );
-
+function BlockForm({ block }: BlockFormProps) {
   const displayName = formatBlockType(block.blockType);
 
   return (
@@ -505,7 +494,7 @@ function BlockForm({ block, properties }: BlockFormProps) {
         </p>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .block-form {
           max-width: 600px;
         }
@@ -606,7 +595,7 @@ function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps)
           ))}
         </div>
 
-        <style jsx>{`
+        <style>{`
           .modal-overlay {
             position: fixed;
             inset: 0;

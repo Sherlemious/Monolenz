@@ -13,7 +13,6 @@ import { BlockType, VersionBlockDetail } from '@monolenz/types/entities';
 export default function ProfilePage() {
   const api = useProfileBlocksApi();
   const [blocks, setBlocks] = useState<VersionBlockDetail[]>([]);
-  const [blockTypes, setBlockTypes] = useState<BlockType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,15 +20,11 @@ export default function ProfilePage() {
     async function loadProfile() {
       try {
         setIsLoading(true);
-        
-        // Load block types for display names
-        const types = await api.listBlockTypes();
-        setBlockTypes(types);
-        
+
         // For now, we'll need to get the user's latest version
         // This would typically come from a profile endpoint
         // TODO: Add endpoint to get user's latest version ID
-        
+
         // Placeholder: show empty state for now
         setBlocks([]);
       } catch (err) {
@@ -38,7 +33,7 @@ export default function ProfilePage() {
         setIsLoading(false);
       }
     }
-    
+
     loadProfile();
   }, [api]);
 
@@ -49,7 +44,7 @@ export default function ProfilePage() {
           <div className="spinner" />
           <p>Loading your profile...</p>
         </div>
-        <style jsx>{styles}</style>
+        <style>{styles}</style>
       </div>
     );
   }
@@ -61,7 +56,7 @@ export default function ProfilePage() {
           <h2>Something went wrong</h2>
           <p>{error}</p>
         </div>
-        <style jsx>{styles}</style>
+        <style>{styles}</style>
       </div>
     );
   }
@@ -72,11 +67,9 @@ export default function ProfilePage() {
       <header className="profile-page__header">
         <div className="profile-page__title">
           <h1>My Profile</h1>
-          <p className="profile-page__subtitle">
-            Your professional identity across all platforms
-          </p>
+          <p className="profile-page__subtitle">Your professional identity across all platforms</p>
         </div>
-        
+
         <Link href="/dashboard/profile/edit" className="btn btn--primary">
           <EditIcon className="w-4 h-4" />
           Edit Profile
@@ -85,14 +78,10 @@ export default function ProfilePage() {
 
       {/* Content */}
       <main className="profile-page__content">
-        {blocks.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <BlocksGrid blocks={blocks} />
-        )}
+        {blocks.length === 0 ? <EmptyState /> : <BlocksGrid blocks={blocks} />}
       </main>
 
-      <style jsx>{styles}</style>
+      <style>{styles}</style>
     </div>
   );
 }
@@ -108,12 +97,14 @@ function EmptyState() {
         <ProfileIcon className="w-16 h-16" />
       </div>
       <h2>Your profile is empty</h2>
-      <p>Start building your professional identity by adding blocks for your experience, skills, education, and more.</p>
+      <p>
+        Start building your professional identity by adding blocks for your experience, skills, education, and more.
+      </p>
       <Link href="/dashboard/profile/edit" className="btn btn--primary btn--lg">
         Get Started
       </Link>
-      
-      <style jsx>{`
+
+      <style>{`
         .empty-state {
           display: flex;
           flex-direction: column;
@@ -185,10 +176,8 @@ function BlocksGrid({ blocks }: BlocksGridProps) {
     <div className="blocks-grid">
       {Array.from(byCategory.entries()).map(([category, categoryBlocks]) => (
         <section key={category} className="block-category">
-          <h2 className="block-category__title">
-            {formatCategoryName(category)}
-          </h2>
-          
+          <h2 className="block-category__title">{formatCategoryName(category)}</h2>
+
           <div className="block-category__items">
             {categoryBlocks.map((block) => (
               <BlockPreview key={block.id} block={block} />
@@ -196,8 +185,8 @@ function BlocksGrid({ blocks }: BlocksGridProps) {
           </div>
         </section>
       ))}
-      
-      <style jsx>{`
+
+      <style>{`
         .blocks-grid {
           display: flex;
           flex-direction: column;
@@ -244,18 +233,14 @@ function BlockPreview({ block }: BlockPreviewProps) {
           </span>
         )}
       </div>
-      
+
       <h3 className="block-preview__title">{title}</h3>
-      
-      {subtitle && (
-        <p className="block-preview__subtitle">{subtitle}</p>
-      )}
-      
-      {dates && (
-        <p className="block-preview__dates">{dates}</p>
-      )}
-      
-      <style jsx>{`
+
+      {subtitle && <p className="block-preview__subtitle">{subtitle}</p>}
+
+      {dates && <p className="block-preview__dates">{dates}</p>}
+
+      <style>{`
         .block-preview {
           background: white;
           border: 1px solid #e5e7eb;
@@ -319,36 +304,35 @@ function BlockPreview({ block }: BlockPreviewProps) {
 function formatBlockType(blockType: string): string {
   return blockType
     .split(/[-_]/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
 
 function formatCategoryName(category: string): string {
   return category
     .split(/[-_]/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
 
 function getBlockTitle(block: VersionBlockDetail): string {
-  const data = block.data as any;
+  const data = block.data as unknown as Record<string, unknown>;
   return String(
     data.title ||
-    data.name ||
-    data.company_name ||
-    data.institution_name ||
-    data.organization_name ||
-    data.language ||
-    data.position_title ||
-    data.degree_name ||
-    formatBlockType(block.block_type)
+      data.name ||
+      data.company_name ||
+      data.institution_name ||
+      data.organization_name ||
+      data.language ||
+      data.position_title ||
+      data.degree_name ||
+      formatBlockType(block.block_type)
   );
 }
 
 function getBlockSubtitle(block: VersionBlockDetail): string | null {
-  const data = block.data as any;
-  return (
-    data.position_title ||
+  const data = block.data as unknown as Record<string, unknown>;
+  return (data.position_title ||
     data.job_title ||
     data.degree_name ||
     data.degree ||
@@ -356,12 +340,11 @@ function getBlockSubtitle(block: VersionBlockDetail): string | null {
     data.role ||
     data.proficiency ||
     data.proficiency_level ||
-    null
-  ) as string | null;
+    null) as string | null;
 }
 
 function getBlockDates(block: VersionBlockDetail): string | null {
-  const data = block.data as any;
+  const data = block.data as unknown as Record<string, unknown>;
   const start = data.start_date || data.issue_date || data.date_received;
   const end = data.end_date || data.expiration_date;
   const current = data.is_current || data.is_ongoing;
@@ -390,7 +373,11 @@ function formatDate(dateStr: string): string {
 function EditIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+      />
     </svg>
   );
 }
@@ -398,7 +385,11 @@ function EditIcon({ className }: { className?: string }) {
 function ProfileIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+      />
     </svg>
   );
 }
@@ -406,7 +397,11 @@ function ProfileIcon({ className }: { className?: string }) {
 function EyeOffIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+      />
     </svg>
   );
 }

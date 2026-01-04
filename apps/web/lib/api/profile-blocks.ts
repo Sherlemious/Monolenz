@@ -3,12 +3,7 @@
  * Handles all block-related API calls
  */
 
-import type {
-  BlockType,
-  VersionBlockDetail,
-  BatchUpdatePayload,
-  BatchUpdateResponse,
-} from '@monolenz/types/entities';
+import type { BlockType, VersionBlockDetail, BatchUpdatePayload, BatchUpdateResponse } from '@monolenz/types/entities';
 import type { ApiResponse } from '@monolenz/types/api';
 
 // ============================================================================
@@ -26,7 +21,6 @@ export interface ApiClient {
 // API Response Wrappers
 // ============================================================================
 
-type BlockTypesResponse = ApiResponse<BlockType[]>;
 type VersionBlocksResponse = ApiResponse<VersionBlockDetail[]>;
 type BatchUpdateApiResponse = ApiResponse<BatchUpdateResponse>;
 
@@ -95,7 +89,6 @@ export function createProfileBlocksApi(client: ApiClient) {
       }
       return response.data;
     },
-
   };
 }
 

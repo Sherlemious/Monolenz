@@ -349,7 +349,7 @@ export const useProfileEditorStore = create<EditorStore>()(
           case 'created':
             creations.push({
               block_type: block.blockType,
-              data: block.data as any,
+              data: block.data as unknown as BatchUpdateCreation['data'],
               section_name: block.sectionName,
               sort_order: block.sortOrder,
             });
@@ -360,7 +360,7 @@ export const useProfileEditorStore = create<EditorStore>()(
               updates.push({
                 parent_block_id: block.serverId,
                 block_type: block.blockType,
-                data: block.data as any,
+                data: block.data as unknown as BatchUpdateUpdate['data'],
                 section_name: block.sectionName,
                 sort_order: block.sortOrder,
               });
@@ -401,7 +401,7 @@ function convertToDraft(block: VersionBlockDetail): DraftBlock {
     serverId: block.id,
     blockType: block.block_type,
     data: block.data as unknown as Record<string, unknown>,
-    originalData: { ...(block.data as any) },
+    originalData: { ...(block.data as unknown as Record<string, unknown>) },
     sectionName: block.section_name,
     sortOrder: block.sort_order ?? 0,
     status: 'unchanged',
@@ -445,9 +445,7 @@ export const useSelectedBlock = () =>
 export const useVisibleBlocks = () =>
   useProfileEditorStore(
     useShallow((state) =>
-      state.draftBlocks
-        .filter((b) => b.status !== 'deleted')
-        .sort((a, b) => a.sortOrder - b.sortOrder)
+      state.draftBlocks.filter((b) => b.status !== 'deleted').sort((a, b) => a.sortOrder - b.sortOrder)
     )
   );
 
