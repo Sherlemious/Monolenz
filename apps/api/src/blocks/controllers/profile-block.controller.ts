@@ -80,9 +80,12 @@ class ProfileBlockController {
   getLatestVersion = asyncHandler(async (req: Request, res: Response) => {
     const { identifier } = req.validatedParams;
 
-    // TODO: Implement resolveProfileIdentifier to convert username/UUID to profile_id
-    // For now, assuming identifier is profile_id
-    const profileId = identifier;
+    // Resolve identifier (UUID or username) to profile_id
+    const profileId = await this.resolveProfileIdentifier(identifier);
+
+    if (!profileId) {
+      return res.error('Profile not found', 404);
+    }
 
     const version = await this.blockService.getLatestVersion(profileId);
 
@@ -94,6 +97,24 @@ class ProfileBlockController {
 
     return res.success({ version, blocks }, 'Latest version retrieved');
   });
+
+  /**
+   * Resolve profile identifier (UUID or username) to profile_id
+   */
+  private async resolveProfileIdentifier(identifier: string): Promise<string | null> {
+    // Check if identifier looks like a UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    if (uuidRegex.test(identifier)) {
+      // It's a UUID, verify it exists
+      const profile = await prisma.profiles.findUnique({ where: { id: identifier }, select: { id: true } });
+      return profile?.id || null;
+    } else {
+      // It's a username, look it up
+      const profile = await prisma.profiles.findUnique({ where: { username: identifier }, select: { id: true } });
+      return profile?.id || null;
+    }
+  }
 }
 
 export const profileBlockController = new ProfileBlockController();

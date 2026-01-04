@@ -19,7 +19,16 @@ const router = Router();
  * GET /:identifier/versions/latest
  * Get the latest version and its blocks for a profile (public)
  */
-router.get('/:identifier/versions/latest', optionalAuth, profileBlockController.getLatestVersion);
+router.get(
+  '/:identifier/versions/latest',
+  optionalAuth,
+  validate({
+    params: z.object({
+      identifier: z.string(),
+    }),
+  }),
+  profileBlockController.getLatestVersion
+);
 
 /**
  * GET /:identifier/versions/:versionId/blocks

@@ -6,7 +6,6 @@ export interface VersionEntity {
   profile_id?: string | null;
   name?: string | null;
   description?: string | null;
-  metadata?: any | null;
   created_at?: Date | null;
 }
 
@@ -15,7 +14,6 @@ export interface CreateVersionInput {
   parent_version_id?: number | null;
   name?: string | null;
   description?: string | null;
-  metadata?: any | null;
 }
 
 export class VersionsRepository {
@@ -25,11 +23,16 @@ export class VersionsRepository {
     const p = (tx || this.prisma) as any;
     return p.versions.create({
       data: {
-        profile_id: input.profile_id,
-        parent_version_id: input.parent_version_id ?? null,
+        profiles: {
+          connect: { id: input.profile_id },
+        },
+        ...(input.parent_version_id && {
+          versions: {
+            connect: { id: input.parent_version_id },
+          },
+        }),
         name: input.name ?? null,
         description: input.description ?? null,
-        metadata: input.metadata ?? {},
       },
     });
   }
