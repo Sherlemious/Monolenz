@@ -372,32 +372,36 @@ model profiles {
 }
 
 model version_blocks {
-  version_id                                      Int
-  block_id                                        Int
-  previous_block_id                               Int?
-  is_visible                                      Boolean?  @default(true)
-  section_name                                    String?   @db.VarChar(255)
-  sort_order                                      Int?      @default(0)
-  created_at                                      DateTime? @default(now()) @db.Timestamptz(6)
-  blocks_version_blocks_block_idToblocks          blocks    @relation("version_blocks_block_idToblocks", fields: [block_id], references: [id], onDelete: Cascade)
-  blocks_version_blocks_previous_block_idToblocks blocks?   @relation("version_blocks_previous_block_idToblocks", fields: [previous_block_id], references: [id])
-  versions_version_blocks_version_idToversions    versions  @relation("version_blocks_version_idToversions", fields: [version_id], references: [id], onDelete: Cascade)
+  version_id                                            Int
+  block_id                                              Int
+  previous_block_id                                     Int?
+  is_visible                                            Boolean?  @default(true)
+  section_name                                          String?   @db.VarChar(255)
+  sort_order                                            Int?      @default(0)
+  created_at                                            DateTime? @default(now()) @db.Timestamptz(6)
+  previous_version_id                                   Int?
+  blocks_version_blocks_block_idToblocks                blocks    @relation("version_blocks_block_idToblocks", fields: [block_id], references: [id], onDelete: Cascade)
+  blocks_version_blocks_previous_block_idToblocks       blocks?   @relation("version_blocks_previous_block_idToblocks", fields: [previous_block_id], references: [id])
+  versions_version_blocks_previous_version_idToversions versions? @relation("version_blocks_previous_version_idToversions", fields: [previous_version_id], references: [id])
+  versions_version_blocks_version_idToversions          versions  @relation("version_blocks_version_idToversions", fields: [version_id], references: [id], onDelete: Cascade)
 
   @@id([version_id, block_id])
   @@schema("public")
 }
 
 model versions {
-  id                                                 Int              @id @default(autoincrement())
-  profile_id                                         String?          @db.Uuid
-  parent_version_id                                  Int?
-  name                                               String?          @db.VarChar(255)
-  description                                        String?
-  created_at                                         DateTime?        @default(now()) @db.Timestamptz(6)
-  version_blocks_version_blocks_version_idToversions version_blocks[] @relation("version_blocks_version_idToversions")
-  versions                                           versions?        @relation("versionsToversions", fields: [parent_version_id], references: [id])
-  other_versions                                     versions[]       @relation("versionsToversions")
-  profiles                                           profiles?        @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  id                                                          Int              @id @default(autoincrement())
+  profile_id                                                  String?          @db.Uuid
+  parent_version_id                                           Int?
+  name                                                        String?          @db.VarChar(255)
+  description                                                 String?
+  created_at                                                  DateTime?        @default(now()) @db.Timestamptz(6)
+  metadata                                                    Json?            @default("{}")
+  version_blocks_version_blocks_previous_version_idToversions version_blocks[] @relation("version_blocks_previous_version_idToversions")
+  version_blocks_version_blocks_version_idToversions          version_blocks[] @relation("version_blocks_version_idToversions")
+  versions                                                    versions?        @relation("versionsToversions", fields: [parent_version_id], references: [id])
+  other_versions                                              versions[]       @relation("versionsToversions")
+  profiles                                                    profiles?        @relation(fields: [profile_id], references: [id], onDelete: Cascade)
 
   @@schema("public")
 }
