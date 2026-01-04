@@ -63,10 +63,15 @@ The collection includes a **Login** request that auto-saves the JWT token.
 
 ## Endpoints
 
+### API Info
+
+- `GET /api/` - Root API information (see `api-info.bru`)
+- `GET /api/v1/` - V1 API information (see `v1-info.bru`)
+
 ### Auth
 
 - `POST /auth/v1/token` - Login (Supabase)
-- `GET /auth` - Info
+- `GET /api/v1/auth` - Auth info (see `auth/info.bru`)
 
 ### Profiles
 
@@ -82,24 +87,24 @@ The collection includes a **Login** request that auto-saves the JWT token.
 
 ### Blocks
 
-- `GET /profiles/:id/versions/latest` - Get latest version
-- `GET /profiles/:id/versions/:versionId/blocks` - List blocks
-- `POST /profiles/me/versions` - Batch update blocks
-- See `blocks/create-work-experience.bru` - Detailed guide for creating work experience
-- See `blocks/create-education.bru` - Detailed guide for creating education entries
+- `GET /profiles/:id/versions/latest` - Get latest version (see `blocks/get-latest-version.bru`)
+- `GET /profiles/:id/versions/:versionId/blocks` - List blocks (see `blocks/list-blocks-for-version.bru`)
+- `POST /profiles/me/versions` - Batch update blocks (see `blocks/batch-update-blocks.bru`)
 
 ## Block Types
 
-| Type              | Description         |
-| ----------------- | ------------------- |
-| `work_experience` | Employment history  |
-| `education`       | Education & degrees |
-| `skill`           | Skills              |
-| `project`         | Projects            |
-| `certification`   | Certifications      |
-| `language`        | Languages           |
-| `volunteer`       | Volunteer work      |
-| `award`           | Awards              |
+All block types are created using the batch update endpoint (`POST /profiles/me/versions`). Each block type has a detailed creation guide:
+
+| Type              | Description         | Creation Guide                      |
+| ----------------- | ------------------- | ----------------------------------- |
+| `work_experience` | Employment history  | `blocks/create-work-experience.bru` |
+| `education`       | Education & degrees | `blocks/create-education.bru`       |
+| `skill`           | Skills              | `blocks/create-skill.bru`           |
+| `project`         | Projects            | `blocks/create-project.bru`         |
+| `certification`   | Certifications      | `blocks/create-certification.bru`   |
+| `language`        | Languages           | `blocks/create-language.bru`        |
+| `volunteer`       | Volunteer work      | `blocks/create-volunteer.bru`       |
+| `award`           | Awards              | `blocks/create-award.bru`           |
 
 ## Running the API
 
