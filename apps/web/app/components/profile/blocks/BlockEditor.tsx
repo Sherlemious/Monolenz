@@ -151,25 +151,25 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
   }
 
   return (
-    <div className="block-editor">
+    <div className='block-editor'>
       {/* Header with actions */}
-      <div className="block-editor__header">
-        <div className="block-editor__title">
+      <div className='block-editor__header'>
+        <div className='block-editor__title'>
           <h2>Profile Blocks</h2>
-          {versionId && <span className="block-editor__version">Version #{versionId}</span>}
+          {versionId && <span className='block-editor__version'>Version #{versionId}</span>}
         </div>
 
-        <div className="block-editor__actions">
-          <button type="button" onClick={() => setShowTypeSelector(true)} className="btn btn--secondary">
-            <PlusIcon className="w-4 h-4" />
+        <div className='block-editor__actions'>
+          <button type='button' onClick={() => setShowTypeSelector(true)} className='btn btn--secondary'>
+            <PlusIcon className='w-4 h-4' />
             Add Block
           </button>
 
           <button
-            type="button"
+            type='button'
             onClick={handleSave}
             disabled={!hasUnsavedChanges || isSaving}
-            className="btn btn--primary"
+            className='btn btn--primary'
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </button>
@@ -177,19 +177,19 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
       </div>
 
       {/* Save error */}
-      {lastSaveError && <div className="block-editor__error">{lastSaveError}</div>}
+      {lastSaveError && <div className='block-editor__error'>{lastSaveError}</div>}
 
       {/* Unsaved changes indicator */}
-      {hasUnsavedChanges && <div className="block-editor__unsaved">You have unsaved changes</div>}
+      {hasUnsavedChanges && <div className='block-editor__unsaved'>You have unsaved changes</div>}
 
       {/* Block list and editor layout */}
-      <div className="block-editor__layout">
+      <div className='block-editor__layout'>
         {/* Left: Block list */}
-        <div className="block-editor__list">
+        <div className='block-editor__list'>
           {visibleBlocks.length === 0 ? (
             <EmptyState onAddBlock={() => setShowTypeSelector(true)} />
           ) : (
-            <div className="block-list">
+            <div className='block-list'>
               {visibleBlocks.map((block) => (
                 <BlockCard
                   key={block.clientId}
@@ -204,11 +204,11 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
         </div>
 
         {/* Right: Selected block editor */}
-        <div className="block-editor__detail">
+        <div className='block-editor__detail'>
           {selectedBlock ? (
             <BlockForm block={selectedBlock} properties={[]} />
           ) : (
-            <div className="block-editor__placeholder">Select a block to edit</div>
+            <div className='block-editor__placeholder'>Select a block to edit</div>
           )}
         </div>
       </div>
@@ -369,26 +369,26 @@ function formatBlockType(blockType: string): string {
 
 function LoadingState() {
   return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+    <div className='flex items-center justify-center h-64'>
+      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600' />
     </div>
   );
 }
 
 function ErrorState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center h-64 text-center">
-      <p className="text-red-600 mb-2">Failed to load profile</p>
-      <p className="text-gray-500 text-sm">{message}</p>
+    <div className='flex flex-col items-center justify-center h-64 text-center'>
+      <p className='text-red-600 mb-2'>Failed to load profile</p>
+      <p className='text-gray-500 text-sm'>{message}</p>
     </div>
   );
 }
 
 function EmptyState({ onAddBlock }: { onAddBlock: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center h-48 text-center">
-      <p className="text-gray-500 mb-4">No blocks yet</p>
-      <button type="button" onClick={onAddBlock} className="text-blue-600 hover:text-blue-700 font-medium">
+    <div className='flex flex-col items-center justify-center h-48 text-center'>
+      <p className='text-gray-500 mb-4'>No blocks yet</p>
+      <button type='button' onClick={onAddBlock} className='text-blue-600 hover:text-blue-700 font-medium'>
         Add your first block
       </button>
     </div>
@@ -423,22 +423,22 @@ function BlockCard({ block, isSelected, onClick, onDelete }: BlockCardProps) {
       `}
       onClick={onClick}
     >
-      <div className="flex justify-between items-start">
+      <div className='flex justify-between items-start'>
         <div>
-          <p className="font-medium text-sm">{formatBlockType(block.blockType)}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{getBlockSummary(block)}</p>
+          <p className='font-medium text-sm'>{formatBlockType(block.blockType)}</p>
+          <p className='text-xs text-gray-500 mt-0.5'>{getBlockSummary(block)}</p>
         </div>
 
         <button
-          type="button"
+          type='button'
           onClick={(e) => {
             e.stopPropagation();
             onDelete();
           }}
-          className="p-1 text-gray-400 hover:text-red-600 rounded"
-          title="Delete block"
+          className='p-1 text-gray-400 hover:text-red-600 rounded'
+          title='Delete block'
         >
-          <TrashIcon className="w-4 h-4" />
+          <TrashIcon className='w-4 h-4' />
         </button>
       </div>
 
@@ -481,13 +481,13 @@ function BlockForm({ block }: BlockFormProps) {
   const displayName = formatBlockType(block.blockType);
 
   return (
-    <div className="block-form">
-      <div className="block-form__header">
+    <div className='block-form'>
+      <div className='block-form__header'>
         <h3>{displayName}</h3>
       </div>
 
       {/* TODO: Implement typed field rendering for new block system */}
-      <div className="block-form__placeholder">
+      <div className='block-form__placeholder'>
         <p>Block editing UI needs to be updated for the new typed block system</p>
         <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.5rem' }}>
           Data: {JSON.stringify(block.data, null, 2)}
@@ -570,24 +570,24 @@ function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps)
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal__header">
+    <div className='modal-overlay' onClick={onClose}>
+      <div className='modal' onClick={(e) => e.stopPropagation()}>
+        <div className='modal__header'>
           <h3>Add Block</h3>
-          <button type="button" onClick={onClose} className="modal__close">
-            <CloseIcon className="w-5 h-5" />
+          <button type='button' onClick={onClose} className='modal__close'>
+            <CloseIcon className='w-5 h-5' />
           </button>
         </div>
 
-        <div className="modal__content">
+        <div className='modal__content'>
           {Array.from(byCategory.entries()).map(([category, categoryTypes]) => (
-            <div key={category} className="type-category">
-              <h4 className="type-category__title">{category}</h4>
+            <div key={category} className='type-category'>
+              <h4 className='type-category__title'>{category}</h4>
 
-              <div className="type-grid">
+              <div className='type-grid'>
                 {categoryTypes.map((type) => (
-                  <button key={type} type="button" onClick={() => onSelect(type)} className="type-card">
-                    <span className="type-card__name">{formatBlockType(type)}</span>
+                  <button key={type} type='button' onClick={() => onSelect(type)} className='type-card'>
+                    <span className='type-card__name'>{formatBlockType(type)}</span>
                   </button>
                 ))}
               </div>
@@ -714,19 +714,19 @@ function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps)
 
 function PlusIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+    <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+      <path strokeLinecap='round' strokeLinejoin='round' d='M12 4v16m8-8H4' />
     </svg>
   );
 }
 
 function TrashIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
       <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
       />
     </svg>
   );
@@ -734,8 +734,8 @@ function TrashIcon({ className }: { className?: string }) {
 
 function CloseIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+      <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
     </svg>
   );
 }

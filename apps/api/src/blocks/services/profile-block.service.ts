@@ -57,7 +57,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
     blocksRepo: BlocksRepository,
     versionsRepo: VersionsRepository,
     versionBlocksRepo: VersionBlocksRepository,
-    prisma: PrismaClient,
+    prisma: PrismaClient
   ) {
     super('ProfileBlockService', blocksRepo);
     this.versionsRepo = versionsRepo;
@@ -82,7 +82,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
   protected async applyBusinessRules(
     data: any,
     operation: 'create' | 'update',
-    context?: ServiceContext,
+    context?: ServiceContext
   ): Promise<any> {
     // Blocks are immutable - no business rules to apply
     return data;
@@ -90,7 +90,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
 
   protected async applyServiceFilters(
     filters?: Record<string, any>,
-    context?: ServiceContext,
+    context?: ServiceContext
   ): Promise<Record<string, any>> {
     // Filter by profile_id if context provided
     if (context?.userId) {
@@ -127,11 +127,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
       // 3. Validate update parent blocks exist in current version
       for (const update of input.updates) {
         if (!currentBlockIds.includes(update.parentBlockId)) {
-          throw new ServiceError(
-            `Parent block ${update.parentBlockId} not found in current version`,
-            null,
-            400,
-          );
+          throw new ServiceError(`Parent block ${update.parentBlockId} not found in current version`, null, 400);
         }
       }
 
@@ -147,7 +143,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
           name: null,
           description: null,
         },
-        tx,
+        tx
       );
 
       // 6. Compute blocks to attach (carry-forward + new/updated, excluding deleted)
@@ -156,7 +152,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
         processedCreations,
         processedUpdates,
         input.deletions,
-        latestVersion?.id,
+        latestVersion?.id
       );
 
       // 7. Attach blocks to new version
@@ -171,7 +167,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
             sort_order: block.sortOrder ?? 0,
             is_visible: true,
           },
-          tx,
+          tx
         );
       }
 
@@ -184,7 +180,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
    */
   async listBlocksForVersion(
     versionId: number,
-    options?: { sectionName?: string; blockType?: BlockType },
+    options?: { sectionName?: string; blockType?: BlockType }
   ): Promise<TypedBlock[]> {
     return (this.repository as BlocksRepository).withTransaction(async (tx) => {
       // 1. Get version_blocks with base block info
@@ -247,7 +243,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
 
   private async processBlockCreations(
     creations: CreateBlockInput[],
-    tx: Prisma.TransactionClient,
+    tx: Prisma.TransactionClient
   ): Promise<ProcessedBlock[]> {
     const results: ProcessedBlock[] = [];
 
@@ -273,7 +269,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
             block_type: creation.blockType,
             content_hash: hash,
           },
-          tx,
+          tx
         );
 
         // Create typed block data
@@ -293,7 +289,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
 
   private async processBlockUpdates(
     updates: UpdateBlockInput[],
-    tx: Prisma.TransactionClient,
+    tx: Prisma.TransactionClient
   ): Promise<ProcessedBlock[]> {
     const results: ProcessedBlock[] = [];
 
@@ -319,7 +315,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
             block_type: update.blockType,
             content_hash: hash,
           },
-          tx,
+          tx
         );
 
         // Create typed block data
@@ -343,7 +339,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
     processedCreations: ProcessedBlock[],
     processedUpdates: ProcessedBlock[],
     deletions: number[],
-    latestVersionId?: number,
+    latestVersionId?: number
   ): BlockToAttach[] {
     const deletionSet = new Set(deletions);
     const updatedBlockMap = new Map(processedUpdates.map((u) => [u.previousBlockId!, u]));

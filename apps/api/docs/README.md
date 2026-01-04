@@ -30,21 +30,21 @@ The collection includes a **Login** request that auto-saves the JWT token.
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `link` | Base API URL (`http://localhost:3001/api`) |
-| `v1link` | V1 API URL (`http://localhost:3001/api/v1`) |
-| `supabaseUrl` | Supabase project URL |
-| `testEmail` | Test user email |
-| `testPassword` | Test user password |
-| `testJWT` | Auth token (auto-populated by Login) |
+| Variable       | Description                                 |
+| -------------- | ------------------------------------------- |
+| `link`         | Base API URL (`http://localhost:3001/api`)  |
+| `v1link`       | V1 API URL (`http://localhost:3001/api/v1`) |
+| `supabaseUrl`  | Supabase project URL                        |
+| `testEmail`    | Test user email                             |
+| `testPassword` | Test user password                          |
+| `testJWT`      | Auth token (auto-populated by Login)        |
 
 ## API Overview
 
-| Base URL | `http://localhost:3001/api/v1` |
-|----------|--------------------------------|
-| Auth | Supabase JWT Bearer Token |
-| Content-Type | `application/json` |
+| Base URL     | `http://localhost:3001/api/v1` |
+| ------------ | ------------------------------ |
+| Auth         | Supabase JWT Bearer Token      |
+| Content-Type | `application/json`             |
 
 ### Response Format
 
@@ -64,10 +64,12 @@ The collection includes a **Login** request that auto-saves the JWT token.
 ## Endpoints
 
 ### Auth
+
 - `POST /auth/v1/token` - Login (Supabase)
 - `GET /auth` - Info
 
 ### Profiles
+
 - `POST /profiles` - Create profile
 - `GET /profiles/me` - Get my profile
 - `PUT /profiles/me` - Update my profile
@@ -78,22 +80,23 @@ The collection includes a **Login** request that auto-saves the JWT token.
 - `GET /profiles/username/:username/availability` - Check username
 
 ### Blocks
+
 - `GET /profiles/:id/versions/latest` - Get latest version
 - `GET /profiles/:id/versions/:versionId/blocks` - List blocks
 - `POST /profiles/me/versions` - Batch update blocks
 
 ## Block Types
 
-| Type | Description |
-|------|-------------|
-| `work_experience` | Employment history |
-| `education` | Education & degrees |
-| `skill` | Skills |
-| `project` | Projects |
-| `certification` | Certifications |
-| `language` | Languages |
-| `volunteer` | Volunteer work |
-| `award` | Awards |
+| Type              | Description         |
+| ----------------- | ------------------- |
+| `work_experience` | Employment history  |
+| `education`       | Education & degrees |
+| `skill`           | Skills              |
+| `project`         | Projects            |
+| `certification`   | Certifications      |
+| `language`        | Languages           |
+| `volunteer`       | Volunteer work      |
+| `award`           | Awards              |
 
 ## Running the API
 

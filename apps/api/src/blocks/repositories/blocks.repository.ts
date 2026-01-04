@@ -30,7 +30,7 @@ export class BlocksRepository extends BaseRepository<BlockEntity> {
 
   async createBaseBlock(
     data: { block_type: BlockType; content_hash: string },
-    tx?: Prisma.TransactionClient,
+    tx?: Prisma.TransactionClient
   ): Promise<BlockEntity> {
     const prisma = (tx || this.prisma) as any;
     return prisma.blocks.create({

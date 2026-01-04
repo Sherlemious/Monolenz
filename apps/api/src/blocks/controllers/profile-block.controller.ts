@@ -53,7 +53,7 @@ class ProfileBlockController {
         })),
         deletions,
       },
-      context,
+      context
     );
 
     return res.success(result, 'Version updated successfully');

@@ -29,7 +29,7 @@ export default function ProfileEditPage() {
         e.returnValue = '';
       }
     };
-    
+
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
@@ -39,31 +39,30 @@ export default function ProfileEditPage() {
     async function loadUserProfile() {
       try {
         setIsLoading(true);
-        
+
         // TODO: Fetch current user's profile identifier and latest version
         // For now, using 'me' as a placeholder - you'll want to:
         // 1. Get the current user's profile from your auth/profile endpoint
         // 2. Get their latest version ID
-        
+
         // Placeholder values - replace with actual API call
         setProfileIdentifier('me');
         setLatestVersionId(undefined); // Will create first version on save
-        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load profile');
       } finally {
         setIsLoading(false);
       }
     }
-    
+
     loadUserProfile();
   }, []);
 
   if (isLoading) {
     return (
-      <div className="edit-page">
-        <div className="edit-page__loading">
-          <div className="spinner" />
+      <div className='edit-page'>
+        <div className='edit-page__loading'>
+          <div className='spinner' />
           <p>Loading editor...</p>
         </div>
         <style jsx>{styles}</style>
@@ -73,11 +72,11 @@ export default function ProfileEditPage() {
 
   if (error || !profileIdentifier) {
     return (
-      <div className="edit-page">
-        <div className="edit-page__error">
+      <div className='edit-page'>
+        <div className='edit-page__error'>
           <h2>Unable to load editor</h2>
           <p>{error ?? 'Profile not found'}</p>
-          <Link href="/dashboard/profile" className="btn btn--secondary">
+          <Link href='/dashboard/profile' className='btn btn--secondary'>
             Back to Profile
           </Link>
         </div>
@@ -87,42 +86,36 @@ export default function ProfileEditPage() {
   }
 
   return (
-    <div className="edit-page">
+    <div className='edit-page'>
       {/* Navigation bar */}
-      <nav className="edit-page__nav">
-        <Link 
-          href="/dashboard/profile" 
-          className="edit-page__back"
+      <nav className='edit-page__nav'>
+        <Link
+          href='/dashboard/profile'
+          className='edit-page__back'
           onClick={(e) => {
             if (hasUnsavedChanges) {
-              const confirmed = window.confirm(
-                'You have unsaved changes. Are you sure you want to leave?'
-              );
+              const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
               if (!confirmed) {
                 e.preventDefault();
               }
             }
           }}
         >
-          <ArrowLeftIcon className="w-4 h-4" />
+          <ArrowLeftIcon className='w-4 h-4' />
           Back to Profile
         </Link>
-        
+
         {hasUnsavedChanges && (
-          <span className="edit-page__status">
-            <span className="edit-page__status-dot" />
+          <span className='edit-page__status'>
+            <span className='edit-page__status-dot' />
             Unsaved changes
           </span>
         )}
       </nav>
 
       {/* Block Editor */}
-      <div className="edit-page__editor">
-        <BlockEditor
-          apiClient={api}
-          profileIdentifier={profileIdentifier}
-          initialVersionId={latestVersionId}
-        />
+      <div className='edit-page__editor'>
+        <BlockEditor apiClient={api} profileIdentifier={profileIdentifier} initialVersionId={latestVersionId} />
       </div>
 
       <style jsx>{styles}</style>
@@ -136,8 +129,8 @@ export default function ProfileEditPage() {
 
 function ArrowLeftIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+      <path strokeLinecap='round' strokeLinejoin='round' d='M10 19l-7-7m0 0l7-7m-7 7h18' />
     </svg>
   );
 }

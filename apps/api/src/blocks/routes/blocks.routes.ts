@@ -23,11 +23,7 @@ const router = Router();
  * GET /:identifier/versions/latest
  * Get the latest version and its blocks for a profile (public)
  */
-router.get(
-  '/:identifier/versions/latest',
-  optionalAuth,
-  profileBlockController.getLatestVersion,
-);
+router.get('/:identifier/versions/latest', optionalAuth, profileBlockController.getLatestVersion);
 
 /**
  * GET /:identifier/versions/:versionId/blocks
@@ -43,7 +39,7 @@ router.get(
     }),
     query: listBlocksQuerySchema,
   }),
-  profileBlockController.listBlocksForVersion,
+  profileBlockController.listBlocksForVersion
 );
 
 // ============================================================================
@@ -56,10 +52,6 @@ router.use(authenticate);
  * POST /me/versions
  * Apply batch version update (creations, updates, deletions)
  */
-router.post(
-  '/me/versions',
-  validate({ body: batchVersionUpdateSchema }),
-  profileBlockController.applyVersionUpdate,
-);
+router.post('/me/versions', validate({ body: batchVersionUpdateSchema }), profileBlockController.applyVersionUpdate);
 
 export default router;

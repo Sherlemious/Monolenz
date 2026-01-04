@@ -134,10 +134,11 @@ export type TypedBlockData =
   | { block_type: BlockType.VOLUNTEER; data: VolunteerData }
   | { block_type: BlockType.AWARD; data: AwardData };
 
-export type TypedBlock = BlockEntity & TypedBlockData & {
-  section_name?: string | null;
-  sort_order?: number;
-};
+export type TypedBlock = BlockEntity &
+  TypedBlockData & {
+    section_name?: string | null;
+    sort_order?: number;
+  };
 
 // ============================================================================
 // Version & VersionBlock (preserved from old system)
@@ -179,7 +180,15 @@ export type VersionBlockDetail = TypedBlock & {
 
 export interface BatchUpdateCreation {
   block_type: BlockType;
-  data: WorkExperienceData | EducationData | SkillData | ProjectData | CertificationData | LanguageData | VolunteerData | AwardData;
+  data:
+    | WorkExperienceData
+    | EducationData
+    | SkillData
+    | ProjectData
+    | CertificationData
+    | LanguageData
+    | VolunteerData
+    | AwardData;
   section_name?: string | null;
   sort_order?: number | null;
 }
@@ -187,7 +196,15 @@ export interface BatchUpdateCreation {
 export interface BatchUpdateUpdate {
   parent_block_id: number;
   block_type: BlockType;
-  data: WorkExperienceData | EducationData | SkillData | ProjectData | CertificationData | LanguageData | VolunteerData | AwardData;
+  data:
+    | WorkExperienceData
+    | EducationData
+    | SkillData
+    | ProjectData
+    | CertificationData
+    | LanguageData
+    | VolunteerData
+    | AwardData;
   section_name?: string | null;
   sort_order?: number | null;
 }

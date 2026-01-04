@@ -32,10 +32,7 @@ export const workExperienceSchema = z.object({
   company_url: urlSchema,
   company_logo_url: urlSchema,
   position_title: z.string().min(1, 'Position title is required').max(255),
-  employment_type: z
-    .enum(['full-time', 'part-time', 'contract', 'internship', 'freelance'])
-    .optional()
-    .nullable(),
+  employment_type: z.enum(['full-time', 'part-time', 'contract', 'internship', 'freelance']).optional().nullable(),
   location: z.string().max(255).optional().nullable(),
   location_type: z.enum(['on-site', 'remote', 'hybrid']).optional().nullable(),
   start_date: isoDateSchema,
@@ -245,7 +242,7 @@ export const batchVersionUpdateSchema = z.object({
         data: z.any(),
         section_name: z.string().max(255).optional(),
         sort_order: z.number().int().min(0).optional(),
-      }),
+      })
     )
     .default([]),
   deletions: z.array(z.number().int().positive()).default([]),
