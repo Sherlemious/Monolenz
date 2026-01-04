@@ -33,7 +33,7 @@ export abstract class BaseService<T extends BaseEntity> {
     this.metrics = metrics || new MetricsCollector();
   }
 
-  async findById(id: string | number, context?: ServiceContext, options?: ServiceOptions): Promise<T | null> {
+  async findById(id: string | number, context?: ServiceContext, _options?: ServiceOptions): Promise<T | null> {
     const operation = 'findById';
     const startTime = Date.now();
 
@@ -60,10 +60,10 @@ export abstract class BaseService<T extends BaseEntity> {
 
   async findMany(
     pagination: PaginationParams,
-    filters?: Record<string, any>,
+    filters?: Record<string, unknown>,
     context?: ServiceContext,
-    options?: ServiceOptions
-  ): Promise<{ data: T[]; total: number; meta: any }> {
+    _options?: ServiceOptions
+  ): Promise<{ data: T[]; total: number; meta: unknown }> {
     const operation = 'findMany';
     const startTime = Date.now();
 

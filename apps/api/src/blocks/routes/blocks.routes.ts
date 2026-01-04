@@ -6,11 +6,7 @@ import { Router } from 'express';
 import { authenticate, optionalAuth } from '../../middleware/auth';
 import { validate } from '../../middleware/validation';
 import { profileBlockController } from '../controllers/profile-block.controller';
-import {
-  batchVersionUpdateSchema,
-  versionIdParamsSchema,
-  listBlocksQuerySchema,
-} from '@monolenz/types/validation/block-schemas';
+import { batchVersionUpdateSchema, listBlocksQuerySchema } from '@monolenz/types/validation/block-schemas';
 import { z } from 'zod';
 
 const router = Router();

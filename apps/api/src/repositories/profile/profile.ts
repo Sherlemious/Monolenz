@@ -30,7 +30,7 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
       });
 
       return result as ProfileEntity;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Failed to find profile by username: ${username}`);
     }
   }
@@ -50,7 +50,7 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
       });
 
       return result as ProfileEntity;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Failed to find profile by identifier: ${identifier}`);
     }
   }
@@ -61,7 +61,7 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
 
       const count = await this.prisma.profiles.count({ where });
       return count === 0;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Failed to check username availability: ${username}`);
     }
   }

@@ -14,7 +14,7 @@ export class BlocksRepository extends BaseRepository<BlockEntity> {
     super(db);
   }
 
-  protected buildSearchConditions(query: string): Record<string, any>[] {
+  protected buildSearchConditions(_query: string): Record<string, unknown>[] {
     // Blocks are not searched directly - they're accessed via versions
     return [];
   }

@@ -4,6 +4,7 @@ import { authenticate, optionalAuth } from '../../../middleware/auth';
 import { validate } from '../../../middleware/validation';
 import { profileSchemas } from '@monolenz/types/validation';
 import { z } from 'zod';
+import profileBlockRouter from '../../../blocks/routes/blocks.routes';
 
 const router: Router = Router();
 

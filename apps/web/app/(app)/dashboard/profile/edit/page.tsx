@@ -7,13 +7,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { BlockEditor } from '@/app/components/profile/blocks/BlockEditor';
 import { useProfileBlocksApi } from '@/lib/hooks/useProfileBlocks';
 import { useHasUnsavedChanges } from '@/lib/stores/profile-editor-store';
 
 export default function ProfileEditPage() {
-  const router = useRouter();
   const api = useProfileBlocksApi();
   const hasUnsavedChanges = useHasUnsavedChanges();
   const [profileIdentifier, setProfileIdentifier] = useState<string | null>(null);
@@ -60,38 +58,38 @@ export default function ProfileEditPage() {
 
   if (isLoading) {
     return (
-      <div className='edit-page'>
-        <div className='edit-page__loading'>
-          <div className='spinner' />
+      <div className="edit-page">
+        <div className="edit-page__loading">
+          <div className="spinner" />
           <p>Loading editor...</p>
         </div>
-        <style jsx>{styles}</style>
+        <style>{styles}</style>
       </div>
     );
   }
 
   if (error || !profileIdentifier) {
     return (
-      <div className='edit-page'>
-        <div className='edit-page__error'>
+      <div className="edit-page">
+        <div className="edit-page__error">
           <h2>Unable to load editor</h2>
           <p>{error ?? 'Profile not found'}</p>
-          <Link href='/dashboard/profile' className='btn btn--secondary'>
+          <Link href="/dashboard/profile" className="btn btn--secondary">
             Back to Profile
           </Link>
         </div>
-        <style jsx>{styles}</style>
+        <style>{styles}</style>
       </div>
     );
   }
 
   return (
-    <div className='edit-page'>
+    <div className="edit-page">
       {/* Navigation bar */}
-      <nav className='edit-page__nav'>
+      <nav className="edit-page__nav">
         <Link
-          href='/dashboard/profile'
-          className='edit-page__back'
+          href="/dashboard/profile"
+          className="edit-page__back"
           onClick={(e) => {
             if (hasUnsavedChanges) {
               const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
@@ -101,24 +99,24 @@ export default function ProfileEditPage() {
             }
           }}
         >
-          <ArrowLeftIcon className='w-4 h-4' />
+          <ArrowLeftIcon className="w-4 h-4" />
           Back to Profile
         </Link>
 
         {hasUnsavedChanges && (
-          <span className='edit-page__status'>
-            <span className='edit-page__status-dot' />
+          <span className="edit-page__status">
+            <span className="edit-page__status-dot" />
             Unsaved changes
           </span>
         )}
       </nav>
 
       {/* Block Editor */}
-      <div className='edit-page__editor'>
+      <div className="edit-page__editor">
         <BlockEditor apiClient={api} profileIdentifier={profileIdentifier} initialVersionId={latestVersionId} />
       </div>
 
-      <style jsx>{styles}</style>
+      <style>{styles}</style>
     </div>
   );
 }
@@ -129,8 +127,8 @@ export default function ProfileEditPage() {
 
 function ArrowLeftIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M10 19l-7-7m0 0l7-7m-7 7h18' />
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
     </svg>
   );
 }

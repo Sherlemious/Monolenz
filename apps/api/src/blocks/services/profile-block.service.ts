@@ -70,20 +70,20 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
   // BaseService Abstract Methods
   // ========================================================================
 
-  protected async validateAccess(operation: string, data: any, context?: ServiceContext): Promise<void> {
+  protected async validateAccess(_operation: string, _data: unknown, _context?: ServiceContext): Promise<void> {
     // For blocks, access control is at profile level
     // This is validated at the service method level
   }
 
-  protected async validateData(data: any, operation: 'create' | 'update'): Promise<void> {
+  protected async validateData(_data: unknown, _operation: 'create' | 'update'): Promise<void> {
     // Validation done via Zod in middleware, not here
   }
 
   protected async applyBusinessRules(
-    data: any,
-    operation: 'create' | 'update',
-    context?: ServiceContext
-  ): Promise<any> {
+    data: unknown,
+    _operation: 'create' | 'update',
+    _context?: ServiceContext
+  ): Promise<unknown> {
     // Blocks are immutable - no business rules to apply
     return data;
   }
