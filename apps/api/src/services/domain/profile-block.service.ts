@@ -4,15 +4,15 @@
  */
 
 import { PrismaClient, Prisma } from '@prisma/client';
-import { BaseService } from '../../services/base.service';
-import { ServiceError } from '../../services/base.service';
+import { BaseService } from '../base.service';
+import { ServiceError } from '../base.service';
 import { BlockEntity, BlockType, TypedBlock, Version } from '@monolenz/types/entities/blocks';
 import { BLOCK_SCHEMAS } from '@monolenz/types/validation/block-schemas';
-import { BlocksRepository } from '../repositories/blocks.repository';
+import { BlocksRepository } from '../../repositories/blocks/blocks.repository';
 import { VersionsRepository } from '../../repositories/profile/versions.repository';
 import { VersionBlocksRepository } from '../../repositories/profile/version-blocks.repository';
-import { TypedBlockRepositoryFactory } from '../repositories/repository-factory';
-import { ServiceContext } from '../../services/base.service';
+import { TypedBlockRepositoryFactory } from '../../repositories/blocks/repository-factory';
+import { ServiceContext } from '../base.service';
 
 interface CreateBlockInput {
   blockType: BlockType;
@@ -51,7 +51,6 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
   private typedBlockFactory: TypedBlockRepositoryFactory;
   private versionsRepo: VersionsRepository;
   private versionBlocksRepo: VersionBlocksRepository;
-  private prisma: PrismaClient;
 
   constructor(
     blocksRepo: BlocksRepository,

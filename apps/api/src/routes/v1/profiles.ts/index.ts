@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import profileRoutes from './profiles';
-import blockRoutes from '../../../blocks/routes/blocks.routes';
+import blockRoutes from './blocks.routes';
 import { rateLimit } from 'express-rate-limit';
 
 const router: Router = Router();

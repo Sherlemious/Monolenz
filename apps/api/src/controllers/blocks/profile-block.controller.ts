@@ -4,8 +4,8 @@
 
 import { asyncHandler } from '../../utils/async-handler';
 import { Request, Response } from 'express';
-import { ProfileBlockService } from '../services/profile-block.service';
-import { BlocksRepository } from '../repositories/blocks.repository';
+import { ProfileBlockService } from '../../services/domain/profile-block.service';
+import { BlocksRepository } from '../../repositories/blocks/blocks.repository';
 import { VersionsRepository } from '../../repositories/profile/versions.repository';
 import { VersionBlocksRepository } from '../../repositories/profile/version-blocks.repository';
 import { prisma } from '../../config/prisma';
