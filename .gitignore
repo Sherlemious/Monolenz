@@ -45,3 +45,5 @@ github-actions-deploy-key.json
 
 # Log files
 *.log
+
+apps/api/docs/environments
