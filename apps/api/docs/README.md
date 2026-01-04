@@ -41,7 +41,7 @@ The collection includes a **Login** request that auto-saves the JWT token.
 
 ## API Overview
 
-| Base URL     | `http://localhost:3001/api/v1` |
+| Base URL     | `http://localhost:8080/api/v1` |
 | ------------ | ------------------------------ |
 | Auth         | Supabase JWT Bearer Token      |
 | Content-Type | `application/json`             |
@@ -78,12 +78,15 @@ The collection includes a **Login** request that auto-saves the JWT token.
 - `GET /profiles/public/:identifier` - Get public profile
 - `GET /profiles/search` - Search profiles
 - `GET /profiles/username/:username/availability` - Check username
+- See `profiles/profile-links.bru` - Guide for working with profile links
 
 ### Blocks
 
 - `GET /profiles/:id/versions/latest` - Get latest version
 - `GET /profiles/:id/versions/:versionId/blocks` - List blocks
 - `POST /profiles/me/versions` - Batch update blocks
+- See `blocks/create-work-experience.bru` - Detailed guide for creating work experience
+- See `blocks/create-education.bru` - Detailed guide for creating education entries
 
 ## Block Types
 
