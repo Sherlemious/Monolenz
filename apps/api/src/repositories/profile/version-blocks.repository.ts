@@ -89,11 +89,7 @@ export class VersionBlocksRepository {
           },
         },
       },
-      orderBy: [
-        { section_name: 'asc' },
-        { sort_order: 'asc' },
-        { created_at: 'asc' },
-      ],
+      orderBy: [{ section_name: 'asc' }, { sort_order: 'asc' }, { created_at: 'asc' }],
     });
 
     // Transform nested structure to flat structure expected by service
