@@ -15,17 +15,14 @@ const Header: React.FC = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const isDashboard = useMemo(() => pathname?.startsWith('/dashboard'), [pathname]);
-  const forceLightHeader = pathname === '/';
-  const lightHeaderVars = forceLightHeader
-    ? ({
-        '--background': 'oklch(1 0 0)',
-        '--foreground': 'oklch(0.145 0 0)',
-        '--muted-foreground': 'oklch(0.556 0 0)',
-        '--border': 'oklch(0.922 0 0)',
-        '--primary': 'oklch(0.205 0 0)',
-        '--primary-foreground': 'oklch(0.985 0 0)',
-      } as React.CSSProperties)
-    : undefined;
+  const lightHeaderVars = {
+    '--background': 'oklch(1 0 0)',
+    '--foreground': 'oklch(0.145 0 0)',
+    '--muted-foreground': 'oklch(0.556 0 0)',
+    '--border': 'oklch(0.922 0 0)',
+    '--primary': 'oklch(0.205 0 0)',
+    '--primary-foreground': 'oklch(0.985 0 0)',
+  } as React.CSSProperties;
 
   useEffect(() => {
     const supabase = createClient();
