@@ -1,13 +1,17 @@
-import HeroSection from '@/app/components/landing/Hero';
-import FeaturesSection from '@/app/components/landing/Features';
-import PricingSection from '@/app/components/landing/Pricing';
-
-export default async function Page() {
+export default function MarketingPage() {
   return (
-    <main>
-      <HeroSection />
-      <FeaturesSection />
-      <PricingSection />
-    </main>
+    <div className="min-h-screen text-white px-6 pt-24">
+      <div className="mx-auto max-w-6xl">
+        <div className="text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight">
+          Your job search, on autopilot.
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-white/80">
+            MonoLenz acts on your behalf, handling your work history, job
+            applications, and tracking in one place.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

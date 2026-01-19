@@ -3,6 +3,7 @@ import { Montserrat } from 'next/font/google';
 import './globals.css';
 import Header from '@/app/components/Header';
 import { PostHogProvider } from '@/app/providers/PostHogProvider';
+import ThemeProvider from '@/app/providers/ThemeProvider';
 import { Suspense } from 'react';
 
 const montserrat = Montserrat({
@@ -23,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en'>
+    <html lang='en' suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -36,10 +37,12 @@ export default function RootLayout({
       </head>
       <body className={montserrat.variable}>
         <Suspense fallback={null}>
-          <PostHogProvider>
-            <Header />
-            {children}
-          </PostHogProvider>
+          <ThemeProvider>
+            <PostHogProvider>
+              <Header />
+              {children}
+            </PostHogProvider>
+          </ThemeProvider>
         </Suspense>
       </body>
     </html>

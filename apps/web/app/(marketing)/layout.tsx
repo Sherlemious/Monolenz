@@ -1,15 +1,9 @@
-import LandingHeader from '@/app/components/landing/LandingHeader';
+import type { ReactNode } from "react";
 
-export default function MarketingLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <div>
-      <div className='grid-pattern' />
-      <LandingHeader />
-      <main>{children}</main>
-    </div>
-  );
+type MarketingLayoutProps = {
+  children: ReactNode;
+};
+
+export default function MarketingLayout({ children }: MarketingLayoutProps) {
+  return <>{children}</>;
 }
