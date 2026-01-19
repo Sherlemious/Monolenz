@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Check, GitBranch, Layers, FileText, Globe, BarChart3, History } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const bullets = [
@@ -9,34 +9,28 @@ const bullets = [
     title: 'Single Source of Truth',
     description:
       'Build one comprehensive profile with 18+ content blocks: work, education, projects, publications, skills, and more.',
-    icon: Layers,
   },
   {
     title: 'Write Once, Tailor Everywhere',
     description:
       'Generate role-specific resumes, live portfolios (monolenz.com/username), and keep applications in sync—without duplication.',
-    icon: FileText,
   },
   {
     title: 'Version Control for Careers',
     description: 'Full version history like git—compare, branch, and evolve your professional story with confidence.',
-    icon: History,
   },
   {
     title: 'Application Tracking & Insights',
     description: 'Track submissions, statuses, and performance metrics from one place. Know what works.',
-    icon: BarChart3,
   },
   {
     title: 'Live Portfolio',
     description: 'Share a living profile at monolenz.com/username that updates the moment your data does.',
-    icon: Globe,
   },
   {
-    title: 'Future: Pro Tools',
+    title: 'Auto Apply',
     description:
-      'Multiple portfolios, client testimonial verification, and more premium capabilities are on the roadmap.',
-    icon: GitBranch,
+      'We pick the best resume and data to apply based on your work history.',
   },
 ];
 
@@ -56,13 +50,13 @@ const FeaturesSection: React.FC = () => {
 
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
           {bullets.map((item) => (
-            <Card key={item.title} className='h-full'>
+            <Card
+              key={item.title}
+              className='h-full bg-neutral-900 text-white border border-neutral-800 shadow-xl'
+            >
               <CardHeader>
-                <div className='inline-flex items-center justify-center size-9 rounded-md bg-muted text-muted-foreground'>
-                  <item.icon className='size-5' />
-                </div>
-                <CardTitle className='mt-2 text-base'>{item.title}</CardTitle>
-                <CardDescription>{item.description}</CardDescription>
+                <CardTitle className='mt-2 text-base text-white'>{item.title}</CardTitle>
+                <CardDescription className='text-neutral-300'>{item.description}</CardDescription>
               </CardHeader>
             </Card>
           ))}
@@ -70,13 +64,13 @@ const FeaturesSection: React.FC = () => {
 
         <div className='mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground'>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-[var(--chart-1)]' /> 18+ content blocks
+            <Check className='size-4 text-white' /> We apply for you automatically
           </div>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-[var(--chart-2)]' /> Live portfolio URL
+            <Check className='size-4 text-white' /> Tailormade application CVs
           </div>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-[var(--chart-3)]' /> Infinite versions
+            <Check className='size-4 text-white' /> Infinite versions
           </div>
         </div>
       </div>

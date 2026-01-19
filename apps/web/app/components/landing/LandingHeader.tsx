@@ -7,6 +7,7 @@ import { Menu, X } from 'lucide-react';
 
 const LandingHeader: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<'overview' | 'features' | 'pricing'>('overview');
 
   useEffect(() => {
     const handleResize = () => {
@@ -17,6 +18,60 @@ const LandingHeader: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'features' || hash === 'pricing') {
+        setActiveSection(hash);
+      } else {
+        setActiveSection('overview');
+      }
+    };
+
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+
+    const sectionIds: Array<'features' | 'pricing'> = ['features', 'pricing'];
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => Boolean(el));
+
+    if (sections.length === 0) {
+      return () => window.removeEventListener('hashchange', handleHash);
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0));
+
+        const firstVisible = visible[0];
+
+        if (firstVisible) {
+          setActiveSection(firstVisible.target.id as 'features' | 'pricing');
+        } else {
+          setActiveSection('overview');
+        }
+      },
+      {
+        root: null,
+        rootMargin: '-35% 0px -55% 0px',
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      window.removeEventListener('hashchange', handleHash);
+      observer.disconnect();
+    };
+  }, []);
+
+  const navClass = (section: 'overview' | 'features' | 'pricing') =>
+    section === activeSection ? 'text-sm font-semibold text-foreground' : 'text-sm font-medium text-muted-foreground';
 
   return (
     <header className='fixed top-0 left-0 right-0 z-50 bg-background border-b border-border'>
@@ -32,13 +87,13 @@ const LandingHeader: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className='hidden md:flex items-center gap-8'>
-            <Link href='/' className='text-sm font-medium text-foreground'>
+            <Link href='/' className={navClass('overview')}>
               Overview
             </Link>
-            <Link href='/#features' className='text-sm font-medium text-foreground'>
+            <Link href='/#features' className={navClass('features')}>
               Features
             </Link>
-            <Link href='/#pricing' className='text-sm font-medium text-muted-foreground'>
+            <Link href='/#pricing' className={navClass('pricing')}>
               Pricing
             </Link>
           </nav>
@@ -77,13 +132,28 @@ const LandingHeader: React.FC = () => {
       {mobileOpen && (
         <div className='md:hidden'>
           <div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
-            <Link href='/' className='block px-3 py-2 rounded-md text-base font-medium text-foreground'>
+            <Link
+              href='/'
+              className={`block px-3 py-2 rounded-md text-base ${
+                activeSection === 'overview' ? 'font-semibold text-foreground' : 'font-medium text-muted-foreground'
+              }`}
+            >
               Overview
             </Link>
-            <Link href='/#features' className='block px-3 py-2 rounded-md text-base font-medium text-foreground'>
+            <Link
+              href='/#features'
+              className={`block px-3 py-2 rounded-md text-base ${
+                activeSection === 'features' ? 'font-semibold text-foreground' : 'font-medium text-muted-foreground'
+              }`}
+            >
               Features
             </Link>
-            <Link href='/#pricing' className='block px-3 py-2 rounded-md text-base font-medium text-muted-foreground'>
+            <Link
+              href='/#pricing'
+              className={`block px-3 py-2 rounded-md text-base ${
+                activeSection === 'pricing' ? 'font-semibold text-foreground' : 'font-medium text-muted-foreground'
+              }`}
+            >
               Pricing
             </Link>
             <div className='border-t border-border pt-4 mt-4'>
