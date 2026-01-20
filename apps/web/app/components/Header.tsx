@@ -23,6 +23,14 @@ const Header: React.FC = () => {
     '--primary': 'oklch(0.205 0 0)',
     '--primary-foreground': 'oklch(0.985 0 0)',
   } as React.CSSProperties;
+  const darkHeaderVars = {
+    '--background': 'oklch(0.2 0 0)',
+    '--foreground': 'oklch(0.985 0 0)',
+    '--muted-foreground': 'oklch(0.7 0 0)',
+    '--border': 'oklch(0.32 0 0)',
+    '--primary': 'oklch(0.985 0 0)',
+    '--primary-foreground': 'oklch(0.145 0 0)',
+  } as React.CSSProperties;
 
   useEffect(() => {
     const supabase = createClient();
@@ -65,7 +73,7 @@ const Header: React.FC = () => {
           transform: isHidden ? 'translateY(-100%)' : 'translateY(0)',
           transition: 'transform 300ms ease',
           willChange: 'transform',
-          ...lightHeaderVars,
+          ...(isDashboard ? lightHeaderVars : darkHeaderVars),
         }}
       >
         <div
@@ -81,7 +89,6 @@ const Header: React.FC = () => {
         >
           {/* Logo */}
           <Link href='/' style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-            <Image src='/logo.svg' alt='Monolenz' width={32} height={32} />
             <span style={{ fontSize: '20px', fontWeight: 600, color: 'var(--foreground)' }}>Monolenz</span>
           </Link>
 
@@ -280,18 +287,27 @@ const Header: React.FC = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            height: 2,
+            height: 0.3,
             background: 'transparent',
           }}
         >
           <div
             style={{
-              height: 2,
-              width: `${Math.round(scrollProgress * 100)}%`,
-              background: 'var(--primary)',
-              transition: 'width 120ms linear',
+              height: 0.3,
+              width: '90%',
+              margin: '0 auto',
+              background: 'transparent',
             }}
-          />
+          >
+            <div
+              style={{
+                height: 0.3,
+                width: `${Math.round(scrollProgress * 100)}%`,
+                background: 'var(--primary)',
+                transition: 'width 120ms linear',
+              }}
+            />
+          </div>
         </div>
 
         {/* Mobile sheet */}
