@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { ArrowRight, FileText, Globe, Briefcase, BarChart3, Plus, Circle, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -317,13 +318,17 @@ const HeroSection = () => {
 
         {/* CTA Buttons */}
         <div className='flex items-center justify-center gap-4 mt-20 flex-wrap'>
-          <Button className='h-11 px-8 gap-3'>
-            <span>Start Building</span>
-            <ArrowRight className='w-4 h-4' />
+          <Button asChild className='h-11 px-8 gap-3'>
+            <Link href='/signup'>
+              <span>Start Building</span>
+              <ArrowRight className='w-4 h-4' />
+            </Link>
           </Button>
-          <Button variant='outline' className='h-11 px-8 gap-3'>
-            <span>See Examples</span>
-            <Square className='w-3 h-3' />
+          <Button asChild variant='outline' className='h-11 px-8 gap-3'>
+            <Link href='/#features'>
+              <span>See Examples</span>
+              <Square className='w-3 h-3' />
+            </Link>
           </Button>
         </div>
 
@@ -344,48 +349,6 @@ const HeroSection = () => {
         </div>
       </div>
 
-      <style>{`
-        .shape-circle {
-          position: absolute;
-          top: 25%;
-          left: 25%;
-          width: 128px;
-          height: 128px;
-          border: 1px solid var(--border);
-          border-radius: 9999px;
-          animation: float-slow 20s ease-in-out infinite;
-          opacity: 0.4;
-        }
-        .shape-square {
-          position: absolute;
-          bottom: 25%;
-          right: 25%;
-          width: 96px;
-          height: 96px;
-          border: 1px solid var(--border);
-          transform: rotate(45deg);
-          animation: float-slower 25s ease-in-out infinite;
-          opacity: 0.4;
-        }
-        @keyframes float-slow {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(180deg);
-          }
-        }
-        @keyframes float-slower {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(45deg);
-          }
-          50% {
-            transform: translateY(-15px) rotate(225deg);
-          }
-        }
-      `}</style>
     </div>
   );
 };

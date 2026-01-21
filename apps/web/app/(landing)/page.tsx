@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ApplicationFlowCard from "@/app/components/landing/ApplicationFlowCard";
 import ApplyNowCard from "@/app/components/landing/ApplyNowCard";
 import FeaturesSection from "@/app/components/landing/Features";
@@ -48,15 +49,15 @@ export default function MarketingPage() {
         <div className="max-w-6xl mx-auto flex flex-col items-center justify-between gap-4 md:flex-row">
           <span className="text-sm text-white/70">© 2026 Monolenz. All rights reserved.</span>
           <div className="flex items-center gap-6 text-sm text-white/70">
-            <a href="/#features" className="hover:text-white transition-colors">
+            <Link href="/#features" className="hover:text-white transition-colors">
               Features
-            </a>
-            <a href="/#pricing" className="hover:text-white transition-colors">
+            </Link>
+            <Link href="/#pricing" className="hover:text-white transition-colors">
               Pricing
-            </a>
-            <a href="/signup" className="hover:text-white transition-colors">
+            </Link>
+            <Link href="/signup" className="hover:text-white transition-colors">
               Get started
-            </a>
+            </Link>
           </div>
         </div>
       </footer>

@@ -1,7 +1,3 @@
-'use client';
-
-import { useState } from 'react';
-
 const flowItems = [
   { company: 'Google', status: 'Waiting for reply', color: 'bg-yellow-400' },
   { company: 'Meta', status: 'OA sent', color: 'bg-blue-500' },
@@ -11,8 +7,6 @@ const flowItems = [
 ];
 
 export default function ApplicationFlowCard() {
-  const [hoveredItem, setHoveredItem] = useState<number | null>(null);
-
   return (
     <div className='group [perspective:1000px] flex flex-col items-center'>
       <div className='mb-4 flex min-h-[4.5rem] flex-col items-center justify-end gap-2'>
@@ -40,17 +34,10 @@ export default function ApplicationFlowCard() {
           </div>
 
           <div className='flex flex-col gap-1.5'>
-            {flowItems.map((item, index) => (
-              <div
-                key={`${item.company}-${item.status}`}
-                className='cursor-pointer'
-                onMouseEnter={() => setHoveredItem(index)}
-                onMouseLeave={() => setHoveredItem(null)}
-              >
+            {flowItems.map((item) => (
+              <div key={`${item.company}-${item.status}`} className='group/item cursor-pointer'>
                 <div
-                  className={`w-full h-8 rounded-sm flex items-center justify-between px-2.5 transition-all bg-neutral-800 ${
-                    hoveredItem === index ? 'scale-[1.02] shadow-xs' : ''
-                  }`}
+                  className='w-full h-8 rounded-sm flex items-center justify-between px-2.5 transition-all bg-neutral-800 group-hover/item:scale-[1.02] group-hover/item:shadow-xs'
                 >
                   <span className='text-[11px] font-semibold text-white'>{item.company}</span>
                   <div className='flex items-center gap-2 text-[11px] text-neutral-400'>

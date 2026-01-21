@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 
 const applySteps = [
@@ -11,8 +8,6 @@ const applySteps = [
 ];
 
 export default function ApplyNowCard() {
-  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
-
   return (
     <div className='group [perspective:1000px] flex flex-col items-center'>
       <div className='mb-4 flex min-h-[4.5rem] flex-col items-center justify-end gap-2'>
@@ -43,17 +38,12 @@ export default function ApplyNowCard() {
           </div>
 
           <div className='flex flex-col gap-1.5'>
-            {applySteps.map((step, index) => (
-              <div
-                key={step.name}
-                className='cursor-pointer'
-                onMouseEnter={() => setHoveredStep(index)}
-                onMouseLeave={() => setHoveredStep(null)}
-              >
+            {applySteps.map((step) => (
+              <div key={step.name} className='group/item cursor-pointer'>
                 <div
-                  className={`w-full h-8 rounded-sm flex items-center justify-between px-2.5 transition-all ${
+                  className={`w-full h-8 rounded-sm flex items-center justify-between px-2.5 transition-all group-hover/item:scale-[1.02] group-hover/item:shadow-xs ${
                     step.done ? 'bg-neutral-800' : 'border border-neutral-700'
-                  } ${hoveredStep === index ? 'scale-[1.02] shadow-xs' : ''}`}
+                  }`}
                 >
                   <span className='text-[11px] font-semibold text-white'>{step.name}</span>
                   <span className='text-[10px] text-neutral-400'>{step.done ? 'Done' : 'Queued'}</span>

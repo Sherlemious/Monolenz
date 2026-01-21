@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from 'react';
 import { Plus } from 'lucide-react';
 
 const contentBlocks = [
@@ -13,8 +10,6 @@ const contentBlocks = [
 ];
 
 export default function MasterProfileCard() {
-  const [hoveredBlock, setHoveredBlock] = useState<number | null>(null);
-
   return (
     <div className='group [perspective:1000px] flex flex-col items-center'>
       <div className='mb-4 flex min-h-[4.5rem] flex-col items-center justify-end gap-2'>
@@ -42,17 +37,12 @@ export default function MasterProfileCard() {
         </div>
 
         <div className='flex flex-col gap-1.5'>
-          {contentBlocks.map((block, index) => (
-            <div
-              key={block.name}
-              className='cursor-pointer'
-              onMouseEnter={() => setHoveredBlock(index)}
-              onMouseLeave={() => setHoveredBlock(null)}
-            >
+          {contentBlocks.map((block) => (
+            <div key={block.name} className='group/item cursor-pointer'>
               <div
-                className={`w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all ${
+                className={`w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all group-hover/item:scale-[1.02] group-hover/item:shadow-xs ${
                   block.filled ? 'bg-neutral-800' : 'border border-neutral-700'
-                } ${hoveredBlock === index ? 'scale-[1.02] shadow-xs' : ''}`}
+                }`}
               >
                 <span className='text-[11px] font-medium text-white'>{block.name}</span>
                 {!block.filled && <Plus className='w-2.5 h-2.5 text-neutral-400' />}
