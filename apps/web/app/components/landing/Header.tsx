@@ -15,6 +15,9 @@ const Header = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const isDashboard = pathname?.startsWith('/dashboard');
+  const isDashboardOverview = pathname === '/dashboard' || pathname === '/dashboard/';
+  const isDashboardProfile = pathname?.startsWith('/dashboard/profile');
+  const isDashboardApplications = pathname?.startsWith('/dashboard/applications');
 
   useEffect(() => {
     const supabase = createClient();
@@ -77,19 +80,19 @@ const Header = () => {
               <>
                 <Link
                   href='/dashboard'
-                  className={`${styles.navLink} ${styles.navLinkStrong}`}
+                  className={`${styles.navLink} ${isDashboardOverview ? styles.navLinkStrong : styles.navLinkMuted}`}
                 >
                   Overview
                 </Link>
                 <Link
                   href='/dashboard/profile'
-                  className={`${styles.navLink} ${styles.navLinkMuted}`}
+                  className={`${styles.navLink} ${isDashboardProfile ? styles.navLinkStrong : styles.navLinkMuted}`}
                 >
                   Profile
                 </Link>
                 <Link
                   href='/dashboard/applications'
-                  className={`${styles.navLink} ${styles.navLinkMuted}`}
+                  className={`${styles.navLink} ${isDashboardApplications ? styles.navLinkStrong : styles.navLinkMuted}`}
                 >
                   Applications
                 </Link>

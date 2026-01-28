@@ -65,7 +65,6 @@ body {
   }
 }
 
-
 /* Move resets into Tailwind base layer below to avoid overriding layered utilities */
 
 @theme inline {
