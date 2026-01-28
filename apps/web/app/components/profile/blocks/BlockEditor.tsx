@@ -223,7 +223,8 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
           display: flex;
           flex-direction: column;
           height: 100%;
-          background: var(--color-bg, #ffffff);
+          background: var(--background);
+          color: var(--foreground);
         }
 
         .block-editor__header {
@@ -231,7 +232,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
           justify-content: space-between;
           align-items: center;
           padding: 1.5rem;
-          border-bottom: 1px solid var(--color-border, #e5e7eb);
+          border-bottom: 1px solid var(--border);
         }
 
         .block-editor__title {
@@ -248,8 +249,8 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
 
         .block-editor__version {
           font-size: 0.75rem;
-          color: var(--color-text-muted, #6b7280);
-          background: var(--color-bg-subtle, #f3f4f6);
+          color: var(--secondary-foreground);
+          background: var(--secondary);
           padding: 0.25rem 0.5rem;
           border-radius: 0.25rem;
         }
@@ -262,20 +263,20 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
         .block-editor__error {
           margin: 1rem 1.5rem 0;
           padding: 0.75rem 1rem;
-          background: #fef2f2;
-          border: 1px solid #fecaca;
+          background: var(--card);
+          border: 1px solid var(--destructive);
           border-radius: 0.5rem;
-          color: #dc2626;
+          color: var(--destructive);
           font-size: 0.875rem;
         }
 
         .block-editor__unsaved {
           margin: 0.75rem 1.5rem 0;
           padding: 0.5rem 0.75rem;
-          background: #fffbeb;
-          border: 1px solid #fde68a;
+          background: var(--accent);
+          border: 1px solid var(--border);
           border-radius: 0.375rem;
-          color: #b45309;
+          color: var(--accent-foreground);
           font-size: 0.75rem;
         }
 
@@ -287,7 +288,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
         }
 
         .block-editor__list {
-          border-right: 1px solid var(--color-border, #e5e7eb);
+          border-right: 1px solid var(--border);
           overflow-y: auto;
           padding: 1rem;
         }
@@ -302,7 +303,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
           align-items: center;
           justify-content: center;
           height: 100%;
-          color: var(--color-text-muted, #6b7280);
+          color: var(--muted-foreground);
           font-size: 0.875rem;
         }
 
@@ -331,21 +332,21 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
         }
 
         .btn--primary {
-          background: var(--color-primary, #3b82f6);
-          color: white;
+          background: var(--primary);
+          color: var(--primary-foreground);
         }
 
         .btn--primary:hover:not(:disabled) {
-          background: var(--color-primary-hover, #2563eb);
+          background: var(--primary);
         }
 
         .btn--secondary {
-          background: var(--color-bg-subtle, #f3f4f6);
-          color: var(--color-text-primary, #1f2937);
+          background: var(--secondary);
+          color: var(--secondary-foreground);
         }
 
         .btn--secondary:hover:not(:disabled) {
-          background: var(--color-bg-hover, #e5e7eb);
+          background: var(--border);
         }
       `}</style>
     </div>
@@ -607,7 +608,8 @@ function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps)
           }
 
           .modal {
-            background: white;
+            background: var(--card);
+            color: var(--foreground);
             border-radius: 0.75rem;
             width: 90%;
             max-width: 600px;
@@ -622,7 +624,7 @@ function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps)
             justify-content: space-between;
             align-items: center;
             padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--border);
           }
 
           .modal__header h3 {
@@ -636,13 +638,13 @@ function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps)
             border: none;
             background: none;
             cursor: pointer;
-            color: #6b7280;
+            color: var(--muted-foreground);
             border-radius: 0.25rem;
           }
 
           .modal__close:hover {
-            color: #1f2937;
-            background: #f3f4f6;
+            color: var(--foreground);
+            background: var(--border);
           }
 
           .modal__content {
@@ -661,7 +663,7 @@ function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps)
           .type-category__title {
             font-size: 0.75rem;
             font-weight: 600;
-            color: #6b7280;
+            color: var(--muted-foreground);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 0.75rem;
@@ -678,23 +680,23 @@ function BlockTypeSelector({ types, onSelect, onClose }: BlockTypeSelectorProps)
             flex-direction: column;
             align-items: flex-start;
             padding: 0.75rem 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border);
             border-radius: 0.5rem;
-            background: white;
+            background: var(--background);
             cursor: pointer;
             transition: all 0.15s ease;
             text-align: left;
           }
 
           .type-card:hover {
-            border-color: #3b82f6;
-            background: #eff6ff;
+            border-color: var(--primary);
+            background: var(--accent);
           }
 
           .type-card__name {
             font-size: 0.875rem;
             font-weight: 500;
-            color: #1f2937;
+            color: var(--foreground);
           }
 
           .type-card__desc {
