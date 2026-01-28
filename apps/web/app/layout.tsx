@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
-import Header from '@/app/components/Header';
+import Header from '@/app/components/landing/Header';
 import { PostHogProvider } from '@/app/providers/PostHogProvider';
 import ThemeProvider from '@/app/providers/ThemeProvider';
 import { Suspense } from 'react';

@@ -1,0 +1,234 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--background);
+  backdrop-filter: blur(8px);
+  transition: transform 300ms ease;
+  will-change: transform;
+}
+
+.headerLight {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --border: oklch(0.922 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+}
+
+.headerDark {
+  --background: oklch(0.2 0 0);
+  --foreground: oklch(0.985 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --border: oklch(0.32 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.145 0 0);
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logoText {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.nav {
+  display: none;
+  align-items: center;
+  gap: 32px;
+}
+
+.navLink {
+  color: var(--foreground);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.navLinkStrong {
+  font-weight: 600;
+}
+
+.navLinkMuted {
+  color: var(--muted-foreground);
+}
+
+.mobileToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: 6px;
+  color: var(--foreground);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboardLink {
+  display: none;
+  color: var(--foreground);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.signOutFormDesktop {
+  display: none;
+}
+
+.signOutFormMobile {
+  display: inline-flex;
+}
+
+.signOutButton {
+  background-color: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.authLink {
+  background-color: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.signupLink {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.progressWrapper {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0.3px;
+  background: transparent;
+}
+
+.progressTrack {
+  height: 0.3px;
+  width: 90%;
+  margin: 0 auto;
+  background: transparent;
+}
+
+.progressFill {
+  height: 0.3px;
+  background: var(--primary);
+  transition: width 120ms linear;
+}
+
+.mobileSheet {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--background);
+}
+
+.mobileSheetContent {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobileLink {
+  font-size: 14px;
+  text-decoration: none;
+  color: var(--foreground);
+}
+
+.mobileLinkMuted {
+  color: var(--muted-foreground);
+}
+
+.mobileDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+.spacer {
+  height: 64px;
+}
+
+@media (min-width: 768px) {
+  .nav {
+    display: flex;
+  }
+
+  .mobileToggle {
+    display: none;
+  }
+
+  .dashboardLink {
+    display: inline-flex;
+  }
+
+  .signOutFormDesktop {
+    display: inline-flex;
+  }
+
+  .signOutFormMobile {
+    display: none;
+  }
+
+  .mobileSheet {
+    display: none;
+  }
+}
