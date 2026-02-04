@@ -1,4 +1,5 @@
 'use client';
+import { useProfileBlocksApi } from '@/lib/hooks/useProfileBlocks';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -22,6 +23,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+
+
 
 const sharedIdentity = {
   name: 'Jake Williams',
