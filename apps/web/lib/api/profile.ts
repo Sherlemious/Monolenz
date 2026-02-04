@@ -47,9 +47,11 @@ export function CreateProfileApi(client: ApiClient) {
         return response.data ?? null;
     },
 
-    
+
 
     
   };
 }
+
+export type ProfileApi = ReturnType<typeof CreateProfileApi>;
 
