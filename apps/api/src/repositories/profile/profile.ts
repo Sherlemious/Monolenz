@@ -55,9 +55,7 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
       // Try to find by UUID first, then by username
       const isUuid = UUID_REGEX.test(identifier);
 
-      const where = isUuid
-        ? { id: identifier, deleted_at: null }
-        : { username: identifier, deleted_at: null };
+      const where = isUuid ? { id: identifier, deleted_at: null } : { username: identifier, deleted_at: null };
 
       const result = await this.prisma.profiles.findFirst({
         where,

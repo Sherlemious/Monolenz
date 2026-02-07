@@ -184,7 +184,6 @@ class ProfileController {
       isAvailable ? 'Username is available' : 'Username is not available'
     );
   });
-
 }
 
 // Export singleton instance
