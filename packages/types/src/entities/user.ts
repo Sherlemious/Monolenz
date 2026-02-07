@@ -20,6 +20,7 @@ export interface Profile {
   portfolio_url?: string;
   created_at: Date;
   updated_at: Date;
+  deleted_at?: Date | null;
 }
 
 export interface PublicProfile {

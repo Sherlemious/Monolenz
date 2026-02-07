@@ -21,6 +21,18 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
     super(db);
   }
 
+  async findById(id: string | number, options?: RepositoryOptions): Promise<ProfileEntity | null> {
+    try {
+      const result = await this.prisma.profiles.findFirst({
+        where: { id: id as string, deleted_at: null },
+        ...options,
+      });
+      return result as ProfileEntity;
+    } catch (error) {
+      throw new Error(`Failed to find profile by id: ${id}`);
+    }
+  }
+
   async findByUsername(username: string, options?: ProfileRepositoryOptions): Promise<ProfileEntity | null> {
     try {
       const include = this.buildIncludeOptions(options);

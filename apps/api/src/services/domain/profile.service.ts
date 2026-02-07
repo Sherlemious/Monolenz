@@ -192,13 +192,10 @@ export class ProfileService extends BaseService<ProfileEntity> {
     filters?: Record<string, unknown>,
     _context?: ServiceContext
   ): Promise<Record<string, unknown>> {
-    const serviceFilters = { ...filters };
-
-    // Add global filters here if needed
-    // For example, only show verified profiles in production
-    if (process.env.NODE_ENV === 'production') {
-      // serviceFilters.verified = true;
-    }
+    const serviceFilters: Record<string, unknown> = {
+      ...filters,
+      deleted_at: null,
+    };
 
     return serviceFilters;
   }
