@@ -54,6 +54,7 @@ export class ProfileService extends BaseService<ProfileEntity> {
     } catch (error) {
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.errors`);
       this.logger.error(`${operation} failed`, { identifier, error: error as Error });
+      if (error instanceof ServiceError) throw error;
       throw new ServiceError(`Failed to get profile by identifier`, error);
     }
   }
@@ -83,6 +84,7 @@ export class ProfileService extends BaseService<ProfileEntity> {
       return null;
     } catch (error) {
       this.logger.error(`${operation} failed`, { username, error: error as Error });
+      if (error instanceof ServiceError) throw error;
       throw new ServiceError(`Failed to get profile by username`, error);
     }
   }
@@ -104,6 +106,7 @@ export class ProfileService extends BaseService<ProfileEntity> {
       return await this.profileRepository.checkUsernameAvailability(username, excludeId);
     } catch (error) {
       this.logger.error('Username availability check failed', { username, error: error as Error });
+      if (error instanceof ServiceError) throw error;
       throw new ServiceError('Failed to check username availability', error);
     }
   }

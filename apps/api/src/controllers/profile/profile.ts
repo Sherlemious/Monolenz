@@ -76,7 +76,7 @@ class ProfileController {
   });
 
   /**
-   * Delete current user's profile
+   * Soft-delete current user's profile
    * DELETE /api/v1/profiles/me
    */
   deleteProfile = asyncHandler(async (req: Request, res: Response) => {
@@ -185,10 +185,6 @@ class ProfileController {
     );
   });
 
-  /**
-   * Get profile statistics
-   * GET /api/v1/profiles/me/stats
-   */
 }
 
 // Export singleton instance
