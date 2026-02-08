@@ -1,5 +1,41 @@
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+/**
+ * Custom error class for API errors with status code information
+ */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly statusText: string,
+    public readonly method: HttpMethod,
+    public readonly path: string,
+    public readonly body?: unknown
+  ) {
+    super(message);
+    this.name = 'ApiError';
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ApiError);
+    }
+  }
+
+  /** Check if error is a 404 Not Found */
+  is404(): boolean {
+    return this.status === 404;
+  }
+
+  /** Check if error is a client error (4xx) */
+  isClientError(): boolean {
+    return this.status >= 400 && this.status < 500;
+  }
+
+  /** Check if error is a server error (5xx) */
+  isServerError(): boolean {
+    return this.status >= 500;
+  }
+}
+
 export type ApiClient = {
   get<T>(path: string, init?: RequestInit): Promise<T>;
   post<T, B = unknown>(path: string, body?: B, init?: RequestInit): Promise<T>;
@@ -47,9 +83,8 @@ export function createApiClientWithTokenProvider(
 
     if (!res.ok) {
       const errorBody = await parseJsonSafe<unknown>(res);
-      throw new Error(
-        `API ${method} ${path} failed: ${res.status} ${res.statusText} — ${typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody)}`
-      );
+      const message = `API ${method} ${path} failed: ${res.status} ${res.statusText} — ${typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody)}`;
+      throw new ApiError(message, res.status, res.statusText, method, path, errorBody);
     }
     return parseJsonSafe<T>(res);
   }

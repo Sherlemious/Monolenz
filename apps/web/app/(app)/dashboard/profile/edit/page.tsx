@@ -23,13 +23,17 @@ export default function ProfileEditPage() {
   const router = useRouter();
   const blocksApi = useProfileBlocksApi();
   const profileApi = useProfileApi();
-  const hasUnsavedChanges = useHasUnsavedChanges();
+  const hasBlocksUnsavedChanges = useHasUnsavedChanges();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [latestVersionId, setLatestVersionId] = useState<number | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'blocks'>('info');
+  const [hasProfileInfoUnsavedChanges, setHasProfileInfoUnsavedChanges] = useState(false);
+
+  // Combined unsaved changes from both tabs
+  const hasUnsavedChanges = hasBlocksUnsavedChanges || hasProfileInfoUnsavedChanges;
 
   // Warn before leaving with unsaved changes
   useEffect(() => {
@@ -76,6 +80,25 @@ export default function ProfileEditPage() {
   const handleProfileSaved = useCallback((updated: Profile) => {
     setProfile(updated);
   }, []);
+
+  const handleTabSwitch = useCallback((newTab: 'info' | 'blocks') => {
+    // Don't switch if already on that tab
+    if (activeTab === newTab) return;
+
+    // Check if current tab has unsaved changes
+    const currentTabHasChanges = 
+      (activeTab === 'info' && hasProfileInfoUnsavedChanges) ||
+      (activeTab === 'blocks' && hasBlocksUnsavedChanges);
+
+    if (currentTabHasChanges) {
+      const confirmed = window.confirm(
+        'You have unsaved changes on this tab. Switching tabs will not discard your changes, but you should save them first. Continue?'
+      );
+      if (!confirmed) return;
+    }
+
+    setActiveTab(newTab);
+  }, [activeTab, hasProfileInfoUnsavedChanges, hasBlocksUnsavedChanges]);
 
   if (isLoading) {
     return (
@@ -149,7 +172,7 @@ export default function ProfileEditPage() {
             'relative px-4 py-3 text-sm font-medium transition-colors',
             activeTab === 'info' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
           )}
-          onClick={() => setActiveTab('info')}
+          onClick={() => handleTabSwitch('info')}
         >
           Profile Info
           {activeTab === 'info' && <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />}
@@ -160,10 +183,7 @@ export default function ProfileEditPage() {
             'relative px-4 py-3 text-sm font-medium transition-colors',
             activeTab === 'blocks' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
           )}
-          onClick={() => {
-            if (hasUnsavedChanges && activeTab === 'blocks') return;
-            setActiveTab('blocks');
-          }}
+          onClick={() => handleTabSwitch('blocks')}
         >
           Content
           {activeTab === 'blocks' && (
@@ -176,7 +196,12 @@ export default function ProfileEditPage() {
       <div className='flex-1 overflow-hidden'>
         {activeTab === 'info' ? (
           <div className='overflow-y-auto h-full'>
-            <ProfileInfoForm profile={profile} api={profileApi} onSaved={handleProfileSaved} />
+            <ProfileInfoForm 
+              profile={profile} 
+              api={profileApi} 
+              onSaved={handleProfileSaved}
+              onDirtyChange={setHasProfileInfoUnsavedChanges}
+            />
           </div>
         ) : (
           <div className='h-full overflow-hidden'>

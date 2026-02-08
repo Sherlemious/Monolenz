@@ -20,6 +20,7 @@ interface ProfileInfoFormProps {
   profile: Profile;
   api: ProfileApi;
   onSaved?: (profile: Profile) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 interface FormData {
@@ -44,7 +45,7 @@ interface FormErrors {
 // Main Component
 // ============================================================================
 
-export function ProfileInfoForm({ profile, api, onSaved }: ProfileInfoFormProps) {
+export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: ProfileInfoFormProps) {
   const [formData, setFormData] = useState<FormData>({
     username: profile.username ?? '',
     bio: profile.bio ?? '',
@@ -57,6 +58,9 @@ export function ProfileInfoForm({ profile, api, onSaved }: ProfileInfoFormProps)
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Track dirty state
+  const [isDirty, setIsDirty] = useState(false);
 
   // Username availability
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
@@ -101,6 +105,20 @@ export function ProfileInfoForm({ profile, api, onSaved }: ProfileInfoFormProps)
       }
     };
   }, []);
+
+  // Check if form is dirty
+  useEffect(() => {
+    const isFormDirty = 
+      formData.username !== (profile.username ?? '') ||
+      formData.bio !== (profile.bio ?? '') ||
+      formData.profile_picture_url !== (profile.profile_picture_url ?? '') ||
+      formData.linkedin_url !== (profile.linkedin_url ?? '') ||
+      formData.github_url !== (profile.github_url ?? '') ||
+      formData.portfolio_url !== (profile.portfolio_url ?? '');
+    
+    setIsDirty(isFormDirty);
+    onDirtyChange?.(isFormDirty);
+  }, [formData, profile, onDirtyChange]);
 
   // ========================================================================
   // Validation
@@ -185,6 +203,8 @@ export function ProfileInfoForm({ profile, api, onSaved }: ProfileInfoFormProps)
 
       originalUsername.current = saved.username;
       setUsernameStatus('idle');
+      setIsDirty(false);
+      onDirtyChange?.(false);
       onSaved?.(saved);
     } catch (err) {
       setSaveMessage({

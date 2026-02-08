@@ -6,6 +6,7 @@
 import type { Profile, VersionBlockDetail } from '@monolenz/types/entities';
 import type { ApiResponse } from '@monolenz/types/api';
 import type { ApiClient } from './profile-blocks';
+import { ApiError } from './common';
 
 // ============================================================================
 // API Response Types
@@ -49,9 +50,13 @@ export function createProfileApi(client: ApiClient) {
           return null;
         }
         return response.data;
-      } catch {
-        // 404 = profile not found, which is expected for new users
-        return null;
+      } catch (err) {
+        // 404 is expected for new users without a profile yet
+        if (err instanceof ApiError && err.is404()) {
+          return null;
+        }
+        // Re-throw all other errors (network failures, 500s, etc.)
+        throw err;
       }
     },
 
@@ -114,9 +119,13 @@ export function createProfileApi(client: ApiClient) {
           return null;
         }
         return response.data;
-      } catch {
-        // No versions yet is not an error
-        return null;
+      } catch (err) {
+        // 404 is expected when no versions exist yet
+        if (err instanceof ApiError && err.is404()) {
+          return null;
+        }
+        // Re-throw all other errors
+        throw err;
       }
     },
   };
