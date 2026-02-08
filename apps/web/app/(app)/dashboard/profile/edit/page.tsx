@@ -92,7 +92,7 @@ export default function ProfileEditPage() {
 
       if (currentTabHasChanges) {
         const confirmed = window.confirm(
-          'You have unsaved changes on this tab. Switching tabs will not discard your changes, but you should save them first. Continue?'
+          'You have unsaved changes. It is recommended to save before switching tabs. Continue anyway?'
         );
         if (!confirmed) return;
       }
@@ -104,26 +104,26 @@ export default function ProfileEditPage() {
 
   if (isLoading) {
     return (
-      <div className='flex flex-col items-center justify-center h-screen gap-4'>
-        <div className='relative size-10'>
-          <div className='absolute inset-0 rounded-full border-2 border-muted' />
-          <div className='absolute inset-0 rounded-full border-2 border-t-primary animate-spin' />
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
+        <div className="relative size-10">
+          <div className="absolute inset-0 rounded-full border-2 border-muted" />
+          <div className="absolute inset-0 rounded-full border-2 border-t-primary animate-spin" />
         </div>
-        <p className='text-muted-foreground text-sm'>Loading editor...</p>
+        <p className="text-muted-foreground text-sm">Loading editor...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className='flex flex-col items-center justify-center h-screen text-center gap-4 p-8'>
-        <div className='size-14 rounded-2xl bg-destructive/10 flex items-center justify-center'>
-          <span className='text-destructive text-xl'>!</span>
+      <div className="flex flex-col items-center justify-center h-screen text-center gap-4 p-8">
+        <div className="size-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
+          <span className="text-destructive text-xl">!</span>
         </div>
-        <h2 className='text-lg font-semibold'>Unable to load editor</h2>
-        <p className='text-muted-foreground text-sm max-w-sm'>{error}</p>
-        <Button variant='outline' asChild>
-          <Link href='/dashboard/profile'>← Back to Profile</Link>
+        <h2 className="text-lg font-semibold">Unable to load editor</h2>
+        <p className="text-muted-foreground text-sm max-w-sm">{error}</p>
+        <Button variant="outline" asChild>
+          <Link href="/dashboard/profile">← Back to Profile</Link>
         </Button>
       </div>
     );
@@ -132,13 +132,13 @@ export default function ProfileEditPage() {
   if (!profile) return null;
 
   return (
-    <div className='flex flex-col h-screen bg-background'>
+    <div className="flex flex-col h-screen bg-background">
       {/* Top navigation */}
-      <nav className='flex justify-between items-center px-6 h-14 border-b bg-card shrink-0'>
-        <div className='flex items-center gap-4'>
+      <nav className="flex justify-between items-center px-6 h-14 border-b bg-card shrink-0">
+        <div className="flex items-center gap-4">
           <Link
-            href='/dashboard/profile'
-            className='inline-flex items-center gap-1.5 text-muted-foreground text-sm font-medium hover:text-foreground transition-colors'
+            href="/dashboard/profile"
+            className="inline-flex items-center gap-1.5 text-muted-foreground text-sm font-medium hover:text-foreground transition-colors"
             onClick={(e) => {
               if (hasUnsavedChanges) {
                 const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
@@ -146,30 +146,30 @@ export default function ProfileEditPage() {
               }
             }}
           >
-            <ArrowLeftIcon className='size-4' />
+            <ArrowLeftIcon className="size-4" />
             Profile
           </Link>
 
-          <span className='text-border'>|</span>
+          <span className="text-border">|</span>
 
-          <span className='text-sm font-semibold'>{profile.username}</span>
+          <span className="text-sm font-semibold">{profile.username}</span>
         </div>
 
         {hasUnsavedChanges && (
           <Badge
-            variant='outline'
-            className='text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800'
+            variant="outline"
+            className="text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800"
           >
-            <span className='size-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5' />
+            <span className="size-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5" />
             Unsaved changes
           </Badge>
         )}
       </nav>
 
       {/* Tab bar */}
-      <div className='flex px-6 border-b bg-card shrink-0'>
+      <div className="flex px-6 border-b bg-card shrink-0">
         <button
-          type='button'
+          type="button"
           className={cn(
             'relative px-4 py-3 text-sm font-medium transition-colors',
             activeTab === 'info' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
@@ -177,10 +177,10 @@ export default function ProfileEditPage() {
           onClick={() => handleTabSwitch('info')}
         >
           Profile Info
-          {activeTab === 'info' && <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />}
+          {activeTab === 'info' && <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full" />}
         </button>
         <button
-          type='button'
+          type="button"
           className={cn(
             'relative px-4 py-3 text-sm font-medium transition-colors',
             activeTab === 'blocks' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
@@ -189,15 +189,15 @@ export default function ProfileEditPage() {
         >
           Content
           {activeTab === 'blocks' && (
-            <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />
+            <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full" />
           )}
         </button>
       </div>
 
       {/* Content area */}
-      <div className='flex-1 overflow-hidden'>
+      <div className="flex-1 overflow-hidden">
         {activeTab === 'info' ? (
-          <div className='overflow-y-auto h-full'>
+          <div className="overflow-y-auto h-full">
             <ProfileInfoForm
               profile={profile}
               api={profileApi}
@@ -206,8 +206,8 @@ export default function ProfileEditPage() {
             />
           </div>
         ) : (
-          <div className='h-full overflow-hidden'>
-            <BlockEditor apiClient={blocksApi} profileIdentifier='me' initialVersionId={latestVersionId} />
+          <div className="h-full overflow-hidden">
+            <BlockEditor apiClient={blocksApi} profileIdentifier="me" initialVersionId={latestVersionId} />
           </div>
         )}
       </div>
@@ -221,8 +221,8 @@ export default function ProfileEditPage() {
 
 function ArrowLeftIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M10 19l-7-7m0 0l7-7m-7 7h18' />
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
     </svg>
   );
 }
