@@ -131,7 +131,10 @@ export default function ProfileEditPage() {
         </div>
 
         {hasUnsavedChanges && (
-          <Badge variant='outline' className='text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800'>
+          <Badge
+            variant='outline'
+            className='text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800'
+          >
             <span className='size-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5' />
             Unsaved changes
           </Badge>
@@ -149,9 +152,7 @@ export default function ProfileEditPage() {
           onClick={() => setActiveTab('info')}
         >
           Profile Info
-          {activeTab === 'info' && (
-            <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />
-          )}
+          {activeTab === 'info' && <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />}
         </button>
         <button
           type='button'

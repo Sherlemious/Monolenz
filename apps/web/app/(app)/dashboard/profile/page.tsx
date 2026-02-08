@@ -162,8 +162,7 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
   const isLastStep = step === ONBOARDING_STEPS.length - 1;
   const isFirstStep = step === 0;
   const currentValue = formData[currentStep.key] ?? '';
-  const canProceed =
-    !currentStep.required || currentValue.trim().length >= (currentStep.key === 'username' ? 3 : 1);
+  const canProceed = !currentStep.required || currentValue.trim().length >= (currentStep.key === 'username' ? 3 : 1);
 
   async function handleNext() {
     if (isLastStep) {
@@ -216,7 +215,10 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
             <button
               type='button'
               onClick={() => {
-                if (i < step) { setStep(i); setError(null); }
+                if (i < step) {
+                  setStep(i);
+                  setError(null);
+                }
               }}
               className={cn(
                 'size-9 rounded-full flex items-center justify-center text-xs font-bold transition-all border-2',
@@ -228,10 +230,7 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
               {i + 1}
             </button>
             {i < ONBOARDING_STEPS.length - 1 && (
-              <div className={cn(
-                'w-8 h-0.5 transition-colors',
-                i < step ? 'bg-primary/30' : 'bg-muted'
-              )} />
+              <div className={cn('w-8 h-0.5 transition-colors', i < step ? 'bg-primary/30' : 'bg-muted')} />
             )}
           </div>
         ))}
@@ -245,7 +244,9 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
               {currentStep.icon}
             </div>
             {!currentStep.required && (
-              <Badge variant='outline' className='text-[10px]'>Optional</Badge>
+              <Badge variant='outline' className='text-[10px]'>
+                Optional
+              </Badge>
             )}
           </div>
           <CardTitle className='text-lg mt-3'>{currentStep.title}</CardTitle>
@@ -293,7 +294,10 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
           <Button
             variant='ghost'
             size='sm'
-            onClick={() => { setStep((s) => s - 1); setError(null); }}
+            onClick={() => {
+              setStep((s) => s - 1);
+              setError(null);
+            }}
             disabled={isFirstStep}
           >
             ← Back
@@ -304,7 +308,10 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
               <Button
                 variant='ghost'
                 size='sm'
-                onClick={() => { setStep((s) => s + 1); setError(null); }}
+                onClick={() => {
+                  setStep((s) => s + 1);
+                  setError(null);
+                }}
               >
                 Skip
               </Button>
@@ -470,10 +477,10 @@ function BlocksGrid({ blocks }: { blocks: VersionBlockDetail[] }) {
         return (
           <section key={category}>
             <div className='flex items-center gap-2 mb-4 pb-3 border-b'>
-              <h2 className='text-sm font-semibold text-foreground uppercase tracking-wider'>
-                {category}
-              </h2>
-              <Badge variant='secondary' className='text-[10px] ml-1'>{categoryBlocks.length}</Badge>
+              <h2 className='text-sm font-semibold text-foreground uppercase tracking-wider'>{category}</h2>
+              <Badge variant='secondary' className='text-[10px] ml-1'>
+                {categoryBlocks.length}
+              </Badge>
             </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
               {categoryBlocks.map((block) => (
@@ -498,17 +505,21 @@ function BlockPreview({ block }: { block: VersionBlockDetail }) {
   const meta = BLOCK_TYPE_META[block.block_type as string];
 
   return (
-    <article className={cn(
-      'bg-card border rounded-xl p-5 transition-all hover:shadow-md border-l-[3px]',
-      meta?.accent ?? 'border-l-muted'
-    )}>
+    <article
+      className={cn(
+        'bg-card border rounded-xl p-5 transition-all hover:shadow-md border-l-[3px]',
+        meta?.accent ?? 'border-l-muted'
+      )}
+    >
       <div className='flex items-start justify-between gap-3'>
         <div className='min-w-0'>
           <h3 className='font-semibold text-[15px] truncate'>{title}</h3>
           {subtitle && <p className='text-sm text-muted-foreground mt-0.5 truncate'>{subtitle}</p>}
         </div>
         {!block.is_visible && (
-          <Badge variant='outline' className='text-[10px] shrink-0'>Hidden</Badge>
+          <Badge variant='outline' className='text-[10px] shrink-0'>
+            Hidden
+          </Badge>
         )}
       </div>
       {dates && <p className='text-xs text-muted-foreground mt-3'>{dates}</p>}
@@ -523,16 +534,28 @@ function BlockPreview({ block }: { block: VersionBlockDetail }) {
 function getBlockTitle(block: VersionBlockDetail): string {
   const data = block.data as unknown as Record<string, unknown>;
   return String(
-    data.title || data.name || data.company_name || data.institution_name ||
-    data.organization_name || data.language || data.position_title ||
-    data.degree_name || formatBlockType(block.block_type)
+    data.title ||
+      data.name ||
+      data.company_name ||
+      data.institution_name ||
+      data.organization_name ||
+      data.language ||
+      data.position_title ||
+      data.degree_name ||
+      formatBlockType(block.block_type)
   );
 }
 
 function getBlockSubtitle(block: VersionBlockDetail): string | null {
   const data = block.data as unknown as Record<string, unknown>;
-  return (data.position_title || data.degree_name || data.issuing_organization ||
-    data.role || data.proficiency || data.proficiency_level || data.category || null) as string | null;
+  return (data.position_title ||
+    data.degree_name ||
+    data.issuing_organization ||
+    data.role ||
+    data.proficiency ||
+    data.proficiency_level ||
+    data.category ||
+    null) as string | null;
 }
 
 function getBlockDates(block: VersionBlockDetail): string | null {
@@ -571,7 +594,11 @@ function formatBlockType(blockType: string): string {
 function EditIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
+      />
     </svg>
   );
 }

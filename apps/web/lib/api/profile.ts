@@ -58,7 +58,14 @@ export function createProfileApi(client: ApiClient) {
     /**
      * Create a new profile (for first-time users)
      */
-    async createProfile(data: { username: string; bio?: string; profile_picture_url?: string; linkedin_url?: string; github_url?: string; portfolio_url?: string }): Promise<Profile> {
+    async createProfile(data: {
+      username: string;
+      bio?: string;
+      profile_picture_url?: string;
+      linkedin_url?: string;
+      github_url?: string;
+      portfolio_url?: string;
+    }): Promise<Profile> {
       const response = await client.post<ProfileResponse>(BASE_PATH, data);
       if (!response.data) {
         throw new Error('Failed to create profile: no data returned');

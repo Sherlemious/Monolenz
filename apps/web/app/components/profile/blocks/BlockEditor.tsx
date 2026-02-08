@@ -291,10 +291,16 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
       const cleanedChangeset = {
         ...changeset,
         creations: changeset.creations.map((c) =>
-          stripNulls({ ...c, data: cleanBlockData(c.data as unknown as Record<string, unknown>) as unknown as typeof c.data })
+          stripNulls({
+            ...c,
+            data: cleanBlockData(c.data as unknown as Record<string, unknown>) as unknown as typeof c.data,
+          })
         ),
         updates: changeset.updates.map((u) =>
-          stripNulls({ ...u, data: cleanBlockData(u.data as unknown as Record<string, unknown>) as unknown as typeof u.data })
+          stripNulls({
+            ...u,
+            data: cleanBlockData(u.data as unknown as Record<string, unknown>) as unknown as typeof u.data,
+          })
         ),
       };
 
@@ -307,7 +313,19 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
       const message = err instanceof Error ? err.message : 'Failed to save changes';
       setSaveError(message);
     }
-  }, [apiClient, profileIdentifier, hasUnsavedChanges, isSaving, setSaving, setSaveError, getChangeset, markAsSaved, setBlockErrors, clearBlockErrors, selectBlock]);
+  }, [
+    apiClient,
+    profileIdentifier,
+    hasUnsavedChanges,
+    isSaving,
+    setSaving,
+    setSaveError,
+    getChangeset,
+    markAsSaved,
+    setBlockErrors,
+    clearBlockErrors,
+    selectBlock,
+  ]);
 
   const handleAddItem = useCallback(() => {
     addBlock(activeCategory as BlockType);
@@ -358,9 +376,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
               Unsaved changes
             </div>
           )}
-          {lastSaveError && (
-            <p className='text-xs text-destructive'>{lastSaveError}</p>
-          )}
+          {lastSaveError && <p className='text-xs text-destructive'>{lastSaveError}</p>}
         </div>
 
         <Button
@@ -425,9 +441,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
                       {count}
                     </span>
                   )}
-                  {hasErrors && (
-                    <span className='size-1.5 rounded-full bg-destructive shrink-0' />
-                  )}
+                  {hasErrors && <span className='size-1.5 rounded-full bg-destructive shrink-0' />}
                 </button>
               );
             })}
@@ -573,9 +587,7 @@ function ItemCard({ item, meta, onClick, onDelete }: ItemCardProps) {
             </Badge>
           )}
         </div>
-        {subtitle && (
-          <p className='text-xs text-muted-foreground mt-0.5 truncate'>{subtitle}</p>
-        )}
+        {subtitle && <p className='text-xs text-muted-foreground mt-0.5 truncate'>{subtitle}</p>}
       </div>
 
       {/* Actions */}
@@ -647,12 +659,7 @@ function ItemEditView({ block, meta, onBack, onDelete }: ItemEditViewProps) {
           </div>
         </div>
 
-        <Button
-          variant='ghost'
-          size='sm'
-          onClick={onDelete}
-          className='text-muted-foreground hover:text-destructive'
-        >
+        <Button variant='ghost' size='sm' onClick={onDelete} className='text-muted-foreground hover:text-destructive'>
           <TrashIcon className='size-3.5' />
           Delete
         </Button>
@@ -741,7 +748,11 @@ function getItemSubtitle(block: DraftBlock): string | null {
 function BriefcaseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1.5}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0'
+      />
     </svg>
   );
 }
@@ -749,7 +760,11 @@ function BriefcaseIcon({ className }: { className?: string }) {
 function GraduationCapIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1.5}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5'
+      />
     </svg>
   );
 }
@@ -757,7 +772,11 @@ function GraduationCapIcon({ className }: { className?: string }) {
 function ZapIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1.5}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z'
+      />
     </svg>
   );
 }
@@ -765,7 +784,11 @@ function ZapIcon({ className }: { className?: string }) {
 function RocketIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1.5}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.58-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.58-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z'
+      />
     </svg>
   );
 }
@@ -773,7 +796,11 @@ function RocketIcon({ className }: { className?: string }) {
 function CertificateIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1.5}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z'
+      />
     </svg>
   );
 }
@@ -781,7 +808,11 @@ function CertificateIcon({ className }: { className?: string }) {
 function GlobeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1.5}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418'
+      />
     </svg>
   );
 }
@@ -789,7 +820,11 @@ function GlobeIcon({ className }: { className?: string }) {
 function HeartHandIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1.5}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z'
+      />
     </svg>
   );
 }
@@ -797,7 +832,11 @@ function HeartHandIcon({ className }: { className?: string }) {
 function TrophyIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1.5}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0116.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.016 6.016 0 01-2.77.853m0 0c-.467.056-.944.086-1.43.086s-.964-.03-1.43-.086m0 0a6.016 6.016 0 01-2.77-.853' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0116.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.016 6.016 0 01-2.77.853m0 0c-.467.056-.944.086-1.43.086s-.964-.03-1.43-.086m0 0a6.016 6.016 0 01-2.77-.853'
+      />
     </svg>
   );
 }
@@ -813,7 +852,11 @@ function PlusIcon({ className }: { className?: string }) {
 function TrashIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1.5}>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0' />
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0'
+      />
     </svg>
   );
 }

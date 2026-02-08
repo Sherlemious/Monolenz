@@ -212,7 +212,8 @@ export function ProfileInfoForm({ profile, api, onSaved }: ProfileInfoFormProps)
         <div
           className={cn(
             'px-4 py-3 rounded-lg text-sm mb-6 border',
-            saveMessage.type === 'success' && 'bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:border-green-800 dark:text-green-400',
+            saveMessage.type === 'success' &&
+              'bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:border-green-800 dark:text-green-400',
             saveMessage.type === 'error' && 'bg-destructive/5 border-destructive/30 text-destructive'
           )}
         >

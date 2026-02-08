@@ -64,7 +64,17 @@ interface TextFieldProps {
   hint?: string;
 }
 
-function TextField({ label, value, onChange, placeholder, required, maxLength, error, type = 'text', hint }: TextFieldProps) {
+function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  required,
+  maxLength,
+  error,
+  type = 'text',
+  hint,
+}: TextFieldProps) {
   return (
     <div className='space-y-1.5'>
       <Label className='text-foreground'>
@@ -81,9 +91,11 @@ function TextField({ label, value, onChange, placeholder, required, maxLength, e
         className={cn(error && 'border-destructive focus-visible:ring-destructive/50')}
       />
       {hint && !error && <p className='text-[11px] text-muted-foreground'>{hint}</p>}
-      {error && <p className='text-xs text-destructive flex items-center gap-1'>
-        <span className='text-[10px]'>●</span> {error}
-      </p>}
+      {error && (
+        <p className='text-xs text-destructive flex items-center gap-1'>
+          <span className='text-[10px]'>●</span> {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -135,9 +147,11 @@ function DateField({ label, value, onChange, required, error }: DateFieldProps) 
         aria-invalid={!!error}
         className={cn(error && 'border-destructive focus-visible:ring-destructive/50')}
       />
-      {error && <p className='text-xs text-destructive flex items-center gap-1'>
-        <span className='text-[10px]'>●</span> {error}
-      </p>}
+      {error && (
+        <p className='text-xs text-destructive flex items-center gap-1'>
+          <span className='text-[10px]'>●</span> {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -160,10 +174,10 @@ function ToggleField({ label, checked, onChange, description }: ToggleFieldProps
       />
       <span
         className={cn(
-          "relative w-10 h-[22px] rounded-full transition-colors shrink-0",
-          "bg-input",
+          'relative w-10 h-[22px] rounded-full transition-colors shrink-0',
+          'bg-input',
           "after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:size-4 after:bg-white after:rounded-full after:shadow-sm after:transition-transform",
-          "peer-checked:bg-primary peer-checked:after:translate-x-[18px]"
+          'peer-checked:bg-primary peer-checked:after:translate-x-[18px]'
         )}
       />
       <span className='text-sm'>
@@ -209,9 +223,11 @@ function SelectField({ label, value, onChange, options, placeholder, required, e
           </option>
         ))}
       </select>
-      {error && <p className='text-xs text-destructive flex items-center gap-1'>
-        <span className='text-[10px]'>●</span> {error}
-      </p>}
+      {error && (
+        <p className='text-xs text-destructive flex items-center gap-1'>
+          <span className='text-[10px]'>●</span> {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -319,9 +335,7 @@ function TagsField({ label, values, onChange, placeholder }: TagsFieldProps) {
 function FormSection({ title }: { title: string }) {
   return (
     <div className='pt-2'>
-      <p className='text-[11px] font-semibold text-muted-foreground uppercase tracking-wider pb-2 border-b'>
-        {title}
-      </p>
+      <p className='text-[11px] font-semibold text-muted-foreground uppercase tracking-wider pb-2 border-b'>{title}</p>
     </div>
   );
 }
