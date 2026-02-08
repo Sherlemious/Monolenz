@@ -81,24 +81,26 @@ export default function ProfileEditPage() {
     setProfile(updated);
   }, []);
 
-  const handleTabSwitch = useCallback((newTab: 'info' | 'blocks') => {
-    // Don't switch if already on that tab
-    if (activeTab === newTab) return;
+  const handleTabSwitch = useCallback(
+    (newTab: 'info' | 'blocks') => {
+      // Don't switch if already on that tab
+      if (activeTab === newTab) return;
 
-    // Check if current tab has unsaved changes
-    const currentTabHasChanges = 
-      (activeTab === 'info' && hasProfileInfoUnsavedChanges) ||
-      (activeTab === 'blocks' && hasBlocksUnsavedChanges);
+      // Check if current tab has unsaved changes
+      const currentTabHasChanges =
+        (activeTab === 'info' && hasProfileInfoUnsavedChanges) || (activeTab === 'blocks' && hasBlocksUnsavedChanges);
 
-    if (currentTabHasChanges) {
-      const confirmed = window.confirm(
-        'You have unsaved changes on this tab. Switching tabs will not discard your changes, but you should save them first. Continue?'
-      );
-      if (!confirmed) return;
-    }
+      if (currentTabHasChanges) {
+        const confirmed = window.confirm(
+          'You have unsaved changes on this tab. Switching tabs will not discard your changes, but you should save them first. Continue?'
+        );
+        if (!confirmed) return;
+      }
 
-    setActiveTab(newTab);
-  }, [activeTab, hasProfileInfoUnsavedChanges, hasBlocksUnsavedChanges]);
+      setActiveTab(newTab);
+    },
+    [activeTab, hasProfileInfoUnsavedChanges, hasBlocksUnsavedChanges]
+  );
 
   if (isLoading) {
     return (
@@ -196,9 +198,9 @@ export default function ProfileEditPage() {
       <div className='flex-1 overflow-hidden'>
         {activeTab === 'info' ? (
           <div className='overflow-y-auto h-full'>
-            <ProfileInfoForm 
-              profile={profile} 
-              api={profileApi} 
+            <ProfileInfoForm
+              profile={profile}
+              api={profileApi}
               onSaved={handleProfileSaved}
               onDirtyChange={setHasProfileInfoUnsavedChanges}
             />

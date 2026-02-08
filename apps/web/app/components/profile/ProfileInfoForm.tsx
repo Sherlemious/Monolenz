@@ -108,14 +108,14 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
 
   // Check if form is dirty
   useEffect(() => {
-    const isFormDirty = 
+    const isFormDirty =
       formData.username !== (profile.username ?? '') ||
       formData.bio !== (profile.bio ?? '') ||
       formData.profile_picture_url !== (profile.profile_picture_url ?? '') ||
       formData.linkedin_url !== (profile.linkedin_url ?? '') ||
       formData.github_url !== (profile.github_url ?? '') ||
       formData.portfolio_url !== (profile.portfolio_url ?? '');
-    
+
     setIsDirty(isFormDirty);
     onDirtyChange?.(isFormDirty);
   }, [formData, profile, onDirtyChange]);
