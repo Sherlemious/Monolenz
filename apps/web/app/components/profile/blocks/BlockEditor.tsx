@@ -5,7 +5,7 @@
  * Sidebar navigation by content type + item list/edit in main area
  */
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
   useProfileEditorStore,
   useVisibleBlocks,
@@ -180,6 +180,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>(CATEGORIES[0]!.type);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const saveSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const store = useProfileEditorStore();
   const {
@@ -249,6 +250,15 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
     loadInitialData();
   }, [apiClient, profileIdentifier, initialVersionId, setCatalog, setCatalogLoading, setCatalogError, loadVersion]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveSuccessTimerRef.current) {
+        clearTimeout(saveSuccessTimerRef.current);
+      }
+    };
+  }, []);
+
   // Save handler with validation
   const handleSave = useCallback(async () => {
     if (!hasUnsavedChanges || isSaving) return;
@@ -308,7 +318,15 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
       const newBlocks = await apiClient.listVersionBlocks(profileIdentifier, result.versionId);
       markAsSaved(result.versionId, newBlocks);
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+
+      // Clear any existing timer and set new one
+      if (saveSuccessTimerRef.current) {
+        clearTimeout(saveSuccessTimerRef.current);
+      }
+      saveSuccessTimerRef.current = setTimeout(() => {
+        setSaveSuccess(false);
+        saveSuccessTimerRef.current = null;
+      }, 3000);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save changes';
       setSaveError(message);

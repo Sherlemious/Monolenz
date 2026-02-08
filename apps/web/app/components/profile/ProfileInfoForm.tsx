@@ -11,6 +11,7 @@ import type { ProfileApi } from '@/lib/api/profile';
 import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { validateUsername, isUsernameValidForChecking, USERNAME_MAX_LENGTH } from '@/lib/validation/username';
 
 // ============================================================================
 // Types
@@ -59,9 +60,6 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Track dirty state
-  const [isDirty, setIsDirty] = useState(false);
-
   // Username availability
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const usernameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -79,7 +77,7 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
         return;
       }
 
-      if (username.length < 3 || !/^[a-zA-Z0-9_-]+$/.test(username)) {
+      if (!isUsernameValidForChecking(username)) {
         setUsernameStatus('idle');
         return;
       }
@@ -116,7 +114,6 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
       formData.github_url !== (profile.github_url ?? '') ||
       formData.portfolio_url !== (profile.portfolio_url ?? '');
 
-    setIsDirty(isFormDirty);
     onDirtyChange?.(isFormDirty);
   }, [formData, profile, onDirtyChange]);
 
@@ -127,12 +124,9 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
   function validate(data: FormData): FormErrors {
     const errs: FormErrors = {};
 
-    if (!data.username || data.username.length < 3) {
-      errs.username = 'Username must be at least 3 characters';
-    } else if (data.username.length > 50) {
-      errs.username = 'Username must be less than 50 characters';
-    } else if (!/^[a-zA-Z0-9_-]+$/.test(data.username)) {
-      errs.username = 'Username can only contain letters, numbers, underscores, and hyphens';
+    const usernameError = validateUsername(data.username);
+    if (usernameError) {
+      errs.username = usernameError;
     }
 
     if (data.bio && data.bio.length > 500) {
@@ -203,7 +197,6 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
 
       originalUsername.current = saved.username;
       setUsernameStatus('idle');
-      setIsDirty(false);
       onDirtyChange?.(false);
       onSaved?.(saved);
     } catch (err) {
@@ -253,7 +246,7 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
               value={formData.username}
               onChange={(e) => handleChange('username', e.target.value)}
               placeholder='your-username'
-              maxLength={50}
+              maxLength={USERNAME_MAX_LENGTH}
               aria-invalid={!!errors.username}
             />
             {usernameStatus !== 'idle' && (

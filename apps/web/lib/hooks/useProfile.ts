@@ -37,8 +37,15 @@ export function useProfileApi(): ProfileApi {
         });
 
         if (!response.ok) {
-          const error = await response.json().catch(() => ({ message: 'Request failed' }));
-          throw new Error(error.message ?? `HTTP ${response.status}`);
+          const text = await response.text();
+          let message = `HTTP ${response.status}`;
+          try {
+            const json = JSON.parse(text);
+            message = json.message ?? json.error ?? message;
+          } catch {
+            if (text) message = text;
+          }
+          throw new Error(message);
         }
 
         return response.json();
@@ -88,8 +95,15 @@ export function useProfileApi(): ProfileApi {
         });
 
         if (!response.ok) {
-          const error = await response.json().catch(() => ({ message: 'Request failed' }));
-          throw new Error(error.message ?? `HTTP ${response.status}`);
+          const text = await response.text();
+          let message = `HTTP ${response.status}`;
+          try {
+            const json = JSON.parse(text);
+            message = json.message ?? json.error ?? message;
+          } catch {
+            if (text) message = text;
+          }
+          throw new Error(message);
         }
 
         return response.json();
@@ -109,8 +123,15 @@ export function useProfileApi(): ProfileApi {
         });
 
         if (!response.ok) {
-          const error = await response.json().catch(() => ({ message: 'Request failed' }));
-          throw new Error(error.message ?? `HTTP ${response.status}`);
+          const text = await response.text();
+          let message = `HTTP ${response.status}`;
+          try {
+            const json = JSON.parse(text);
+            message = json.message ?? json.error ?? message;
+          } catch {
+            if (text) message = text;
+          }
+          throw new Error(message);
         }
 
         return response.json();

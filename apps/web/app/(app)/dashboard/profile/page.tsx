@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { USERNAME_MIN_LENGTH, meetsMinimumLength } from '@/lib/validation/username';
 
 // ============================================================================
 // Main Page
@@ -162,7 +163,8 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
   const isLastStep = step === ONBOARDING_STEPS.length - 1;
   const isFirstStep = step === 0;
   const currentValue = formData[currentStep.key] ?? '';
-  const canProceed = !currentStep.required || currentValue.trim().length >= (currentStep.key === 'username' ? 3 : 1);
+  const canProceed =
+    !currentStep.required || currentValue.trim().length >= (currentStep.key === 'username' ? USERNAME_MIN_LENGTH : 1);
 
   async function handleNext() {
     if (isLastStep) {
@@ -279,8 +281,10 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
             />
           )}
 
-          {currentStep.key === 'username' && currentValue.length > 0 && currentValue.length < 3 && (
-            <p className='text-xs text-muted-foreground mt-2'>Username must be at least 3 characters</p>
+          {currentStep.key === 'username' && currentValue.length > 0 && !meetsMinimumLength(currentValue) && (
+            <p className='text-xs text-muted-foreground mt-2'>
+              Username must be at least {USERNAME_MIN_LENGTH} characters
+            </p>
           )}
 
           {error && (
