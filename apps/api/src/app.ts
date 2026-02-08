@@ -63,14 +63,7 @@ const globalLimiter = rateLimit({
 });
 app.use('/api', globalLimiter);
 
-// 7. REQUEST PREPROCESSING (before routes)
-app.use((req, res, next) => {
-  req.requestId = crypto.randomUUID();
-  req.startTime = new Date();
-  next();
-});
-
-// 8. SIMPLE HEALTH CHECK (no auth needed)
+// 7. SIMPLE HEALTH CHECK (no auth needed)
 app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -80,10 +73,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-// 9. API ROUTES (main application)
+// 8. API ROUTES (main application)
 app.use('/api', routes);
 
-// 10. 404 HANDLER (after all routes)
+// 9. 404 HANDLER (after all routes)
 app.use('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
@@ -93,7 +86,7 @@ app.use('*', (req, res) => {
   });
 });
 
-// 11. ERROR HANDLER (must be last)
+// 10. ERROR HANDLER (must be last)
 app.use(handleErrors);
 
 export default app;

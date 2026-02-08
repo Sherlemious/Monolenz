@@ -8,18 +8,22 @@ import { ProfileBlockService } from '../../services/domain/profile-block.service
 import { BlocksRepository } from '../../repositories/blocks/blocks.repository';
 import { VersionsRepository } from '../../repositories/profile/versions.repository';
 import { VersionBlocksRepository } from '../../repositories/profile/version-blocks.repository';
+import { ProfileRepository } from '../../repositories/profile/profile';
 import { prisma } from '../../config/prisma';
 import { ServiceContext } from '../../services/base.service';
 import { BlockType } from '@monolenz/types/entities/blocks';
+import { HTTP_STATUS_CODES } from '@monolenz/types/api';
 
 class ProfileBlockController {
   private blockService: ProfileBlockService;
+  private profileRepository: ProfileRepository;
 
   constructor() {
     const blocksRepo = new BlocksRepository(prisma);
     const versionsRepo = new VersionsRepository(prisma);
     const versionBlocksRepo = new VersionBlocksRepository(prisma);
     this.blockService = new ProfileBlockService(blocksRepo, versionsRepo, versionBlocksRepo, prisma);
+    this.profileRepository = new ProfileRepository(prisma);
   }
 
   /**
@@ -84,13 +88,13 @@ class ProfileBlockController {
     const profileId = await this.resolveProfileIdentifier(identifier);
 
     if (!profileId) {
-      return res.error('Profile not found', 404);
+      return res.error('Profile not found', HTTP_STATUS_CODES.NOT_FOUND);
     }
 
     const version = await this.blockService.getLatestVersion(profileId);
 
     if (!version) {
-      return res.error('No versions found for this profile', 404);
+      return res.error('No versions found for this profile', HTTP_STATUS_CODES.NOT_FOUND);
     }
 
     const blocks = await this.blockService.listBlocksForVersion(version.id);
@@ -102,18 +106,8 @@ class ProfileBlockController {
    * Resolve profile identifier (UUID or username) to profile_id
    */
   private async resolveProfileIdentifier(identifier: string): Promise<string | null> {
-    // Check if identifier looks like a UUID
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-    if (uuidRegex.test(identifier)) {
-      // It's a UUID, verify it exists
-      const profile = await prisma.profiles.findUnique({ where: { id: identifier }, select: { id: true } });
-      return profile?.id || null;
-    } else {
-      // It's a username, look it up
-      const profile = await prisma.profiles.findUnique({ where: { username: identifier }, select: { id: true } });
-      return profile?.id || null;
-    }
+    const profile = await this.profileRepository.findByIdentifier(identifier);
+    return profile?.id || null;
   }
 }
 

@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import { supabaseAuth } from '../config/supabase';
 import { HTTP_STATUS_CODES } from '@monolenz/types';
+import { Logger } from '../utils/logger';
+
+const logger = new Logger('AuthMiddleware');
 
 // Authentication middleware
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
@@ -54,7 +58,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     next();
   } catch (error) {
-    console.error('Authentication error:', error);
+    logger.error('Authentication error', { error: error as Error });
     return res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Authentication service error',
@@ -86,7 +90,7 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
 
     next();
   } catch (error) {
-    console.error('Optional authentication error:', error);
+    logger.error('Optional authentication error', { error: error as Error });
     next(); // Continue without authentication on error
   }
 };
@@ -159,7 +163,11 @@ export const authenticateApiKey = (req: Request, res: Response, next: NextFuncti
     });
   }
 
-  if (!apiKey || apiKey !== expectedApiKey) {
+  if (
+    !apiKey ||
+    apiKey.length !== expectedApiKey.length ||
+    !crypto.timingSafeEqual(Buffer.from(apiKey), Buffer.from(expectedApiKey))
+  ) {
     return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
       success: false,
       message: 'Invalid API key',

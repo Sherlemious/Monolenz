@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { BaseRepository, RepositoryOptions } from '../base.repository';
 import { Profile } from '@monolenz/types/entities';
+import { UUID_REGEX } from '../../utils/constants';
 
 export interface ProfileEntity extends Profile {
   profile_links?: any[];
@@ -20,12 +21,24 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
     super(db);
   }
 
+  async findById(id: string | number, options?: RepositoryOptions): Promise<ProfileEntity | null> {
+    try {
+      const result = await this.prisma.profiles.findFirst({
+        where: { id: id as string, deleted_at: null },
+        ...options,
+      });
+      return result as ProfileEntity;
+    } catch (error) {
+      throw new Error(`Failed to find profile by id: ${id}`);
+    }
+  }
+
   async findByUsername(username: string, options?: ProfileRepositoryOptions): Promise<ProfileEntity | null> {
     try {
       const include = this.buildIncludeOptions(options);
 
-      const result = await this.prisma.profiles.findUnique({
-        where: { username },
+      const result = await this.prisma.profiles.findFirst({
+        where: { username, deleted_at: null },
         include,
       });
 
@@ -40,11 +53,11 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
       const include = this.buildIncludeOptions(options);
 
       // Try to find by UUID first, then by username
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+      const isUuid = UUID_REGEX.test(identifier);
 
-      const where = isUuid ? { id: identifier } : { username: identifier };
+      const where = isUuid ? { id: identifier, deleted_at: null } : { username: identifier, deleted_at: null };
 
-      const result = await this.prisma.profiles.findUnique({
+      const result = await this.prisma.profiles.findFirst({
         where,
         include,
       });
@@ -57,7 +70,10 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
 
   async checkUsernameAvailability(username: string, excludeId?: string): Promise<boolean> {
     try {
-      const where = excludeId ? { username, NOT: { id: excludeId } } : { username };
+      const where: any = { username, deleted_at: null };
+      if (excludeId) {
+        where.NOT = { id: excludeId };
+      }
 
       const count = await this.prisma.profiles.count({ where });
       return count === 0;
@@ -74,12 +90,14 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
           contains: query,
           mode: 'insensitive',
         },
+        deleted_at: null,
       },
       {
         bio: {
           contains: query,
           mode: 'insensitive',
         },
+        deleted_at: null,
       },
     ];
   }
@@ -105,28 +123,5 @@ export class ProfileRepository extends BaseRepository<ProfileEntity> {
     }
 
     return Object.keys(include).length > 0 ? include : undefined;
-  }
-
-  private buildSelectOptions(options?: ProfileRepositoryOptions) {
-    if (options?.publicOnly) {
-      return {
-        select: {
-          username: true,
-          bio: true,
-          profile_picture_url: true,
-          portfolio_url: true,
-          created_at: true,
-          profile_links: options.includeLinks
-            ? {
-                where: { is_public: true },
-                include: { link_platforms: true },
-                orderBy: { sort_order: 'asc' },
-              }
-            : false,
-        },
-      };
-    }
-
-    return {};
   }
 }
