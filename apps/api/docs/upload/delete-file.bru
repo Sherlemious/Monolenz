@@ -1,0 +1,35 @@
+meta {
+  name: Delete File
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/v1/upload/{{fileKey}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+vars:pre-request {
+  fileKey: uploads/1707408000000-abc123-file.jpg
+}
+
+docs {
+  # Delete File
+  
+  Deletes a file from S3 by its key.
+  
+  ## Path Parameters
+  - key: string (required) - URL-encoded S3 object key
+  
+  ## Example
+  To delete a file with key "uploads/2024/image.jpg", the key should be URL-encoded:
+  uploads%2F2024%2Fimage.jpg
+  
+  ## Response
+  Returns success message if file is deleted.
+}

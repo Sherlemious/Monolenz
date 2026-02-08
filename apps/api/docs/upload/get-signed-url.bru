@@ -1,0 +1,38 @@
+meta {
+  name: Get Signed URL
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/v1/upload/signed-url/{{fileKey}}?expiresIn=3600
+  body: none
+  auth: bearer
+}
+
+params:query {
+  expiresIn: 3600
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+vars:pre-request {
+  fileKey: uploads/1707408000000-abc123-file.jpg
+}
+
+docs {
+  # Get Signed URL
+  
+  Generates a temporary signed URL for accessing a private file.
+  
+  ## Path Parameters
+  - key: string (required) - URL-encoded S3 object key
+  
+  ## Query Parameters
+  - expiresIn: number (optional) - URL expiration time in seconds (default: 3600)
+  
+  ## Response
+  Returns a signed URL that can be used to access the file temporarily.
+}

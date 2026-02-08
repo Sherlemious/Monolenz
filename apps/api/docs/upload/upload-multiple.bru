@@ -1,0 +1,36 @@
+meta {
+  name: Upload Multiple Files
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/upload/multiple
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  files: @file(./test-image1.jpg)
+  files: @file(./test-image2.jpg)
+  folder: documents
+  isPublic: false
+}
+
+docs {
+  # Upload Multiple Files
+  
+  Uploads multiple files to S3 (max 10 files).
+  
+  ## Request Body
+  - files: File[] (required) - Array of files to upload
+  - folder: string (optional) - Target folder name (default: "uploads")
+  - isPublic: boolean (optional) - Whether files should be publicly accessible
+  
+  ## Response
+  Returns an array of uploaded file details.
+}

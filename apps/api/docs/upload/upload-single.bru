@@ -1,0 +1,35 @@
+meta {
+  name: Upload Single File
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/upload/single
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  file: @file(./test-image.jpg)
+  folder: profile-pictures
+  isPublic: true
+}
+
+docs {
+  # Upload Single File
+  
+  Uploads a single file to S3.
+  
+  ## Request Body
+  - file: File (required) - The file to upload
+  - folder: string (optional) - Target folder name (default: "uploads")
+  - isPublic: boolean (optional) - Whether the file should be publicly accessible
+  
+  ## Response
+  Returns the uploaded file details including the URL and S3 key.
+}

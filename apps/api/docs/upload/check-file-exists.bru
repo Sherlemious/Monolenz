@@ -1,0 +1,31 @@
+meta {
+  name: Check File Exists
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/v1/upload/exists/{{fileKey}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+vars:pre-request {
+  fileKey: uploads/1707408000000-abc123-file.jpg
+}
+
+docs {
+  # Check File Exists
+  
+  Checks if a file exists in S3.
+  
+  ## Path Parameters
+  - key: string (required) - URL-encoded S3 object key
+  
+  ## Response
+  Returns a boolean indicating whether the file exists.
+}
