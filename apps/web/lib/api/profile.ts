@@ -36,6 +36,10 @@ type PaginatedPublicProfileResponse = PaginatedResponse<PublicProfile>;
 export function CreateProfileApi(client: ApiClient) {
  const BASE_PATH = '/api/v1/profiles';
    return {
+    async createProfile(payload: Partial<Profile> & { username: string }): Promise<Profile | null> {
+        const response = await client.post<ProfileResponse>(`${BASE_PATH}`, payload);
+        return response.data ?? null;
+    },
 
     async getMyProfile(): Promise<Profile | null> {
         const response = await client.get<ProfileResponse>(`${BASE_PATH}/me`);

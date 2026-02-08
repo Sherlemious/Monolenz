@@ -9,11 +9,19 @@ type ProfileSection = {
   items: ProfileSectionItem[];
 };
 
+type ProfileLinks = {
+  email?: string;
+  linkedin_url?: string;
+  github_url?: string;
+  portfolio_url?: string;
+};
+
 type MasterProfileCardProps = {
   name?: string;
   headline?: string;
   role?: string;
   contact?: string;
+  links?: ProfileLinks;
   sections?: ProfileSection[];
 };
 
@@ -66,17 +74,45 @@ const defaultProfile: MasterProfileCardProps = {
   headline: 'SWE Google',
   role: 'SWE · Google',
   contact: 'jake@email.com · github.com/jake · +1 (555) 555-5555',
+  links: {
+    email: 'jake@email.com',
+    linkedin_url: 'https://linkedin.com/in/jake',
+    github_url: 'https://github.com/jake',
+    portfolio_url: 'https://jake.dev',
+  },
   sections: DEFAULT_SECTIONS,
 };
+
+function LinkItem({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target='_blank'
+      rel='noopener noreferrer'
+      className='text-neutral-400 hover:text-neutral-200 transition-colors'
+    >
+      {label}
+    </a>
+  );
+}
 
 export default function MasterProfileCard({
   name = defaultProfile.name,
   headline = defaultProfile.headline,
   role = defaultProfile.role,
   contact = defaultProfile.contact,
+  links = defaultProfile.links,
   sections = defaultProfile.sections,
 }: MasterProfileCardProps) {
   const safeSections = sections ?? DEFAULT_SECTIONS;
+  const safeLinks = links ?? defaultProfile.links;
+
+  const linkItems = [
+    safeLinks?.email && { href: `mailto:${safeLinks.email}`, label: safeLinks.email },
+    safeLinks?.linkedin_url && { href: safeLinks.linkedin_url, label: 'LinkedIn' },
+    safeLinks?.github_url && { href: safeLinks.github_url, label: 'GitHub' },
+    safeLinks?.portfolio_url && { href: safeLinks.portfolio_url, label: 'Portfolio' },
+  ].filter(Boolean) as Array<{ href: string; label: string }>;
 
   return (
     <div className='flex flex-col items-center'>
@@ -87,7 +123,15 @@ export default function MasterProfileCard({
         <div className='mb-6 text-center'>
           <h2 className='text-2xl font-semibold tracking-tight'>{name}</h2>
           <p className='text-sm text-neutral-400'>{role}</p>
-          <p className='text-xs text-neutral-500 mt-1'>{contact}</p>
+          {linkItems.length > 0 ? (
+            <div className='mt-2 flex flex-wrap justify-center gap-3 text-xs'>
+              {linkItems.map((item) => (
+                <LinkItem key={item.href} href={item.href} label={item.label} />
+              ))}
+            </div>
+          ) : contact ? (
+            <p className='text-xs text-neutral-500 mt-1'>{contact}</p>
+          ) : null}
         </div>
 
         <div className='space-y-6'>

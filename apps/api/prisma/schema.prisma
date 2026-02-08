@@ -367,7 +367,7 @@ model profiles {
   created_at          DateTime?  @default(now()) @db.Timestamptz(6)
   updated_at          DateTime?  @default(now()) @db.Timestamptz(6)
   versions            versions[]
-
+  deleted_at          DateTime?  @db.Timestamptz(6)
   @@schema("public")
 }
 
