@@ -32,7 +32,7 @@ To modify supported file types, update the `allowedMimeTypes` array in [`src/con
 
 ## API Endpoints
 
-All upload endpoints require authentication via the `requireAuth` middleware.
+All upload endpoints require authentication via the `authenticate` middleware.
 
 ### Upload Single File
 
