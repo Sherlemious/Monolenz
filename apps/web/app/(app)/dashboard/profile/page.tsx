@@ -6,10 +6,11 @@
  * - Has profile: polished read-only view of profile info and blocks
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import type { Profile, VersionBlockDetail } from '@monolenz/types/entities';
-import { useProfileApi } from '@/lib/hooks/useProfile';
+import { useApiClient } from '@/lib/hooks/useApiClient';
+import { createProfileApi, type ProfileApi } from '@/lib/api/profile';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
@@ -22,7 +23,8 @@ import { USERNAME_MIN_LENGTH, meetsMinimumLength } from '@/lib/validation/userna
 // ============================================================================
 
 export default function ProfilePage() {
-  const profileApi = useProfileApi();
+  const client = useApiClient();
+  const profileApi = useMemo(() => createProfileApi(client), [client]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [blocks, setBlocks] = useState<VersionBlockDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -149,7 +151,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 // ============================================================================
 
 interface OnboardingWizardProps {
-  api: ReturnType<typeof useProfileApi>;
+  api: ProfileApi;
   onCreated: (profile: Profile) => void;
 }
 

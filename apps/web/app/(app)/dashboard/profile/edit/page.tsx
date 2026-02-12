@@ -6,14 +6,15 @@
  * - Tab-based editor: Profile Info + Content sections
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Profile } from '@monolenz/types/entities';
 import { BlockEditor } from '@/app/components/profile/blocks/BlockEditor';
 import { ProfileInfoForm } from '@/app/components/profile/ProfileInfoForm';
-import { useProfileBlocksApi } from '@/lib/hooks/useProfileBlocks';
-import { useProfileApi } from '@/lib/hooks/useProfile';
+import { useApiClient } from '@/lib/hooks/useApiClient';
+import { createProfileApi } from '@/lib/api/profile';
+import { createProfileBlocksApi } from '@/lib/api/profile-blocks';
 import { useHasUnsavedChanges } from '@/lib/stores/profile-editor-store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,8 +22,9 @@ import { cn } from '@/lib/utils';
 
 export default function ProfileEditPage() {
   const router = useRouter();
-  const blocksApi = useProfileBlocksApi();
-  const profileApi = useProfileApi();
+  const client = useApiClient();
+  const blocksApi = useMemo(() => createProfileBlocksApi(client), [client]);
+  const profileApi = useMemo(() => createProfileApi(client), [client]);
   const hasBlocksUnsavedChanges = useHasUnsavedChanges();
 
   const [profile, setProfile] = useState<Profile | null>(null);

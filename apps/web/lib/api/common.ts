@@ -41,7 +41,7 @@ export type ApiClient = {
   post<T, B = unknown>(path: string, body?: B, init?: RequestInit): Promise<T>;
   put<T, B = unknown>(path: string, body?: B, init?: RequestInit): Promise<T>;
   patch<T, B = unknown>(path: string, body?: B, init?: RequestInit): Promise<T>;
-  del<T>(path: string, init?: RequestInit): Promise<T>;
+  delete<T>(path: string, init?: RequestInit): Promise<T>;
 };
 
 function toJsonBody(body: unknown): BodyInit | undefined {
@@ -94,6 +94,6 @@ export function createApiClientWithTokenProvider(
     post: (path, body, init) => request('POST', path, { ...init, body: toJsonBody(body) }),
     put: (path, body, init) => request('PUT', path, { ...init, body: toJsonBody(body) }),
     patch: (path, body, init) => request('PATCH', path, { ...init, body: toJsonBody(body) }),
-    del: (path, init) => request('DELETE', path, init),
+    delete: (path, init) => request('DELETE', path, init),
   };
 }

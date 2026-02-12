@@ -5,7 +5,7 @@
 
 import type { Profile, VersionBlockDetail } from '@monolenz/types/entities';
 import type { ApiResponse } from '@monolenz/types/api';
-import type { ApiClient } from './profile-blocks';
+import type { ApiClient } from './common';
 import { ApiError } from './common';
 
 // ============================================================================
@@ -82,9 +82,6 @@ export function createProfileApi(client: ApiClient) {
      * Update the current user's profile
      */
     async updateProfile(data: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>): Promise<Profile> {
-      if (!client.put) {
-        throw new Error('PUT method not available on API client');
-      }
       const response = await client.put<ProfileResponse>(`${BASE_PATH}/me`, data);
       if (!response.data) {
         throw new Error('Failed to update profile: no data returned');

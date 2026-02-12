@@ -5,17 +5,8 @@
 
 import type { BlockType, VersionBlockDetail, BatchUpdatePayload, BatchUpdateResponse } from '@monolenz/types/entities';
 import type { ApiResponse } from '@monolenz/types/api';
-
-// ============================================================================
-// API Client Interface
-// ============================================================================
-
-export interface ApiClient {
-  get: <T>(url: string, init?: RequestInit) => Promise<T>;
-  post: <T>(url: string, body?: unknown, init?: RequestInit) => Promise<T>;
-  put?: <T>(url: string, body?: unknown, init?: RequestInit) => Promise<T>;
-  delete?: <T>(url: string, init?: RequestInit) => Promise<T>;
-}
+import type { ApiClient } from './common';
+export type { ApiClient };
 
 // ============================================================================
 // API Response Wrappers
