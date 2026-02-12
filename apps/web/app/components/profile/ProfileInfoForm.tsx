@@ -248,24 +248,41 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
               placeholder='your-username'
               maxLength={USERNAME_MAX_LENGTH}
               aria-invalid={!!errors.username}
+              aria-describedby={cn(
+                'username-helper',
+                errors.username && 'username-error',
+                usernameStatus !== 'idle' && 'username-status'
+              )}
             />
-            {usernameStatus !== 'idle' && (
-              <span
-                className={cn(
-                  'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium',
-                  usernameStatus === 'checking' && 'text-muted-foreground',
-                  usernameStatus === 'available' && 'text-green-600',
-                  usernameStatus === 'taken' && 'text-destructive'
-                )}
-              >
-                {usernameStatus === 'checking' && 'Checking...'}
-                {usernameStatus === 'available' && 'Available'}
-                {usernameStatus === 'taken' && 'Taken'}
-              </span>
-            )}
+            {/* Status indicator - Added aria-live and id */}
+            <span
+              id='username-status'
+              aria-live='polite'
+              className={cn(
+                'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium',
+                usernameStatus === 'checking' && 'text-muted-foreground',
+                usernameStatus === 'available' && 'text-green-600',
+                usernameStatus === 'taken' && 'text-destructive'
+              )}
+            >
+              {usernameStatus !== 'idle' && (
+                <>
+                  <span className='sr-only'>Username is </span>
+                  {usernameStatus === 'checking' && 'Checking...'}
+                  {usernameStatus === 'available' && 'Available'}
+                  {usernameStatus === 'taken' && 'Taken'}
+                </>
+              )}
+            </span>
           </div>
-          {errors.username && <p className='text-xs text-destructive'>{errors.username}</p>}
-          <p className='text-xs text-muted-foreground'>Letters, numbers, underscores, and hyphens only</p>
+          {errors.username && (
+            <p id='username-error' role='alert' className='text-xs text-destructive'>
+              {errors.username}
+            </p>
+          )}
+          <p id='username-helper' className='text-xs text-muted-foreground'>
+            Letters, numbers, underscores, and hyphens only
+          </p>
         </div>
 
         {/* Bio */}
@@ -282,9 +299,16 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
             placeholder='A brief description about yourself'
             rows={3}
             maxLength={500}
+            aria-describedby={cn('bio-helper', errors.bio && 'bio-error')}
           />
-          <div className='text-xs text-muted-foreground text-right'>{formData.bio.length}/500</div>
-          {errors.bio && <p className='text-xs text-destructive'>{errors.bio}</p>}
+          <div id='bio-helper' className='text-xs text-muted-foreground text-right'>
+            {formData.bio.length}/500
+          </div>
+          {errors.bio && (
+            <p id='bio-error' role='alert' className='text-xs text-destructive'>
+              {errors.bio}
+            </p>
+          )}
         </div>
 
         {/* Profile Picture URL */}
@@ -297,8 +321,13 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
             onChange={(e) => handleChange('profile_picture_url', e.target.value)}
             placeholder='https://example.com/photo.jpg'
             aria-invalid={!!errors.profile_picture_url}
+            aria-describedby={errors.profile_picture_url ? 'profile-pic-error' : undefined}
           />
-          {errors.profile_picture_url && <p className='text-xs text-destructive'>{errors.profile_picture_url}</p>}
+          {errors.profile_picture_url && (
+            <p id='profile-pic-error' role='alert' className='text-xs text-destructive'>
+              {errors.profile_picture_url}
+            </p>
+          )}
         </div>
 
         <div className='text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-2 pb-2 border-b'>
@@ -315,8 +344,13 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
             onChange={(e) => handleChange('linkedin_url', e.target.value)}
             placeholder='https://linkedin.com/in/username'
             aria-invalid={!!errors.linkedin_url}
+            aria-describedby={errors.linkedin_url ? 'linkedin-error' : undefined}
           />
-          {errors.linkedin_url && <p className='text-xs text-destructive'>{errors.linkedin_url}</p>}
+          {errors.linkedin_url && (
+            <p id='linkedin-error' role='alert' className='text-xs text-destructive'>
+              {errors.linkedin_url}
+            </p>
+          )}
         </div>
 
         {/* GitHub URL */}
@@ -329,8 +363,13 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
             onChange={(e) => handleChange('github_url', e.target.value)}
             placeholder='https://github.com/username'
             aria-invalid={!!errors.github_url}
+            aria-describedby={errors.github_url ? 'github-error' : undefined}
           />
-          {errors.github_url && <p className='text-xs text-destructive'>{errors.github_url}</p>}
+          {errors.github_url && (
+            <p id='github-error' role='alert' className='text-xs text-destructive'>
+              {errors.github_url}
+            </p>
+          )}
         </div>
 
         {/* Portfolio URL */}
@@ -343,8 +382,13 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
             onChange={(e) => handleChange('portfolio_url', e.target.value)}
             placeholder='https://your-website.com'
             aria-invalid={!!errors.portfolio_url}
+            aria-describedby={errors.portfolio_url ? 'portfolio-error' : undefined}
           />
-          {errors.portfolio_url && <p className='text-xs text-destructive'>{errors.portfolio_url}</p>}
+          {errors.portfolio_url && (
+            <p id='portfolio-error' role='alert' className='text-xs text-destructive'>
+              {errors.portfolio_url}
+            </p>
+          )}
         </div>
       </div>
 
