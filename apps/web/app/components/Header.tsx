@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { Bell, Menu, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { signOut } from '@/app/actions/auth';
+import { cn } from '@/lib/utils';
 
 const Header: React.FC = () => {
   const pathname = usePathname();
@@ -45,61 +46,37 @@ const Header: React.FC = () => {
   return (
     <>
       <header
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          borderBottom: '1px solid var(--border)',
-          backgroundColor: 'var(--background)',
-          backdropFilter: 'blur(8px)',
-          transform: isHidden ? 'translateY(-100%)' : 'translateY(0)',
-          transition: 'transform 300ms ease',
-          willChange: 'transform',
-        }}
+        className={cn(
+          'fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md transition-transform duration-300 ease-in-out will-change-transform',
+          isHidden ? '-translate-y-full' : 'translate-y-0'
+        )}
       >
-        <div
-          style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '0 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            height: '64px',
-          }}
-        >
+        <div className='mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4'>
           {/* Logo */}
-          <Link href='/' style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+          <Link href='/' className='flex items-center gap-3 no-underline'>
             <Image src='/logo.svg' alt='Monolenz' width={32} height={32} />
-            <span style={{ fontSize: '20px', fontWeight: 600, color: 'var(--foreground)' }}>Monolenz</span>
+            <span className='text-xl font-semibold text-foreground'>Monolenz</span>
           </Link>
 
           {/* Navigation */}
-          <nav className='hidden md:flex' style={{ alignItems: 'center', gap: '32px' }}>
+          <nav className='hidden items-center gap-8 md:flex'>
             {!isDashboard ? (
               <>
                 <Link
                   href='/dashboard'
-                  style={{ color: 'var(--foreground)', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}
+                  className='text-sm font-semibold text-foreground no-underline'
                 >
                   Overview
                 </Link>
                 <Link
                   href='/#features'
-                  style={{ color: 'var(--foreground)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}
+                  className='text-sm font-medium text-foreground no-underline'
                 >
                   Features
                 </Link>
                 <Link
                   href='/#pricing'
-                  style={{
-                    color: 'var(--muted-foreground)',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                  }}
+                  className='text-sm font-medium text-muted-foreground no-underline'
                 >
                   Pricing
                 </Link>
@@ -108,29 +85,19 @@ const Header: React.FC = () => {
               <>
                 <Link
                   href='/dashboard'
-                  style={{ color: 'var(--foreground)', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}
+                  className='text-sm font-semibold text-foreground no-underline'
                 >
                   Overview
                 </Link>
                 <Link
                   href='/dashboard/profile'
-                  style={{
-                    color: 'var(--muted-foreground)',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                  }}
+                  className='text-sm font-medium text-muted-foreground no-underline'
                 >
                   Profile
                 </Link>
                 <Link
                   href='/dashboard/applications'
-                  style={{
-                    color: 'var(--muted-foreground)',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                  }}
+                  className='text-sm font-medium text-muted-foreground no-underline'
                 >
                   Applications
                 </Link>
@@ -140,68 +107,36 @@ const Header: React.FC = () => {
 
           {/* Mobile menu toggle */}
           <button
-            className='md:hidden'
-            style={{
-              background: 'none',
-              border: '1px solid var(--border)',
-              padding: 8,
-              borderRadius: 6,
-              color: 'var(--foreground)',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className='flex items-center justify-center rounded-md border border-border bg-transparent p-2 text-foreground md:hidden'
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen((v) => !v)}
           >
-            {mobileOpen ? <X style={{ width: 18, height: 18 }} /> : <Menu style={{ width: 18, height: 18 }} />}
+            {mobileOpen ? <X className='h-[18px] w-[18px]' /> : <Menu className='h-[18px] w-[18px]' />}
           </button>
 
           {/* Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className='flex items-center gap-3'>
             {isAuthed ? (
               <>
                 <Link
                   href='/dashboard'
-                  className='hidden md:inline-flex'
-                  style={{
-                    color: 'var(--foreground)',
-                    textDecoration: 'none',
-                    fontSize: 14,
-                    fontWeight: 500,
-                    padding: 8,
-                  }}
+                  className='hidden p-2 text-sm font-medium text-foreground no-underline md:inline-flex'
                 >
                   Dashboard
                 </Link>
                 {pathname !== '/' && (
                   <button
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: 8,
-                      borderRadius: 6,
-                      color: 'var(--muted-foreground)',
-                      cursor: 'pointer',
-                    }}
+                    className='cursor-pointer rounded-md border-none bg-transparent p-2 text-muted-foreground'
                     aria-label='Notifications'
                   >
-                    <Bell style={{ width: 18, height: 18 }} />
+                    <Bell className='h-[18px] w-[18px]' />
                   </button>
                 )}
                 <form action={signOut} className='hidden md:inline-flex'>
                   <button
                     type='submit'
-                    style={{
-                      backgroundColor: 'transparent',
-                      color: 'var(--foreground)',
-                      border: '1px solid var(--border)',
-                      padding: '8px 16px',
-                      borderRadius: 6,
-                      fontSize: 14,
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                    }}
+                    className='cursor-pointer rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium text-foreground'
                   >
                     Sign out
                   </button>
@@ -210,16 +145,7 @@ const Header: React.FC = () => {
                   <form action={signOut} className='inline-flex md:hidden'>
                     <button
                       type='submit'
-                      style={{
-                        backgroundColor: 'transparent',
-                        color: 'var(--foreground)',
-                        border: '1px solid var(--border)',
-                        padding: '8px 16px',
-                        borderRadius: 6,
-                        fontSize: 14,
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                      }}
+                      className='cursor-pointer rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium text-foreground'
                     >
                       Sign out
                     </button>
@@ -230,31 +156,13 @@ const Header: React.FC = () => {
               <>
                 <Link
                   href='/login'
-                  style={{
-                    backgroundColor: 'transparent',
-                    color: 'var(--foreground)',
-                    border: '1px solid var(--border)',
-                    padding: '8px 16px',
-                    borderRadius: 6,
-                    fontSize: 14,
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                  }}
+                  className='rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium text-foreground no-underline'
                 >
                   Sign in
                 </Link>
                 <Link
                   href='/signup'
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: 6,
-                    fontSize: 14,
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                  }}
+                  className='rounded-md border-none bg-primary px-4 py-2 text-sm font-medium text-primary-foreground no-underline'
                 >
                   Sign up
                 </Link>
@@ -266,21 +174,12 @@ const Header: React.FC = () => {
         {/* Scroll progress bar */}
         <div
           aria-hidden
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 2,
-            background: 'transparent',
-          }}
+          className='absolute bottom-0 left-0 right-0 h-[2px] bg-transparent'
         >
           <div
+            className='h-[2px] bg-primary transition-[width] duration-120 ease-linear'
             style={{
-              height: 2,
               width: `${Math.round(scrollProgress * 100)}%`,
-              background: 'var(--primary)',
-              transition: 'width 120ms linear',
             }}
           />
         </div>
@@ -288,42 +187,34 @@ const Header: React.FC = () => {
         {/* Mobile sheet */}
         {mobileOpen && (
           <div
-            className='md:hidden'
-            style={{
-              position: 'absolute',
-              top: 64,
-              left: 0,
-              right: 0,
-              borderBottom: '1px solid var(--border)',
-              backgroundColor: 'var(--background)',
-            }}
+            className='absolute left-0 right-0 top-16 border-b border-border bg-background md:hidden'
           >
-            <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className='flex flex-col gap-3 p-4'>
               {!isDashboard ? (
                 <>
-                  <Link href='/' style={{ fontSize: 14 }}>
+                  <Link href='/' className='text-sm'>
                     Overview
                   </Link>
-                  <Link href='/#features' style={{ fontSize: 14 }}>
+                  <Link href='/#features' className='text-sm'>
                     Features
                   </Link>
-                  <Link href='/#pricing' style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
+                  <Link href='/#pricing' className='text-sm text-muted-foreground'>
                     Pricing
                   </Link>
-                  <div aria-hidden style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
-                  <Link href='/dashboard' style={{ fontSize: 14 }}>
+                  <div aria-hidden className='my-2 h-[1px] bg-border' />
+                  <Link href='/dashboard' className='text-sm'>
                     Dashboard
                   </Link>
                 </>
               ) : (
                 <>
-                  <Link href='/dashboard' style={{ fontSize: 14 }}>
+                  <Link href='/dashboard' className='text-sm'>
                     Overview
                   </Link>
-                  <Link href='/dashboard/profile' style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
+                  <Link href='/dashboard/profile' className='text-sm text-muted-foreground'>
                     Profile
                   </Link>
-                  <Link href='/dashboard/applications' style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
+                  <Link href='/dashboard/applications' className='text-sm text-muted-foreground'>
                     Applications
                   </Link>
                 </>
@@ -332,7 +223,7 @@ const Header: React.FC = () => {
           </div>
         )}
       </header>
-      <div aria-hidden style={{ height: 64 }} />
+      <div aria-hidden className='h-16' />
     </>
   );
 };

@@ -207,12 +207,9 @@ function SelectField({ label, value, onChange, options, placeholder, required, e
       </Label>
       <select
         className={cn(
-          'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none bg-[length:1.25em_1.25em] bg-[position:right_0.5rem_center] bg-no-repeat pr-8',
+          'form-select-chevron flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none bg-[length:1.25em_1.25em] bg-[position:right_0.5rem_center] bg-no-repeat pr-8',
           error && 'border-destructive focus-visible:ring-destructive/50'
         )}
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-        }}
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
       >

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, FileText, Globe, Briefcase, BarChart3, Plus, Circle, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const HeroSection = () => {
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -158,7 +159,7 @@ const HeroSection = () => {
                     stroke={activeOutput === output.id ? (output.accent as string) : 'var(--border)'}
                     strokeWidth={activeOutput === output.id ? 3 : 2}
                     strokeDasharray={activeOutput === output.id ? '0' : '8,8'}
-                    style={{ transition: 'all 0.3s ease' }}
+                    className='transition-all duration-300 ease-in-out'
                     opacity={activeOutput === output.id ? 1 : 0.6}
                   />
                   <circle
@@ -166,14 +167,14 @@ const HeroSection = () => {
                     cy={pos.startY}
                     r={activeOutput === output.id ? 5 : 3}
                     fill={activeOutput === output.id ? (output.accent as string) : 'var(--muted)'}
-                    style={{ transition: 'all 0.3s ease' }}
+                    className='transition-all duration-300 ease-in-out'
                   />
                   <circle
                     cx={pos.endX}
                     cy={pos.endY}
                     r={activeOutput === output.id ? 5 : 3}
                     fill={activeOutput === output.id ? (output.accent as string) : 'var(--muted)'}
-                    style={{ transition: 'all 0.3s ease' }}
+                    className='transition-all duration-300 ease-in-out'
                   />
                 </g>
               );
@@ -188,9 +189,8 @@ const HeroSection = () => {
                 transform: `perspective(1000px) rotateY(${mousePosition.x * 0.5}deg) rotateX(${
                   -mousePosition.y * 0.5
                 }deg)`,
-                transition: 'transform 0.1s ease-out',
               }}
-              className='relative z-20 shrink-0 mb-8 md:mb-0'
+              className='relative z-20 shrink-0 mb-8 md:mb-0 transition-transform duration-100 ease-out'
             >
               <div className='bg-card border rounded-lg shadow-xl p-5 w-[280px]'>
                 {/* Document Header */}
@@ -223,9 +223,11 @@ const HeroSection = () => {
                         onMouseLeave={() => setHoveredBlock(null)}
                       >
                         <div
-                          className={`w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all ${
-                            block.filled ? 'bg-muted' : 'border border-dashed'
-                          } ${hoveredBlock === index ? 'scale-[1.02] shadow-xs' : ''}`}
+                          className={cn(
+                            'w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all',
+                            block.filled ? 'bg-muted' : 'border border-dashed',
+                            hoveredBlock === index ? 'scale-[1.02] shadow-xs' : ''
+                          )}
                         >
                           <span className='text-[11px] font-medium text-card-foreground'>{block.name}</span>
                           {!block.filled && <Plus className='w-2.5 h-2.5 text-muted-foreground' />}
@@ -261,20 +263,32 @@ const HeroSection = () => {
                   ref={(el) => {
                     outputRefs.current[index] = el;
                   }}
-                  className={`cursor-pointer transition-transform ${activeOutput === output.id ? 'scale-105' : ''}`}
+                  className={cn(
+                    'cursor-pointer transition-transform',
+                    activeOutput === output.id ? 'scale-105' : ''
+                  )}
                   onMouseEnter={() => setActiveOutput(output.id)}
                   onMouseLeave={() => setActiveOutput(null)}
                 >
                   <div
-                    className={`bg-card border rounded-lg p-4 w-[220px] relative transition-all ${activeOutput === output.id ? 'shadow-2xl' : 'shadow-sm'}`}
+                    className={cn(
+                      'bg-card border rounded-lg p-4 w-[220px] relative transition-all',
+                      activeOutput === output.id ? 'shadow-2xl' : 'shadow-sm'
+                    )}
                   >
                     <div
-                      className={`absolute top-0 left-0 w-full h-0.5 rounded-t-lg transition-all ${activeOutput === output.id ? '' : 'bg-transparent'}`}
+                      className={cn(
+                        'absolute top-0 left-0 w-full h-0.5 rounded-t-lg transition-all',
+                        activeOutput === output.id ? '' : 'bg-transparent'
+                      )}
                       style={{ backgroundColor: activeOutput === output.id ? (output.accent as string) : undefined }}
                     />
 
                     <div
-                      className={`inline-flex p-2 rounded-md mb-3 transition-all ${activeOutput === output.id ? 'text-[inherit]' : 'bg-muted text-muted-foreground'}`}
+                      className={cn(
+                        'inline-flex p-2 rounded-md mb-3 transition-all',
+                        activeOutput === output.id ? 'text-[inherit]' : 'bg-muted text-muted-foreground'
+                      )}
                       style={{
                         backgroundColor:
                           activeOutput === output.id
@@ -343,49 +357,6 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-
-      <style>{`
-        .shape-circle {
-          position: absolute;
-          top: 25%;
-          left: 25%;
-          width: 128px;
-          height: 128px;
-          border: 1px solid var(--border);
-          border-radius: 9999px;
-          animation: float-slow 20s ease-in-out infinite;
-          opacity: 0.4;
-        }
-        .shape-square {
-          position: absolute;
-          bottom: 25%;
-          right: 25%;
-          width: 96px;
-          height: 96px;
-          border: 1px solid var(--border);
-          transform: rotate(45deg);
-          animation: float-slower 25s ease-in-out infinite;
-          opacity: 0.4;
-        }
-        @keyframes float-slow {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(180deg);
-          }
-        }
-        @keyframes float-slower {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(45deg);
-          }
-          50% {
-            transform: translateY(-15px) rotate(225deg);
-          }
-        }
-      `}</style>
     </div>
   );
 };

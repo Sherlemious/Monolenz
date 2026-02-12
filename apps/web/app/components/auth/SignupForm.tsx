@@ -58,11 +58,7 @@ export default function SignupForm() {
           {state?.success && (
             <div
               role='status'
-              className='mb-3 rounded-md border px-3 py-2 text-sm text-foreground'
-              style={{
-                borderColor: 'var(--chart-1)',
-                background: 'color-mix(in oklab, var(--chart-1) 10%, transparent)',
-              }}
+              className='mb-3 rounded-md border border-chart-1 bg-chart-1/10 px-3 py-2 text-sm text-foreground'
             >
               {state.emailSentTo ? (
                 <>
@@ -113,11 +109,7 @@ export default function SignupForm() {
           {resendState?.success && (
             <div
               role='status'
-              className='rounded-md border px-3 py-2 text-sm text-foreground'
-              style={{
-                borderColor: 'var(--chart-1)',
-                background: 'color-mix(in oklab, var(--chart-1) 10%, transparent)',
-              }}
+              className='rounded-md border border-chart-1 bg-chart-1/10 px-3 py-2 text-sm text-foreground'
             >
               Verification link resent to <span className='font-medium'>{state.emailSentTo}</span>.
             </div>
