@@ -158,7 +158,13 @@ export class S3Service {
    * Gets the public URL for a public file (if ACL is public-read)
    */
   getPublicUrl(key: string): string {
-    return `https://${this.bucketName}.s3.${s3Config.region}.amazonaws.com/${key}`;
+    const baseUrl = `https://${this.bucketName}.s3.${s3Config.region}.amazonaws.com/`;
+    const encodedKey = key
+      .split('/')
+      .map((segment) => encodeURIComponent(segment))
+      .join('/');
+    const url = new URL(encodedKey, baseUrl);
+    return url.toString();
   }
 
   /**
