@@ -1,5 +1,3 @@
-import LandingHeader from '@/app/components/landing/LandingHeader';
-
 export default function MarketingLayout({
   children,
 }: Readonly<{
@@ -8,7 +6,6 @@ export default function MarketingLayout({
   return (
     <div>
       <div className='grid-pattern' />
-      <LandingHeader />
       <main>{children}</main>
     </div>
   );
