@@ -6,13 +6,13 @@ import MasterProfileCard from "@/app/components/landing/MasterProfileCard";
 
 export default function MarketingPage() {
   return (
-    <div className="min-h-screen text-white px-6 pt-24">
+    <div className="min-h-screen text-foreground px-6 pt-24">
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight">
           Your job search, on autopilot.
           </h1>
-          <p className="mt-4 text-lg md:text-xl text-white/80">
+          <p className="mt-4 text-lg md:text-xl text-muted-foreground">
             MonoLenz acts on your behalf, handling your work history, job
             applications, and tracking in one place.
           </p>
@@ -45,17 +45,17 @@ export default function MarketingPage() {
           </p>
         </div>
       </section>
-      <footer className="border-t border-white/10 px-6 py-10">
+      <footer className="border-t border-border px-6 py-10">
         <div className="max-w-6xl mx-auto flex flex-col items-center justify-between gap-4 md:flex-row">
-          <span className="text-sm text-white/70">© 2026 Monolenz. All rights reserved.</span>
-          <div className="flex items-center gap-6 text-sm text-white/70">
-            <Link href="/#features" className="hover:text-white transition-colors">
+          <span className="text-sm text-muted-foreground">© 2026 Monolenz. All rights reserved.</span>
+          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <Link href="/#features" className="hover:text-foreground transition-colors">
               Features
             </Link>
-            <Link href="/#pricing" className="hover:text-white transition-colors">
+            <Link href="/#pricing" className="hover:text-foreground transition-colors">
               Pricing
             </Link>
-            <Link href="/signup" className="hover:text-white transition-colors">
+            <Link href="/signup" className="hover:text-foreground transition-colors">
               Get started
             </Link>
           </div>

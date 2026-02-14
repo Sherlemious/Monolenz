@@ -15,22 +15,6 @@ const Header: React.FC = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const isDashboard = useMemo(() => pathname?.startsWith('/dashboard'), [pathname]);
-  const lightHeaderVars = {
-    '--background': 'oklch(1 0 0)',
-    '--foreground': 'oklch(0.145 0 0)',
-    '--muted-foreground': 'oklch(0.556 0 0)',
-    '--border': 'oklch(0.922 0 0)',
-    '--primary': 'oklch(0.205 0 0)',
-    '--primary-foreground': 'oklch(0.985 0 0)',
-  } as React.CSSProperties;
-  const darkHeaderVars = {
-    '--background': 'oklch(0.2 0 0)',
-    '--foreground': 'oklch(0.985 0 0)',
-    '--muted-foreground': 'oklch(0.7 0 0)',
-    '--border': 'oklch(0.32 0 0)',
-    '--primary': 'oklch(0.985 0 0)',
-    '--primary-foreground': 'oklch(0.145 0 0)',
-  } as React.CSSProperties;
 
   useEffect(() => {
     const supabase = createClient();
@@ -73,7 +57,6 @@ const Header: React.FC = () => {
           transform: isHidden ? 'translateY(-100%)' : 'translateY(0)',
           transition: 'transform 300ms ease',
           willChange: 'transform',
-          ...(isDashboard ? lightHeaderVars : darkHeaderVars),
         }}
       >
         <div
@@ -294,8 +277,7 @@ const Header: React.FC = () => {
           <div
             style={{
               height: 0.3,
-              width: '90%',
-              margin: '0 auto',
+              width: '100%',
               background: 'transparent',
             }}
           >

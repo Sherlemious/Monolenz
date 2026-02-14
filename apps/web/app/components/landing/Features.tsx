@@ -49,11 +49,11 @@ const FeaturesSection: React.FC = () => {
           {bullets.map((item) => (
             <Card
               key={item.title}
-              className='h-full bg-neutral-900 text-white border border-neutral-800 shadow-xl'
+              className='h-full bg-card text-card-foreground border-border shadow-xl'
             >
               <CardHeader>
-                <CardTitle className='mt-2 text-base text-white'>{item.title}</CardTitle>
-                <CardDescription className='text-neutral-300'>{item.description}</CardDescription>
+                <CardTitle className='mt-2 text-base text-card-foreground'>{item.title}</CardTitle>
+                <CardDescription className='text-muted-foreground'>{item.description}</CardDescription>
               </CardHeader>
             </Card>
           ))}
@@ -61,13 +61,13 @@ const FeaturesSection: React.FC = () => {
 
         <div className='mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground'>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-white' /> We apply for you automatically
+            <Check className='size-4 text-foreground' /> We apply for you automatically
           </div>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-white' /> Tailormade application CVs
+            <Check className='size-4 text-foreground' /> Tailormade application CVs
           </div>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-white' /> Infinite versions
+            <Check className='size-4 text-foreground' /> Infinite versions
           </div>
         </div>
       </div>
