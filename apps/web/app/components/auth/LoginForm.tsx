@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { login, type AuthActionState } from '@/app/(auth)/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Button } from '@/components/ui/button';
 
 function SubmitButton({ label }: { label: string }) {
@@ -46,7 +47,7 @@ export default function LoginForm() {
 
           <div className='grid gap-2'>
             <Label htmlFor='password'>Password</Label>
-            <Input id='password' name='password' type='password' required className='h-10 sm:h-11 rounded-lg' />
+            <PasswordInput id='password' name='password' required className='h-10 sm:h-11 rounded-lg' />
           </div>
 
           <SubmitButton label='Sign in' />
