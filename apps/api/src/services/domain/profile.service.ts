@@ -121,7 +121,16 @@ export class ProfileService extends BaseService<ProfileEntity> {
       // Add any global filters here (e.g., only show verified profiles)
     };
 
-    return this.findMany(searchParams, filters, context);
+    const result = await this.findMany(searchParams, filters, context);
+
+    const filteredData = await Promise.all(
+      result.data.map((profile) => this.applyPrivacyFilters(profile, context))
+    );
+
+    return {
+      ...result,
+      data: filteredData,
+    };
   }
 
   // Protected methods - implement abstract methods from BaseService
