@@ -8,6 +8,7 @@ import { signup, resendVerification, type AuthActionState as SignupActionState }
 import { createClient } from '@/utils/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Button } from '@/components/ui/button';
 
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
@@ -84,7 +85,12 @@ export default function SignupForm() {
 
               <div className='grid gap-2'>
                 <Label htmlFor='password'>Password</Label>
-                <Input id='password' name='password' type='password' required className='h-10 sm:h-11 rounded-lg' />
+                <PasswordInput
+                  id='password'
+                  name='password'
+                  required
+                  className='h-10 sm:h-11 rounded-lg'
+                />
               </div>
 
               <SubmitButton label='Sign up' pendingLabel='Creating...' />
