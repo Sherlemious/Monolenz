@@ -9,6 +9,7 @@
     "build:without-db": "pnpm i && tsup",
     "dev": "tsx watch src/server.ts --clear-screen=false",
     "start": "node dist/server.js",
+    "test": "jest",
     "type-check": "tsc --noEmit",
     "lint": "eslint src/",
     "db:generate": "prisma generate",

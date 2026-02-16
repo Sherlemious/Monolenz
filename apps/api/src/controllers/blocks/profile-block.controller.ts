@@ -14,16 +14,25 @@ import { ServiceContext } from '../../services/base.service';
 import { BlockType } from '@monolenz/types/entities/blocks';
 import { HTTP_STATUS_CODES } from '@monolenz/types/api';
 
-class ProfileBlockController {
-  private blockService: ProfileBlockService;
-  private profileRepository: ProfileRepository;
+export class ProfileBlockController {
+  public blockService: ProfileBlockService;
+  public profileRepository: ProfileRepository;
 
-  constructor() {
-    const blocksRepo = new BlocksRepository(prisma);
-    const versionsRepo = new VersionsRepository(prisma);
-    const versionBlocksRepo = new VersionBlocksRepository(prisma);
-    this.blockService = new ProfileBlockService(blocksRepo, versionsRepo, versionBlocksRepo, prisma);
-    this.profileRepository = new ProfileRepository(prisma);
+  constructor(blockService?: ProfileBlockService, profileRepository?: ProfileRepository) {
+    if (blockService) {
+      this.blockService = blockService;
+    } else {
+      const blocksRepo = new BlocksRepository(prisma);
+      const versionsRepo = new VersionsRepository(prisma);
+      const versionBlocksRepo = new VersionBlocksRepository(prisma);
+      this.blockService = new ProfileBlockService(blocksRepo, versionsRepo, versionBlocksRepo, prisma);
+    }
+
+    if (profileRepository) {
+      this.profileRepository = profileRepository;
+    } else {
+      this.profileRepository = new ProfileRepository(prisma);
+    }
   }
 
   /**
@@ -67,10 +76,17 @@ class ProfileBlockController {
    * List blocks for a specific version
    */
   listBlocksForVersion = asyncHandler(async (req: Request, res: Response) => {
-    const { versionId } = req.validatedParams;
+    const { identifier, versionId } = req.validatedParams;
     const { section_name, block_type } = req.validatedQuery || {};
 
-    const blocks = await this.blockService.listBlocksForVersion(versionId, {
+    // Resolve identifier (UUID or username) to profile_id
+    const profileId = await this.resolveProfileIdentifier(identifier);
+
+    if (!profileId) {
+      return res.error('Profile not found', HTTP_STATUS_CODES.NOT_FOUND);
+    }
+
+    const blocks = await this.blockService.listBlocksForVersion(versionId, profileId, {
       sectionName: section_name,
       blockType: block_type as BlockType | undefined,
     });
@@ -97,7 +113,7 @@ class ProfileBlockController {
       return res.error('No versions found for this profile', HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    const blocks = await this.blockService.listBlocksForVersion(version.id);
+    const blocks = await this.blockService.listBlocksForVersion(version.id, profileId);
 
     return res.success({ version, blocks }, 'Latest version retrieved');
   });

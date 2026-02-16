@@ -179,13 +179,23 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
    */
   async listBlocksForVersion(
     versionId: number,
+    profileId: string,
     options?: { sectionName?: string; blockType?: BlockType }
   ): Promise<TypedBlock[]> {
     return (this.repository as BlocksRepository).withTransaction(async (tx) => {
-      // 1. Get version_blocks with base block info
+      // 1. Validate version ownership
+      const version = await this.versionsRepo.getVersionById(versionId, tx);
+      if (!version) {
+        throw new ServiceError('Version not found', null, 404);
+      }
+      if (version.profile_id !== profileId) {
+        throw new ServiceError('Version not found', null, 404);
+      }
+
+      // 2. Get version_blocks with base block info
       const versionBlocks = await this.versionBlocksRepo.listVersionBlocks(versionId, options, tx);
 
-      // 2. Group by block_type for batch fetching
+      // 3. Group by block_type for batch fetching
       const blocksByType = new Map<BlockType, number[]>();
       for (const vb of versionBlocks) {
         const blockType = vb.block_type as BlockType;
@@ -194,7 +204,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
         blocksByType.set(blockType, ids);
       }
 
-      // 3. Batch fetch typed data for each block type in parallel
+      // 4. Batch fetch typed data for each block type in parallel
       const typedDataPromises = Array.from(blocksByType.entries()).map(async ([blockType, blockIds]) => {
         const repo = this.typedBlockFactory.getRepository(blockType);
         const typedBlocks = await repo.findManyByBlockIds(blockIds, tx);
@@ -203,7 +213,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
 
       const typedDataResults = await Promise.all(typedDataPromises);
 
-      // 4. Build map of block_id -> typed data
+      // 5. Build map of block_id -> typed data
       const typedDataMap = new Map<number, any>();
       for (const result of typedDataResults) {
         for (const typedBlock of result.typedBlocks) {
@@ -211,7 +221,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
         }
       }
 
-      // 5. Combine base + typed data into TypedBlock[]
+      // 6. Combine base + typed data into TypedBlock[]
       return versionBlocks.map((vb) => {
         const blockType = vb.block_type as BlockType;
         const typedData = typedDataMap.get(vb.block_id);
