@@ -7,6 +7,7 @@
   "scripts": {
     "build": "pnpm i && prisma db pull && prisma generate && tsup",
     "build:without-db": "pnpm i && tsup",
+    "test": "jest",
     "dev": "tsx watch src/server.ts --clear-screen=false",
     "start": "node dist/server.js",
     "type-check": "tsc --noEmit",

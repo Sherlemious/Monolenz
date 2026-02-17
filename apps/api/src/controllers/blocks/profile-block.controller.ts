@@ -67,12 +67,19 @@ class ProfileBlockController {
    * List blocks for a specific version
    */
   listBlocksForVersion = asyncHandler(async (req: Request, res: Response) => {
-    const { versionId } = req.validatedParams;
+    const { identifier, versionId } = req.validatedParams;
     const { section_name, block_type } = req.validatedQuery || {};
+
+    const profileId = await this.resolveProfileIdentifier(identifier);
+
+    if (!profileId) {
+      return res.error('Profile not found', HTTP_STATUS_CODES.NOT_FOUND);
+    }
 
     const blocks = await this.blockService.listBlocksForVersion(versionId, {
       sectionName: section_name,
       blockType: block_type as BlockType | undefined,
+      profileId,
     });
 
     return res.success(blocks, 'Blocks retrieved successfully');
@@ -97,7 +104,9 @@ class ProfileBlockController {
       return res.error('No versions found for this profile', HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    const blocks = await this.blockService.listBlocksForVersion(version.id);
+    const blocks = await this.blockService.listBlocksForVersion(version.id, {
+      profileId,
+    });
 
     return res.success({ version, blocks }, 'Latest version retrieved');
   });
