@@ -111,6 +111,24 @@ export class ProfileService extends BaseService<ProfileEntity> {
     }
   }
 
+  // Override findMany to apply privacy filters
+  async findMany(
+    pagination: PaginationParams,
+    filters?: Record<string, unknown>,
+    context?: ServiceContext,
+    options?: ServiceOptions
+  ): Promise<{ data: ProfileEntity[]; total: number; meta: unknown }> {
+    const result = await super.findMany(pagination, filters, context, options);
+
+    // Apply privacy filters to each profile in the result
+    const filteredData = await Promise.all(result.data.map((profile) => this.applyPrivacyFilters(profile, context)));
+
+    return {
+      ...result,
+      data: filteredData,
+    };
+  }
+
   async searchProfiles(
     searchParams: PaginationParams & { query?: string; filters?: Record<string, any> },
     context?: ServiceContext
