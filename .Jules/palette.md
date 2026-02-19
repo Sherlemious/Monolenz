@@ -1,0 +1,3 @@
+## 2025-05-15 - Password Input Visibility Toggle
+**Learning:** Users often mistype passwords, leading to frustration. Adding a visibility toggle is a standard pattern that significantly improves usability and reduces errors. The lack of `forwardRef` in the base `Input` component means custom wrappers like `PasswordInput` should also avoid it for consistency unless necessary.
+**Action:** When creating password fields, always include a visibility toggle using a reusable `PasswordInput` component that wraps the standard `Input` with an absolute positioned toggle button. Ensure the toggle button has `type="button"` to prevent form submission.
