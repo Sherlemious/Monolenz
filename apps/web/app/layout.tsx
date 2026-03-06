@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
-import Header from '@/app/components/Header';
 import { PostHogProvider } from '@/app/providers/PostHogProvider';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Suspense } from 'react';
 
 const montserrat = Montserrat({
@@ -37,8 +37,9 @@ export default function RootLayout({
       <body className={montserrat.variable}>
         <Suspense fallback={null}>
           <PostHogProvider>
-            <Header />
-            {children}
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
           </PostHogProvider>
         </Suspense>
       </body>

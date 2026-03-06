@@ -27,6 +27,7 @@
     "next": "^15.4.2",
     "posthog-js": "^1.283.0",
     "posthog-node": "^5.11.0",
+    "radix-ui": "^1.4.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.3.1",
@@ -35,8 +36,8 @@
   },
   "devDependencies": {
     "@monolenz/eslint-config": "workspace:*",
-    "@monolenz/typescript-config": "workspace:*",
     "@monolenz/types": "workspace:*",
+    "@monolenz/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",

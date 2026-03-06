@@ -6,7 +6,7 @@
  * - Has profile: polished read-only view of profile info and blocks
  */
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import type { Profile, VersionBlockDetail } from '@monolenz/types/entities';
 import { useApiClient } from '@/lib/hooks/useApiClient';
@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { USERNAME_MIN_LENGTH, meetsMinimumLength } from '@/lib/validation/username';
+import { isUsernameValidForChecking, validateUsername } from '@/lib/validation/username';
 
 // ============================================================================
 // Main Page
@@ -59,7 +59,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <div className="flex flex-col items-center justify-center h-full gap-4">
         <div className="relative size-10">
           <div className="absolute inset-0 rounded-full border-2 border-muted" />
           <div className="absolute inset-0 rounded-full border-2 border-t-primary animate-spin" />
@@ -71,7 +71,7 @@ export default function ProfilePage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-3 p-8">
+      <div className="flex flex-col items-center justify-center h-full text-center gap-3 p-8">
         <div className="size-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
           <span className="text-destructive text-xl">!</span>
         </div>
@@ -82,10 +82,18 @@ export default function ProfilePage() {
   }
 
   if (!profile) {
-    return <OnboardingWizard api={profileApi} onCreated={handleProfileCreated} />;
+    return (
+      <div className='h-full overflow-y-auto'>
+        <OnboardingWizard api={profileApi} onCreated={handleProfileCreated} />
+      </div>
+    );
   }
 
-  return <ProfileOverview profile={profile} blocks={blocks} />;
+  return (
+    <div className='h-full overflow-y-auto'>
+      <ProfileOverview profile={profile} blocks={blocks} />
+    </div>
+  );
 }
 
 // ============================================================================
@@ -160,13 +168,62 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [createdProfile, setCreatedProfile] = useState<Profile | null>(null);
+
+  // Username availability state
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const usernameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (usernameTimerRef.current) clearTimeout(usernameTimerRef.current);
+    };
+  }, []);
+
+  const checkUsername = useCallback(
+    (username: string) => {
+      if (usernameTimerRef.current) clearTimeout(usernameTimerRef.current);
+
+      if (!isUsernameValidForChecking(username)) {
+        setUsernameStatus('idle');
+        return;
+      }
+
+      setUsernameStatus('checking');
+      usernameTimerRef.current = setTimeout(async () => {
+        try {
+          const result = await api.checkUsernameAvailability(username);
+          setUsernameStatus(result.available ? 'available' : 'taken');
+        } catch {
+          setUsernameStatus('idle');
+        }
+      }, 500);
+    },
+    [api]
+  );
 
   const currentStep = ONBOARDING_STEPS[step]!;
   const isLastStep = step === ONBOARDING_STEPS.length - 1;
   const isFirstStep = step === 0;
   const currentValue = formData[currentStep.key] ?? '';
-  const canProceed =
-    !currentStep.required || currentValue.trim().length >= (currentStep.key === 'username' ? USERNAME_MIN_LENGTH : 1);
+
+  // Username step: must be valid format and not taken
+  const usernameError = currentStep.key === 'username' ? validateUsername(currentValue) : null;
+  const canProceed = (() => {
+    if (currentStep.key === 'username') {
+      return !usernameError && usernameStatus !== 'taken' && usernameStatus !== 'checking';
+    }
+    return !currentStep.required || currentValue.trim().length >= 1;
+  })();
+
+  function handleFieldChange(key: string, value: string) {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (key === 'username') {
+      checkUsername(value);
+    }
+  }
 
   async function handleNext() {
     if (isLastStep) {
@@ -199,7 +256,8 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
         ...(github_url && { github_url }),
         ...(portfolio_url && { portfolio_url }),
       });
-      onCreated(newProfile);
+      setCreatedProfile(newProfile);
+      setShowSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create profile');
     } finally {
@@ -214,20 +272,44 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
     }
   }
 
+  // Success screen
+  if (showSuccess && createdProfile) {
+    return (
+      <div className='flex flex-col items-center justify-center min-h-[80vh] p-6'>
+        <div className='size-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6'>
+          <CheckIcon className='size-10 text-primary' />
+        </div>
+        <h1 className='text-2xl font-bold mb-2'>You&apos;re all set!</h1>
+        <p className='text-muted-foreground text-sm text-center max-w-sm mb-8'>
+          Your profile has been created as <span className='font-semibold text-foreground'>@{createdProfile.username}</span>.
+          Start adding your experience, skills, and projects.
+        </p>
+        <div className='flex gap-3'>
+          <Button variant='outline' onClick={() => onCreated(createdProfile)}>
+            View Profile
+          </Button>
+          <Button asChild>
+            <Link href='/dashboard/profile/edit'>Add Your Content</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] p-6">
+    <div className='flex flex-col items-center justify-center min-h-[80vh] p-6'>
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold mb-2">Welcome to Monolenz</h1>
-        <p className="text-muted-foreground text-sm">Let&apos;s set up your professional profile</p>
+      <div className='text-center mb-8'>
+        <h1 className='text-2xl font-bold mb-2'>Welcome to Monolenz</h1>
+        <p className='text-muted-foreground text-sm'>Let&apos;s set up your professional profile</p>
       </div>
 
       {/* Stepper */}
-      <div className="flex items-center gap-0 mb-8">
+      <div className='flex items-center gap-0 mb-8'>
         {ONBOARDING_STEPS.map((s, i) => (
-          <div key={s.key} className="flex items-center">
+          <div key={s.key} className='flex items-center'>
             <button
-              type="button"
+              type='button'
               onClick={() => {
                 if (i < step) {
                   setStep(i);
@@ -251,32 +333,32 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
       </div>
 
       {/* Card */}
-      <Card className="w-full max-w-md">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+      <Card className='w-full max-w-md'>
+        <CardHeader className='pb-4'>
+          <div className='flex items-center justify-between'>
+            <div className='size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-sm'>
               {currentStep.icon}
             </div>
             {!currentStep.required && (
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant='outline' className='text-[10px]'>
                 Optional
               </Badge>
             )}
           </div>
-          <CardTitle className="text-lg mt-3">{currentStep.title}</CardTitle>
+          <CardTitle className='text-lg mt-3'>{currentStep.title}</CardTitle>
           <CardDescription>{currentStep.description}</CardDescription>
         </CardHeader>
 
-        <CardContent className="pb-4">
-          <Label htmlFor={`onboarding-${currentStep.key}`} className="sr-only">
+        <CardContent className='pb-4'>
+          <Label htmlFor={`onboarding-${currentStep.key}`} className='sr-only'>
             {currentStep.title}
           </Label>
           {currentStep.multiline ? (
             <textarea
               id={`onboarding-${currentStep.key}`}
-              className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm shadow-xs transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring resize-y font-[inherit]"
+              className='flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm shadow-xs transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring resize-y font-[inherit]'
               value={currentValue}
-              onChange={(e) => setFormData((prev) => ({ ...prev, [currentStep.key]: e.target.value }))}
+              onChange={(e) => handleFieldChange(currentStep.key, e.target.value)}
               placeholder={currentStep.placeholder}
               autoFocus
             />
@@ -285,45 +367,54 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
               id={`onboarding-${currentStep.key}`}
               type={currentStep.type ?? 'text'}
               value={currentValue}
-              onChange={(e) => setFormData((prev) => ({ ...prev, [currentStep.key]: e.target.value }))}
+              onChange={(e) => handleFieldChange(currentStep.key, e.target.value)}
               placeholder={currentStep.placeholder}
               onKeyDown={handleKeyDown}
-              className="h-10"
+              className='h-10'
               autoFocus
             />
           )}
 
-          {currentStep.key === 'username' && currentValue.length > 0 && !meetsMinimumLength(currentValue) && (
-            <p className="text-xs text-muted-foreground mt-2">
-              Username must be at least {USERNAME_MIN_LENGTH} characters
-            </p>
+          {/* Username validation feedback */}
+          {currentStep.key === 'username' && currentValue.length > 0 && (
+            <div className='mt-2'>
+              {usernameError ? (
+                <p className='text-xs text-muted-foreground'>{usernameError}</p>
+              ) : usernameStatus === 'checking' ? (
+                <p className='text-xs text-muted-foreground'>Checking availability...</p>
+              ) : usernameStatus === 'available' ? (
+                <p className='text-xs text-emerald-600'>Username is available</p>
+              ) : usernameStatus === 'taken' ? (
+                <p className='text-xs text-destructive'>Username is already taken</p>
+              ) : null}
+            </div>
           )}
 
           {error && (
-            <div className="mt-4 px-3 py-2.5 rounded-lg border border-destructive/30 bg-destructive/5 text-destructive text-sm">
+            <div className='mt-4 px-3 py-2.5 rounded-lg border border-destructive/30 bg-destructive/5 text-destructive text-sm'>
               {error}
             </div>
           )}
         </CardContent>
 
-        <CardFooter className="flex justify-between pt-2">
+        <CardFooter className='flex justify-between pt-2'>
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={() => {
               setStep((s) => s - 1);
               setError(null);
             }}
             disabled={isFirstStep}
           >
-            ← Back
+            Back
           </Button>
 
-          <div className="flex gap-2">
+          <div className='flex gap-2'>
             {!currentStep.required && !isLastStep && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={() => {
                   setStep((s) => s + 1);
                   setError(null);
@@ -332,22 +423,22 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
                 Skip
               </Button>
             )}
-            <Button size="sm" onClick={handleNext} disabled={!canProceed || isSubmitting}>
-              {isSubmitting ? 'Creating...' : isLastStep ? 'Create Profile' : 'Next →'}
+            <Button size='sm' onClick={handleNext} disabled={!canProceed || isSubmitting}>
+              {isSubmitting ? 'Creating...' : isLastStep ? 'Create Profile' : 'Next'}
             </Button>
           </div>
         </CardFooter>
       </Card>
 
       {/* Progress bar */}
-      <div className="w-full max-w-md mt-6">
-        <div className="h-1 bg-muted rounded-full overflow-hidden">
+      <div className='w-full max-w-md mt-6'>
+        <div className='h-1 bg-muted rounded-full overflow-hidden'>
           <div
-            className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+            className='h-full bg-primary rounded-full transition-all duration-500 ease-out'
             style={{ width: `${((step + 1) / ONBOARDING_STEPS.length) * 100}%` }}
           />
         </div>
-        <p className="text-[11px] text-muted-foreground text-center mt-2">
+        <p className='text-[11px] text-muted-foreground text-center mt-2'>
           Step {step + 1} of {ONBOARDING_STEPS.length}
         </p>
       </div>
@@ -487,9 +578,6 @@ function BlocksGrid({ blocks }: { blocks: VersionBlockDetail[] }) {
   return (
     <div className="space-y-10">
       {Array.from(byCategory.entries()).map(([category, categoryBlocks]) => {
-        const firstBlock = categoryBlocks[0];
-        const meta = firstBlock ? BLOCK_TYPE_META[firstBlock.block_type as string] : null;
-
         return (
           <section key={category}>
             <div className="flex items-center gap-2 mb-4 pb-3 border-b">
@@ -606,6 +694,14 @@ function formatBlockType(blockType: string): string {
 // ============================================================================
 // Icons
 // ============================================================================
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2.5}>
+      <path strokeLinecap='round' strokeLinejoin='round' d='M5 13l4 4L19 7' />
+    </svg>
+  );
+}
 
 function EditIcon({ className }: { className?: string }) {
   return (
