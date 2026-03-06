@@ -12,6 +12,7 @@ import Link from 'next/link';
 import type { Profile } from '@monolenz/types/entities';
 import { BlockEditor } from '@/app/components/profile/blocks/BlockEditor';
 import { ProfileInfoForm } from '@/app/components/profile/ProfileInfoForm';
+import { ProfileLinksEditor } from '@/app/components/profile/ProfileLinksEditor';
 import { useApiClient } from '@/lib/hooks/useApiClient';
 import { createProfileApi } from '@/lib/api/profile';
 import { createProfileBlocksApi } from '@/lib/api/profile-blocks';
@@ -31,10 +32,11 @@ export default function ProfileEditPage() {
   const [latestVersionId, setLatestVersionId] = useState<number | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'info' | 'blocks'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'blocks' | 'links'>('info');
   const [hasProfileInfoUnsavedChanges, setHasProfileInfoUnsavedChanges] = useState(false);
+  const [hasLinksUnsavedChanges, setHasLinksUnsavedChanges] = useState(false);
 
-  const hasUnsavedChanges = hasBlocksUnsavedChanges || hasProfileInfoUnsavedChanges;
+  const hasUnsavedChanges = hasBlocksUnsavedChanges || hasProfileInfoUnsavedChanges || hasLinksUnsavedChanges;
 
   // Warn before leaving with unsaved changes
   useEffect(() => {
@@ -83,11 +85,13 @@ export default function ProfileEditPage() {
   }, []);
 
   const handleTabSwitch = useCallback(
-    (newTab: 'info' | 'blocks') => {
+    (newTab: 'info' | 'blocks' | 'links') => {
       if (activeTab === newTab) return;
 
       const currentTabHasChanges =
-        (activeTab === 'info' && hasProfileInfoUnsavedChanges) || (activeTab === 'blocks' && hasBlocksUnsavedChanges);
+        (activeTab === 'info' && hasProfileInfoUnsavedChanges) ||
+        (activeTab === 'blocks' && hasBlocksUnsavedChanges) ||
+        (activeTab === 'links' && hasLinksUnsavedChanges);
 
       if (currentTabHasChanges) {
         const confirmed = window.confirm(
@@ -98,7 +102,7 @@ export default function ProfileEditPage() {
 
       setActiveTab(newTab);
     },
-    [activeTab, hasProfileInfoUnsavedChanges, hasBlocksUnsavedChanges]
+    [activeTab, hasProfileInfoUnsavedChanges, hasBlocksUnsavedChanges, hasLinksUnsavedChanges]
   );
 
   if (isLoading) {
@@ -159,6 +163,19 @@ export default function ProfileEditPage() {
               <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />
             )}
           </button>
+          <button
+            type='button'
+            className={cn(
+              'relative px-4 py-3 text-sm font-medium transition-colors',
+              activeTab === 'links' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+            )}
+            onClick={() => handleTabSwitch('links')}
+          >
+            Links
+            {activeTab === 'links' && (
+              <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />
+            )}
+          </button>
         </div>
 
         {hasUnsavedChanges && (
@@ -174,7 +191,7 @@ export default function ProfileEditPage() {
 
       {/* Content area */}
       <div className='flex-1 overflow-hidden'>
-        {activeTab === 'info' ? (
+        {activeTab === 'info' && (
           <div className='overflow-y-auto h-full'>
             <ProfileInfoForm
               profile={profile}
@@ -183,9 +200,15 @@ export default function ProfileEditPage() {
               onDirtyChange={setHasProfileInfoUnsavedChanges}
             />
           </div>
-        ) : (
+        )}
+        {activeTab === 'blocks' && (
           <div className='h-full overflow-hidden'>
             <BlockEditor apiClient={blocksApi} profileIdentifier='me' initialVersionId={latestVersionId} />
+          </div>
+        )}
+        {activeTab === 'links' && (
+          <div className='overflow-y-auto h-full'>
+            <ProfileLinksEditor api={profileApi} onDirtyChange={setHasLinksUnsavedChanges} />
           </div>
         )}
       </div>

@@ -3,16 +3,29 @@
  * Handles profile CRUD and username availability
  */
 
-import type { Profile, VersionBlockDetail } from '@monolenz/types/entities';
+import type { Profile, ProfileLink, LinkPlatform, VersionBlockDetail } from '@monolenz/types/entities';
 import type { ApiResponse } from '@monolenz/types/api';
 import type { ApiClient } from './common';
 import { ApiError } from './common';
+
+export type { ProfileLink, LinkPlatform };
+
+export interface SyncLinkPayload {
+  id?: number;
+  platform_id?: number | null;
+  url: string;
+  label?: string | null;
+  is_public?: boolean;
+  sort_order?: number;
+}
 
 // ============================================================================
 // API Response Types
 // ============================================================================
 
 type ProfileResponse = ApiResponse<Profile>;
+type ProfileLinksResponse = ApiResponse<ProfileLink[]>;
+type PlatformsResponse = ApiResponse<LinkPlatform[]>;
 
 type UsernameAvailabilityResponse = ApiResponse<{
   available: boolean;
@@ -121,6 +134,30 @@ export function createProfileApi(client: ApiClient) {
         }
         throw err;
       }
+    },
+
+    /**
+     * Get current user's profile links (with platform info)
+     */
+    async getMyLinks(): Promise<ProfileLink[]> {
+      const response = await client.get<ProfileLinksResponse>(`${BASE_PATH}/me/links`);
+      return response.data ?? [];
+    },
+
+    /**
+     * Bulk sync profile links (replaces all existing links)
+     */
+    async syncLinks(links: SyncLinkPayload[]): Promise<ProfileLink[]> {
+      const response = await client.put<ProfileLinksResponse>(`${BASE_PATH}/me/links`, links);
+      return response.data ?? [];
+    },
+
+    /**
+     * Get all active link platforms (public endpoint)
+     */
+    async listPlatforms(): Promise<LinkPlatform[]> {
+      const response = await client.get<PlatformsResponse>(`${BASE_PATH}/platforms`);
+      return response.data ?? [];
     },
 
     /**

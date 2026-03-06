@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ProfileService } from '../../services/domain/profile.service';
 import { ProfileRepository } from '../../repositories/profile/profile';
+import { ProfileLinkRepository, SyncLinkInput } from '../../repositories/profile/profile-link.repository';
 import { prisma } from '../../config/prisma';
 import { asyncHandler } from '../../utils/async-handler';
 import { ServiceContext } from '../../services/base.service';
@@ -9,6 +10,7 @@ import { ProfileCreateData, ProfileUpdateData } from '@monolenz/types/validation
 
 const profileRepository = new ProfileRepository(prisma);
 const profileService = new ProfileService(profileRepository);
+const profileLinkRepository = new ProfileLinkRepository(prisma);
 
 /**
  * Profile Controller
@@ -133,8 +135,8 @@ class ProfileController {
     };
 
     const profile = await profileService.getProfileByIdentifier(identifier, context, {
-      includeLinks: false, // profile_links table not yet in schema
-      publicOnly: true, // Always show public data only
+      includeLinks: true,
+      publicOnly: true,
     });
 
     if (!profile) {
@@ -184,7 +186,37 @@ class ProfileController {
       isAvailable ? 'Username is available' : 'Username is not available'
     );
   });
+
+  /**
+   * Get current user's profile links
+   * GET /api/v1/profiles/me/links
+   */
+  getMyLinks = asyncHandler(async (req: Request, res: Response) => {
+    const links = await profileLinkRepository.findByProfileId(req.userId!);
+    return res.success(links, 'Profile links retrieved successfully');
+  });
+
+  /**
+   * Sync (bulk replace) current user's profile links
+   * PUT /api/v1/profiles/me/links
+   */
+  syncMyLinks = asyncHandler(async (req: Request, res: Response) => {
+    const links: SyncLinkInput[] = req.body ?? [];
+    const result = await profileLinkRepository.syncLinks(req.userId!, links);
+    return res.success(result, 'Profile links updated successfully');
+  });
 }
+
+/**
+ * Platforms controller (standalone, no class needed)
+ */
+export const listPlatforms = asyncHandler(async (_req: Request, res: Response) => {
+  const platforms = await prisma.link_platforms.findMany({
+    where: { is_active: true },
+    orderBy: [{ category: 'asc' }, { display_name: 'asc' }],
+  });
+  return res.success(platforms, 'Platforms retrieved successfully');
+});
 
 // Export singleton instance
 export const profileController = new ProfileController();

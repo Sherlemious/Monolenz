@@ -130,6 +130,28 @@ function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: Vers
 // ============================================================================
 
 function ProfileLinks({ profile }: { profile: Profile }) {
+  // Prefer the new profile_links array when available
+  if (profile.profile_links && profile.profile_links.length > 0) {
+    const links = profile.profile_links.filter((l) => l.is_public !== false);
+    if (links.length === 0) return null;
+    return (
+      <div className='flex flex-wrap gap-2 mt-3'>
+        {links.map((link) => (
+          <a
+            key={link.id}
+            href={link.url}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='inline-flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md hover:text-foreground hover:bg-accent transition-colors'
+          >
+            {link.label || link.link_platforms?.display_name || 'Link'}
+          </a>
+        ))}
+      </div>
+    );
+  }
+
+  // Fall back to legacy hard-coded fields
   const links = [
     { url: profile.linkedin_url, label: 'LinkedIn' },
     { url: profile.github_url, label: 'GitHub' },
