@@ -133,7 +133,7 @@ class ProfileController {
     };
 
     const profile = await profileService.getProfileByIdentifier(identifier, context, {
-      includeLinks: true,
+      includeLinks: false, // profile_links table not yet in schema
       publicOnly: true, // Always show public data only
     });
 
