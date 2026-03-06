@@ -1,23 +1,26 @@
 'use client';
 
-/**
- * Dashboard Home Page
- * Main hub with navigation to profile and other features
- */
-
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { User, Edit, FileText, Globe, ArrowRight } from 'lucide-react';
+import { User, Edit, FileText, Globe, ArrowRight, ExternalLink } from 'lucide-react';
+import { PageHeader } from '@/app/components/dashboard/PageHeader';
+import { useApiClient } from '@/lib/hooks/useApiClient';
+import { createProfileApi } from '@/lib/api/profile';
 
 export default function DashboardPage() {
+  const client = useApiClient();
+  const profileApi = useMemo(() => createProfileApi(client), [client]);
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    profileApi.getMyProfile().then((p) => setUsername(p?.username ?? null)).catch(() => {});
+  }, [profileApi]);
+
   return (
     <div className='h-full overflow-y-auto'>
-      <div className='p-6 md:p-8 max-w-5xl'>
-        {/* Header */}
-        <header className='mb-8'>
-          <h1 className='text-2xl font-bold text-foreground mb-1'>Dashboard</h1>
-          <p className='text-sm text-muted-foreground'>Manage your professional identity</p>
-        </header>
+      <PageHeader title='Dashboard' description='Manage your professional identity' />
 
+      <div className='p-6 md:p-8 max-w-5xl'>
         {/* Quick Actions Grid */}
         <section className='mb-10'>
           <h2 className='text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4'>Quick Actions</h2>
@@ -64,18 +67,34 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className='flex items-center gap-4 p-5 bg-card/50 border border-border rounded-xl opacity-50 cursor-not-allowed'>
-              <div className='w-10 h-10 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center shrink-0'>
-                <Globe className='w-5 h-5' />
+            {username ? (
+              <Link
+                href={`/${username}`}
+                className='group flex items-center gap-4 p-5 bg-card border border-border rounded-xl transition-all hover:border-ring hover:shadow-sm'
+              >
+                <div className='w-10 h-10 rounded-lg bg-secondary text-primary flex items-center justify-center shrink-0'>
+                  <Globe className='w-5 h-5' />
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <h3 className='text-sm font-semibold text-foreground mb-0.5'>Public Portfolio</h3>
+                  <p className='text-xs text-muted-foreground'>View your public profile</p>
+                </div>
+                <ExternalLink className='w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors' />
+              </Link>
+            ) : (
+              <div className='flex items-center gap-4 p-5 bg-card/50 border border-border rounded-xl opacity-50 cursor-not-allowed'>
+                <div className='w-10 h-10 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center shrink-0'>
+                  <Globe className='w-5 h-5' />
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <h3 className='text-sm font-semibold text-foreground mb-0.5'>Public Portfolio</h3>
+                  <p className='text-xs text-muted-foreground'>Share your professional portfolio</p>
+                  <span className='inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-secondary text-muted-foreground mt-1'>
+                    Set up profile first
+                  </span>
+                </div>
               </div>
-              <div className='flex-1 min-w-0'>
-                <h3 className='text-sm font-semibold text-foreground mb-0.5'>Public Portfolio</h3>
-                <p className='text-xs text-muted-foreground'>Share your professional portfolio</p>
-                <span className='inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-secondary text-muted-foreground mt-1'>
-                  Coming Soon
-                </span>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 

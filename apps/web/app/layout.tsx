@@ -3,6 +3,7 @@ import { Montserrat } from 'next/font/google';
 import './globals.css';
 import { PostHogProvider } from '@/app/providers/PostHogProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from 'sonner';
 import { Suspense } from 'react';
 
 const montserrat = Montserrat({
@@ -39,6 +40,7 @@ export default function RootLayout({
           <PostHogProvider>
             <TooltipProvider>
               {children}
+              <Toaster position='bottom-right' richColors />
             </TooltipProvider>
           </PostHogProvider>
         </Suspense>

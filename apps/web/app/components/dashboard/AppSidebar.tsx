@@ -62,7 +62,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Logo */}
       <div className='flex items-center gap-3 px-5 h-14 shrink-0'>
         <Image src='/logo.svg' alt='Monolenz' width={28} height={28} />
-        <span className='text-lg font-semibold text-foreground'>Monolenz</span>
+        <span className='text-lg font-semibold text-sidebar-foreground'>Monolenz</span>
       </div>
 
       <Separator />
@@ -79,8 +79,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               className={cn(
                 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                 active
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                  : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent'
               )}
             >
               <item.icon className='size-4 shrink-0' />
@@ -96,7 +96,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className='p-3'>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className='flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm hover:bg-accent transition-colors text-left cursor-pointer'>
+            <button className='flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm hover:bg-sidebar-accent transition-colors text-left cursor-pointer'>
               <Avatar className='size-8 shrink-0'>
                 <AvatarFallback className='bg-primary/10 text-primary text-xs font-semibold'>
                   {user?.initials ?? '?'}
@@ -105,7 +105,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               <span className='flex-1 min-w-0 text-sm font-medium truncate'>
                 {user?.email ?? 'Loading...'}
               </span>
-              <ChevronsUpDown className='size-4 text-muted-foreground shrink-0' />
+              <ChevronsUpDown className='size-4 text-sidebar-foreground/40 shrink-0' />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align='start' side='top' className='w-[var(--radix-dropdown-menu-trigger-width)]'>
@@ -136,12 +136,12 @@ export function AppSidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className='hidden md:flex w-60 border-r bg-card shrink-0 flex-col'>
+      <aside className='hidden md:flex w-60 border-r border-sidebar-border bg-sidebar shrink-0 flex-col'>
         <SidebarContent />
       </aside>
 
       {/* Mobile top bar */}
-      <div className='md:hidden fixed top-0 left-0 right-0 z-40 h-14 border-b bg-card/95 backdrop-blur-sm flex items-center px-4 gap-3'>
+      <div className='md:hidden fixed top-0 left-0 right-0 z-40 h-14 border-b border-sidebar-border bg-sidebar/95 backdrop-blur-sm flex items-center px-4 gap-3'>
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
             <Button variant='ghost' size='icon' className='size-9'>

@@ -18,6 +18,9 @@ import { BlockFormFields } from './BlockFormFields';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { Reorder } from 'framer-motion';
+import { GripVertical } from 'lucide-react';
 
 // ============================================================================
 // Types
@@ -194,6 +197,8 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
     loadVersion,
     addBlock,
     deleteBlock,
+    restoreBlock,
+    reorderBlocksInCategory,
     selectBlock,
     setSaving,
     setSaveError,
@@ -345,6 +350,34 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
     selectBlock,
   ]);
 
+  // Ctrl+S / Cmd+S save shortcut
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleSave]);
+
+  // Undo-delete handler
+  const handleDeleteWithUndo = useCallback(
+    (clientId: string) => {
+      const block = useProfileEditorStore.getState().draftBlocks.find((b) => b.clientId === clientId);
+      const summary = block ? getItemSummary(block) : 'Item';
+      deleteBlock(clientId);
+      selectBlock(null);
+      toast('Deleted', {
+        description: summary,
+        action: { label: 'Undo', onClick: () => restoreBlock(clientId) },
+        duration: 5000,
+      });
+    },
+    [deleteBlock, selectBlock, restoreBlock]
+  );
+
   const handleAddItem = useCallback(() => {
     addBlock(activeCategory as BlockType);
   }, [addBlock, activeCategory]);
@@ -473,10 +506,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
               block={selectedBlock}
               meta={activeMeta}
               onBack={handleBackToList}
-              onDelete={() => {
-                deleteBlock(selectedBlock.clientId);
-                selectBlock(null);
-              }}
+              onDelete={() => handleDeleteWithUndo(selectedBlock.clientId)}
             />
           ) : (
             <CategoryListView
@@ -484,7 +514,8 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
               items={categoryItems}
               onAdd={handleAddItem}
               onSelect={handleSelectItem}
-              onDelete={(clientId) => deleteBlock(clientId)}
+              onDelete={(clientId) => handleDeleteWithUndo(clientId)}
+              onReorder={(newOrder) => reorderBlocksInCategory(newOrder.map((b) => b.clientId))}
             />
           )}
         </div>
@@ -503,9 +534,10 @@ interface CategoryListViewProps {
   onAdd: () => void;
   onSelect: (clientId: string) => void;
   onDelete: (clientId: string) => void;
+  onReorder: (newOrder: DraftBlock[]) => void;
 }
 
-function CategoryListView({ meta, items, onAdd, onSelect, onDelete }: CategoryListViewProps) {
+function CategoryListView({ meta, items, onAdd, onSelect, onDelete, onReorder }: CategoryListViewProps) {
   const Icon = meta.icon;
 
   return (
@@ -543,17 +575,18 @@ function CategoryListView({ meta, items, onAdd, onSelect, onDelete }: CategoryLi
           </Button>
         </div>
       ) : (
-        <div className='space-y-2'>
+        <Reorder.Group axis='y' values={items} onReorder={onReorder} className='space-y-2'>
           {items.map((item) => (
-            <ItemCard
-              key={item.clientId}
-              item={item}
-              meta={meta}
-              onClick={() => onSelect(item.clientId)}
-              onDelete={() => onDelete(item.clientId)}
-            />
+            <Reorder.Item key={item.clientId} value={item} className='list-none'>
+              <ItemCard
+                item={item}
+                meta={meta}
+                onClick={() => onSelect(item.clientId)}
+                onDelete={() => onDelete(item.clientId)}
+              />
+            </Reorder.Item>
           ))}
-        </div>
+        </Reorder.Group>
       )}
     </div>
   );
@@ -585,6 +618,9 @@ function ItemCard({ item, meta, onClick, onDelete }: ItemCardProps) {
         hasErrors && 'border-destructive/40 bg-destructive/5'
       )}
     >
+      {/* Drag handle */}
+      <GripVertical className='size-4 text-muted-foreground/0 group-hover:text-muted-foreground/50 shrink-0 cursor-grab transition-colors' />
+
       {/* Color accent */}
       <div className={cn('w-1 self-stretch rounded-full shrink-0', meta.borderColor, 'bg-current opacity-30')} />
 

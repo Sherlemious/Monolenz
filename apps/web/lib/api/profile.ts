@@ -103,6 +103,27 @@ export function createProfileApi(client: ApiClient) {
     },
 
     /**
+     * Get a public profile by username (no auth required)
+     * Returns null on 404
+     */
+    async getPublicProfile(username: string): Promise<Profile | null> {
+      try {
+        const response = await client.get<ProfileResponse>(
+          `${BASE_PATH}/public/${encodeURIComponent(username)}`
+        );
+        if (!response.data) {
+          return null;
+        }
+        return response.data;
+      } catch (err) {
+        if (err instanceof ApiError && err.is404()) {
+          return null;
+        }
+        throw err;
+      }
+    },
+
+    /**
      * Get the latest version and blocks for a profile
      */
     async getLatestVersion(
