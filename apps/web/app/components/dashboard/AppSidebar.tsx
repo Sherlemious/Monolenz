@@ -102,9 +102,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   {user?.initials ?? '?'}
                 </AvatarFallback>
               </Avatar>
-              <span className='flex-1 min-w-0 text-sm font-medium truncate'>
-                {user?.email ?? 'Loading...'}
-              </span>
+              <span className='flex-1 min-w-0 text-sm font-medium truncate'>{user?.email ?? 'Loading...'}</span>
               <ChevronsUpDown className='size-4 text-sidebar-foreground/40 shrink-0' />
             </button>
           </DropdownMenuTrigger>

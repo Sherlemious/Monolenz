@@ -59,24 +59,24 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <div className="relative size-10">
-          <div className="absolute inset-0 rounded-full border-2 border-muted" />
-          <div className="absolute inset-0 rounded-full border-2 border-t-primary animate-spin" />
+      <div className='flex flex-col items-center justify-center h-full gap-4'>
+        <div className='relative size-10'>
+          <div className='absolute inset-0 rounded-full border-2 border-muted' />
+          <div className='absolute inset-0 rounded-full border-2 border-t-primary animate-spin' />
         </div>
-        <p className="text-muted-foreground text-sm">Loading your profile...</p>
+        <p className='text-muted-foreground text-sm'>Loading your profile...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center gap-3 p-8">
-        <div className="size-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
-          <span className="text-destructive text-xl">!</span>
+      <div className='flex flex-col items-center justify-center h-full text-center gap-3 p-8'>
+        <div className='size-14 rounded-2xl bg-destructive/10 flex items-center justify-center'>
+          <span className='text-destructive text-xl'>!</span>
         </div>
-        <h2 className="text-lg font-semibold">Something went wrong</h2>
-        <p className="text-muted-foreground text-sm max-w-sm">{error}</p>
+        <h2 className='text-lg font-semibold'>Something went wrong</h2>
+        <p className='text-muted-foreground text-sm max-w-sm'>{error}</p>
       </div>
     );
   }
@@ -281,8 +281,9 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
         </div>
         <h1 className='text-2xl font-bold mb-2'>You&apos;re all set!</h1>
         <p className='text-muted-foreground text-sm text-center max-w-sm mb-8'>
-          Your profile has been created as <span className='font-semibold text-foreground'>@{createdProfile.username}</span>.
-          Start adding your experience, skills, and projects.
+          Your profile has been created as{' '}
+          <span className='font-semibold text-foreground'>@{createdProfile.username}</span>. Start adding your
+          experience, skills, and projects.
         </p>
         <div className='flex gap-3'>
           <Button variant='outline' onClick={() => onCreated(createdProfile)}>
@@ -452,40 +453,40 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
 
 function ProfileOverview({ profile, blocks }: { profile: Profile; blocks: VersionBlockDetail[] }) {
   return (
-    <div className="min-h-full">
+    <div className='min-h-full'>
       {/* Hero header */}
-      <header className="relative border-b bg-card overflow-hidden">
+      <header className='relative border-b bg-card overflow-hidden'>
         {/* Subtle gradient accent */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent" />
+        <div className='absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent' />
 
-        <div className="relative max-w-5xl mx-auto px-6 lg:px-8 py-8">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
-            <div className="flex items-start gap-5">
+        <div className='relative max-w-5xl mx-auto px-6 lg:px-8 py-8'>
+          <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6'>
+            <div className='flex items-start gap-5'>
               {/* Avatar */}
               {profile.profile_picture_url ? (
                 <img
                   src={profile.profile_picture_url}
                   alt={profile.username}
-                  className="size-20 rounded-2xl object-cover border-2 border-border shadow-sm shrink-0"
+                  className='size-20 rounded-2xl object-cover border-2 border-border shadow-sm shrink-0'
                 />
               ) : (
-                <div className="size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold shrink-0">
+                <div className='size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold shrink-0'>
                   {profile.username.charAt(0).toUpperCase()}
                 </div>
               )}
 
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">{profile.username}</h1>
+                <h1 className='text-2xl font-bold tracking-tight'>{profile.username}</h1>
                 {profile.bio && (
-                  <p className="text-sm text-muted-foreground mt-1.5 max-w-lg leading-relaxed">{profile.bio}</p>
+                  <p className='text-sm text-muted-foreground mt-1.5 max-w-lg leading-relaxed'>{profile.bio}</p>
                 )}
                 <ProfileLinks profile={profile} />
               </div>
             </div>
 
-            <Button asChild className="shrink-0">
-              <Link href="/dashboard/profile/edit">
-                <EditIcon className="size-4" />
+            <Button asChild className='shrink-0'>
+              <Link href='/dashboard/profile/edit'>
+                <EditIcon className='size-4' />
                 Edit Profile
               </Link>
             </Button>
@@ -494,19 +495,19 @@ function ProfileOverview({ profile, blocks }: { profile: Profile; blocks: Versio
       </header>
 
       {/* Content */}
-      <main className="max-w-5xl mx-auto px-6 lg:px-8 py-8">
+      <main className='max-w-5xl mx-auto px-6 lg:px-8 py-8'>
         {blocks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center py-20 max-w-md mx-auto">
-            <div className="size-24 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-8">
-              <PlusIcon className="size-10 text-primary/40" />
+          <div className='flex flex-col items-center justify-center text-center py-20 max-w-md mx-auto'>
+            <div className='size-24 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-8'>
+              <PlusIcon className='size-10 text-primary/40' />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Your profile is empty</h2>
-            <p className="text-muted-foreground text-sm mb-8 leading-relaxed">
+            <h2 className='text-xl font-semibold mb-2'>Your profile is empty</h2>
+            <p className='text-muted-foreground text-sm mb-8 leading-relaxed'>
               Start building your professional profile by adding your experience, skills, education, and more.
             </p>
-            <Button size="lg" asChild>
-              <Link href="/dashboard/profile/edit">
-                <PlusIcon className="size-4" />
+            <Button size='lg' asChild>
+              <Link href='/dashboard/profile/edit'>
+                <PlusIcon className='size-4' />
                 Add Your Content
               </Link>
             </Button>
@@ -529,14 +530,14 @@ function ProfileLinks({ profile }: { profile: Profile }) {
     const links = profile.profile_links.filter((l) => l.is_public !== false);
     if (links.length === 0) return null;
     return (
-      <div className="flex flex-wrap gap-2 mt-3">
+      <div className='flex flex-wrap gap-2 mt-3'>
         {links.map((link) => (
           <a
             key={link.id}
             href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md hover:text-foreground hover:bg-accent transition-colors"
+            target='_blank'
+            rel='noopener noreferrer'
+            className='inline-flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md hover:text-foreground hover:bg-accent transition-colors'
           >
             {link.label || link.link_platforms?.display_name || 'Link'}
           </a>
@@ -555,16 +556,16 @@ function ProfileLinks({ profile }: { profile: Profile }) {
   if (links.length === 0) return null;
 
   return (
-    <div className="flex gap-2 mt-3">
+    <div className='flex gap-2 mt-3'>
       {links.map((link) => (
         <a
           key={link.label}
           href={link.url!}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md hover:text-foreground hover:bg-accent transition-colors"
+          target='_blank'
+          rel='noopener noreferrer'
+          className='inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md hover:text-foreground hover:bg-accent transition-colors'
         >
-          <span className="text-[10px] font-bold">{link.icon}</span>
+          <span className='text-[10px] font-bold'>{link.icon}</span>
           {link.label}
         </a>
       ))}
@@ -598,17 +599,17 @@ function BlocksGrid({ blocks }: { blocks: VersionBlockDetail[] }) {
   }
 
   return (
-    <div className="space-y-10">
+    <div className='space-y-10'>
       {Array.from(byCategory.entries()).map(([category, categoryBlocks]) => {
         return (
           <section key={category}>
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b">
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">{category}</h2>
-              <Badge variant="secondary" className="text-[10px] ml-1">
+            <div className='flex items-center gap-2 mb-4 pb-3 border-b'>
+              <h2 className='text-sm font-semibold text-foreground uppercase tracking-wider'>{category}</h2>
+              <Badge variant='secondary' className='text-[10px] ml-1'>
                 {categoryBlocks.length}
               </Badge>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
               {categoryBlocks.map((block) => (
                 <BlockPreview key={block.id} block={block} />
               ))}
@@ -637,18 +638,18 @@ function BlockPreview({ block }: { block: VersionBlockDetail }) {
         meta?.accent ?? 'border-l-muted'
       )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="font-semibold text-[15px] truncate">{title}</h3>
-          {subtitle && <p className="text-sm text-muted-foreground mt-0.5 truncate">{subtitle}</p>}
+      <div className='flex items-start justify-between gap-3'>
+        <div className='min-w-0'>
+          <h3 className='font-semibold text-[15px] truncate'>{title}</h3>
+          {subtitle && <p className='text-sm text-muted-foreground mt-0.5 truncate'>{subtitle}</p>}
         </div>
         {!block.is_visible && (
-          <Badge variant="outline" className="text-[10px] shrink-0">
+          <Badge variant='outline' className='text-[10px] shrink-0'>
             Hidden
           </Badge>
         )}
       </div>
-      {dates && <p className="text-xs text-muted-foreground mt-3">{dates}</p>}
+      {dates && <p className='text-xs text-muted-foreground mt-3'>{dates}</p>}
     </article>
   );
 }
@@ -727,11 +728,11 @@ function CheckIcon({ className }: { className?: string }) {
 
 function EditIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
       <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
       />
     </svg>
   );
@@ -739,8 +740,8 @@ function EditIcon({ className }: { className?: string }) {
 
 function PlusIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+    <svg className={className} fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+      <path strokeLinecap='round' strokeLinejoin='round' d='M12 4v16m8-8H4' />
     </svg>
   );
 }

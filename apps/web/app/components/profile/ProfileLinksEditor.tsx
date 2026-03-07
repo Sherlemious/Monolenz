@@ -172,21 +172,26 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
   }, []);
 
   const handleAddCustomLink = useCallback(() => {
-    setDrafts((prev) => [
-      ...prev,
-      { _key: newKey(), platform_id: null, url: '', label: '', is_public: true },
-    ]);
+    setDrafts((prev) => [...prev, { _key: newKey(), platform_id: null, url: '', label: '', is_public: true }]);
   }, []);
 
   const handleRemove = useCallback((key: string) => {
     setDrafts((prev) => prev.filter((d) => d._key !== key));
-    setErrors((prev) => { const next = { ...prev }; delete next[key]; return next; });
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }, []);
 
   const handleFieldChange = useCallback(<K extends keyof DraftLink>(key: string, field: K, value: DraftLink[K]) => {
-    setDrafts((prev) => prev.map((d) => d._key === key ? { ...d, [field]: value } : d));
+    setDrafts((prev) => prev.map((d) => (d._key === key ? { ...d, [field]: value } : d)));
     if (field === 'url') {
-      setErrors((prev) => { const next = { ...prev }; delete next[key]; return next; });
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
     }
   }, []);
 
@@ -220,12 +225,17 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
 
             return (
               <Reorder.Item key={draft._key} value={draft} className='list-none'>
-                <div className={cn(
-                  'flex items-start gap-3 p-3 rounded-xl border bg-card',
-                  error && 'border-destructive/40'
-                )}>
+                <div
+                  className={cn(
+                    'flex items-start gap-3 p-3 rounded-xl border bg-card',
+                    error && 'border-destructive/40'
+                  )}
+                >
                   {/* Drag handle */}
-                  <button type='button' className='mt-2.5 cursor-grab text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0'>
+                  <button
+                    type='button'
+                    className='mt-2.5 cursor-grab text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0'
+                  >
                     <GripVertical className='size-4' />
                   </button>
 
@@ -318,7 +328,9 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
         <div className='space-y-3'>
           {Array.from(platformsByCategory.entries()).map(([category, plats]) => (
             <div key={category}>
-              <p className='text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mb-1.5 capitalize'>{category}</p>
+              <p className='text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mb-1.5 capitalize'>
+                {category}
+              </p>
               <div className='flex flex-wrap gap-1.5'>
                 {plats.map((p) => (
                   <button

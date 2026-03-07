@@ -121,9 +121,7 @@ export function createProfileApi(client: ApiClient) {
      */
     async getPublicProfile(username: string): Promise<Profile | null> {
       try {
-        const response = await client.get<ProfileResponse>(
-          `${BASE_PATH}/public/${encodeURIComponent(username)}`
-        );
+        const response = await client.get<ProfileResponse>(`${BASE_PATH}/public/${encodeURIComponent(username)}`);
         if (!response.data) {
           return null;
         }

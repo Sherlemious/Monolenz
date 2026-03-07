@@ -148,7 +148,9 @@ export default function ProfileEditPage() {
             onClick={() => handleTabSwitch('info')}
           >
             Profile Info
-            {activeTab === 'info' && <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />}
+            {activeTab === 'info' && (
+              <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />
+            )}
           </button>
           <button
             type='button'

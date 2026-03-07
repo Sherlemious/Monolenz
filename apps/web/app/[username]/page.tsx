@@ -114,10 +114,7 @@ function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: Vers
 
       {/* Footer */}
       <footer className='border-t py-6 text-center'>
-        <Link
-          href='/'
-          className='text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors'
-        >
+        <Link href='/' className='text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors'>
           Built with Monolenz
         </Link>
       </footer>
@@ -222,9 +219,7 @@ function BlockCard({ block }: { block: VersionBlockDetail }) {
   const meta = BLOCK_TYPE_META[block.block_type as string];
 
   return (
-    <article
-      className={`bg-card border rounded-xl p-5 border-l-[3px] ${meta?.accent ?? 'border-l-muted'}`}
-    >
+    <article className={`bg-card border rounded-xl p-5 border-l-[3px] ${meta?.accent ?? 'border-l-muted'}`}>
       <div className='flex items-start justify-between gap-3'>
         <div className='min-w-0'>
           <h3 className='font-semibold text-[15px]'>{title}</h3>
@@ -232,9 +227,7 @@ function BlockCard({ block }: { block: VersionBlockDetail }) {
         </div>
       </div>
       {dates && <p className='text-xs text-muted-foreground mt-2'>{dates}</p>}
-      {description && (
-        <p className='text-sm text-muted-foreground mt-3 leading-relaxed'>{description}</p>
-      )}
+      {description && <p className='text-sm text-muted-foreground mt-3 leading-relaxed'>{description}</p>}
     </article>
   );
 }
@@ -265,8 +258,7 @@ function getBlockSubtitle(block: VersionBlockDetail): string | null {
   switch (bt) {
     case 'work_experience': {
       const parts: string[] = [];
-      if (data.position_title && data.company_name)
-        parts.push(`${data.position_title} at ${data.company_name}`);
+      if (data.position_title && data.company_name) parts.push(`${data.position_title} at ${data.company_name}`);
       else if (data.position_title) parts.push(data.position_title as string);
       if (data.location) parts.push(data.location as string);
       return parts.length > 0 ? parts.join(' \u00b7 ') : null;

@@ -13,7 +13,10 @@ export default function DashboardPage() {
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    profileApi.getMyProfile().then((p) => setUsername(p?.username ?? null)).catch(() => {});
+    profileApi
+      .getMyProfile()
+      .then((p) => setUsername(p?.username ?? null))
+      .catch(() => {});
   }, [profileApi]);
 
   return (
