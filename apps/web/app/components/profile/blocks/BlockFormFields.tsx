@@ -420,12 +420,21 @@ function WorkExperienceForm({ block }: { block: DraftBlock }) {
         />
       </div>
 
-      <TextField
-        label='Location'
-        value={get('location', '')}
-        onChange={(v) => update('location', v || null)}
-        placeholder='New York, NY'
-      />
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+        <TextField
+          label='Location'
+          value={get('location', '')}
+          onChange={(v) => update('location', v || null)}
+          placeholder='New York, NY'
+        />
+        <TextField
+          label='Company Website'
+          value={get('company_url', '')}
+          onChange={(v) => update('company_url', v || null)}
+          type='url'
+          placeholder='https://acme.com'
+        />
+      </div>
 
       <FormSection title='Duration' />
 
@@ -483,14 +492,23 @@ function EducationForm({ block }: { block: DraftBlock }) {
 
   return (
     <div className='flex flex-col gap-5'>
-      <TextField
-        label='Institution Name'
-        value={get('institution_name', '')}
-        onChange={(v) => update('institution_name', v)}
-        required
-        error={errors.institution_name}
-        placeholder='Massachusetts Institute of Technology'
-      />
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+        <TextField
+          label='Institution Name'
+          value={get('institution_name', '')}
+          onChange={(v) => update('institution_name', v)}
+          required
+          error={errors.institution_name}
+          placeholder='Massachusetts Institute of Technology'
+        />
+        <TextField
+          label='Institution Website'
+          value={get('institution_url', '')}
+          onChange={(v) => update('institution_url', v || null)}
+          type='url'
+          placeholder='https://mit.edu'
+        />
+      </div>
 
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
         <TextField
@@ -676,6 +694,15 @@ function ProjectForm({ block }: { block: DraftBlock }) {
         />
       </div>
 
+      <TextField
+        label='Image URL'
+        value={get('image_url', '')}
+        onChange={(v) => update('image_url', v || null)}
+        type='url'
+        placeholder='https://example.com/screenshot.png'
+        hint='Screenshot or preview image'
+      />
+
       <FormSection title='Timeline' />
 
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
@@ -726,14 +753,23 @@ function CertificationForm({ block }: { block: DraftBlock }) {
         placeholder='AWS Solutions Architect'
       />
 
-      <TextField
-        label='Issuing Organization'
-        value={get('issuing_organization', '')}
-        onChange={(v) => update('issuing_organization', v)}
-        required
-        error={errors.issuing_organization}
-        placeholder='Amazon Web Services'
-      />
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+        <TextField
+          label='Issuing Organization'
+          value={get('issuing_organization', '')}
+          onChange={(v) => update('issuing_organization', v)}
+          required
+          error={errors.issuing_organization}
+          placeholder='Amazon Web Services'
+        />
+        <TextField
+          label='Organization Website'
+          value={get('organization_url', '')}
+          onChange={(v) => update('organization_url', v || null)}
+          type='url'
+          placeholder='https://aws.amazon.com'
+        />
+      </div>
 
       <FormSection title='Credential Details' />
 

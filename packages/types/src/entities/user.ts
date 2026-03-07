@@ -10,6 +10,32 @@ export interface User {
   user_metadata?: Record<string, any>;
 }
 
+export interface LinkPlatform {
+  id: number;
+  name: string;
+  display_name: string;
+  category?: string | null;
+  icon?: string | null;
+  base_url?: string | null;
+  is_active?: boolean | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface ProfileLink {
+  id: number;
+  profile_id: string;
+  platform_id?: number | null;
+  url: string;
+  label?: string | null;
+  category?: string | null;
+  is_public?: boolean | null;
+  sort_order?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  link_platforms?: LinkPlatform | null;
+}
+
 export interface Profile {
   id: string;
   username: string;
@@ -21,6 +47,7 @@ export interface Profile {
   created_at: Date;
   updated_at: Date;
   deleted_at?: Date | null;
+  profile_links?: ProfileLink[];
 }
 
 export interface PublicProfile {

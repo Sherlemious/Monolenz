@@ -61,6 +61,7 @@ interface EditorActions {
   deleteBlock: (clientId: string) => void;
   restoreBlock: (clientId: string) => void;
   reorderBlocks: (fromIndex: number, toIndex: number) => void;
+  reorderBlocksInCategory: (orderedClientIds: string[]) => void;
   setBlockSection: (clientId: string, sectionName: string | null) => void;
 
   // Selection
@@ -270,6 +271,28 @@ export const useProfileEditorStore = create<EditorStore>()(
             }
           }
         });
+
+        state.isDirty = true;
+      });
+    },
+
+    reorderBlocksInCategory: (orderedClientIds) => {
+      set((state) => {
+        // Collect existing sort orders for the given blocks
+        const existingOrders = orderedClientIds
+          .map((id) => state.draftBlocks.find((b) => b.clientId === id)?.sortOrder ?? 0)
+          .sort((a, b) => a - b);
+
+        // Assign sorted orders to the new sequence
+        for (let i = 0; i < orderedClientIds.length; i++) {
+          const block = state.draftBlocks.find((b) => b.clientId === orderedClientIds[i]);
+          if (block) {
+            block.sortOrder = existingOrders[i]!;
+            if (block.serverId && block.status !== 'created') {
+              block.status = 'modified';
+            }
+          }
+        }
 
         state.isDirty = true;
       });

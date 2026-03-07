@@ -85,7 +85,16 @@ docs/bugfix/installation-steps
 
 - `main` - Production ready code
 - `stage` - Staging environment for testing
-- `dev` - Development integration branch
+
+### Branching Flow
+
+Use a staging-first flow:
+
+1. Create a short-lived feature branch from `stage`
+2. Open a PR into `stage` for integration and verification
+3. Promote tested changes from `stage` to `main` via PR
+
+`dev` is being phased out and should not be used as a long-lived integration branch.
 
 ## Component Guidelines
 
@@ -292,9 +301,9 @@ Refs #125
 ### Creating Branches
 
 ```bash
-# Create from dev branch
-git checkout dev
-git pull origin dev
+# Create from stage branch
+git checkout stage
+git pull origin stage
 git checkout -b frontend/feature/user-profile
 
 # Work and commit
@@ -305,20 +314,20 @@ git push -u origin frontend/feature/user-profile
 
 ### Pull Request Flow
 
-1. **Create branch** from `dev`
+1. **Create branch** from `stage`
 2. **Make changes** and commit following conventions
-3. **Push branch** and open PR to `dev`
+3. **Push branch** and open PR to `stage`
 4. **Request review** from team members
 5. **Address feedback** and update commits if needed
 6. **After approval**, merge and delete branch
-7. **Deploy flow**: `dev` → `stage` → `main`
+7. **Release flow**: `stage` → `main`
 
 ### Branch Cleanup
 
 ```bash
 # After PR is merged
-git checkout dev
-git pull origin dev
+git checkout stage
+git pull origin stage
 git branch -d frontend/feature/user-profile
 
 # Remove remote tracking branch
@@ -338,13 +347,13 @@ git commit -m "fix!: Patch critical security vulnerability"
 
 # Push and create PR to main
 git push -u origin frontend/hotfix/critical-security-patch
-# After merge, also merge main into dev and stage
+# If needed, sync hotfix changes back into stage
 ```
 
 ### Working with Large Features
 
 ```bash
-# For big features, create a feature branch from dev
+# For big features, create a feature branch from stage
 git checkout -b frontend/feature/user-management
 
 # Create smaller branches from the feature branch
@@ -355,19 +364,19 @@ git checkout frontend/feature/user-management
 git checkout -b frontend/feature/user-edit
 # Work on user edit, merge back to user-management
 
-# Finally merge user-management to dev
+# Finally merge user-management to stage
 ```
 
 ## Rules & Best Practices
 
 ### Branch Rules
 
-- **Never push directly** to `main`, `stage`, or `dev`
+- **Never push directly** to `main` or `stage`
 - **Always use Pull Requests** for code review
 - **Delete branches** after merging
 - **Keep branches focused** - one feature/fix per branch
 - **Use descriptive names** - avoid generic terms like "fix", "update"
-- **Branch from `dev`** for features, from `main` for hotfixes
+- **Branch from `stage`** for features, from `main` for hotfixes
 
 ### Commit Rules
 

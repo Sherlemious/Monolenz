@@ -1,18 +1,11 @@
 import React from 'react';
+import { AppSidebar } from '@/app/components/dashboard/AppSidebar';
 
 export default function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className='relative min-h-[100svh] bg-background text-foreground overflow-hidden w-full'>
-      <div
-        aria-hidden
-        className='pointer-events-none absolute inset-0 opacity-30'
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, var(--border) 1px, transparent 1px), linear-gradient(to bottom, var(--border) 1px, transparent 1px)',
-          backgroundSize: '14px 24px',
-        }}
-      />
-      <div className='relative z-10'>{children}</div>
+    <div className='flex h-[100svh] bg-background text-foreground'>
+      <AppSidebar />
+      <main className='flex-1 min-w-0 overflow-hidden pt-14 md:pt-0'>{children}</main>
     </div>
   );
 }

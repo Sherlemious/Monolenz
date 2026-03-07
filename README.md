@@ -257,31 +257,24 @@ Note: Deletions are part of the batch version update (they are omitted from the 
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed information about:
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for branch naming, commit conventions, PR workflow, and review expectations.
 
-- Branch naming conventions
-- Commit message format
-- Pull request workflow
-- Code review guidelines
+### Branching and Releases
 
-### Branch Naming Format
+Monolenz uses a staging-first flow:
 
-```text
-<component>/<type>/[ticket-id/]<description>
+- `main` - Production branch
+- `stage` - Integration and staging branch
+- `feature/*` branches - Short-lived branches merged into `stage` via PR
 
-# Examples
-frontend/feature/user-dashboard
-backend/bugfix/auth-validation
-ui/feature/design-system
-```
+Release flow:
 
-### Commit Message Format
+1. Merge feature branches into `stage`
+2. Validate changes in staging
+3. Promote `stage` to `main` via PR for production release
 
-```text
-<type>[optional scope]: <description>
+CI triggers:
 
-# Examples
-feat(auth): add OAuth login
-fix(api): resolve timeout issue
-docs(readme): update setup instructions
-```
+- Quality checks run on `stage` and `main`
+- Staging deploy runs on pushes to `stage`
+- Production deploy runs on pushes to `main`

@@ -5,8 +5,14 @@ import { validate } from '../../../middleware/validation';
 import { profileSchemas } from '@monolenz/types/validation';
 import { z } from 'zod';
 import profileBlockRouter from './blocks.routes';
+import { listPlatforms } from '../../../controllers/profile/profile';
+
+const linkInputSchema = z.string().trim().min(1, 'URL is required').max(500, 'URL is too long');
 
 const router: Router = Router();
+
+// Platforms (public, no auth)
+router.get('/platforms', listPlatforms);
 
 // Public routes (no auth)
 router.get(
@@ -75,6 +81,25 @@ router.put(
 );
 
 router.delete('/me', profileController.deleteProfile);
+
+router.get('/me/links', profileController.getMyLinks);
+
+router.put(
+  '/me/links',
+  validate({
+    body: z.array(
+      z.object({
+        id: z.number().int().positive().optional(),
+        platform_id: z.number().int().positive().nullable().optional(),
+        url: linkInputSchema,
+        label: z.string().max(100).nullable().optional(),
+        is_public: z.boolean().optional(),
+        sort_order: z.number().int().min(0).optional(),
+      })
+    ),
+  }),
+  profileController.syncMyLinks
+);
 
 router.get(
   '/:identifier',

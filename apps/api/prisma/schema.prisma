@@ -25,18 +25,23 @@ model audit_log_entries {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model flow_state {
-  id                     String                @id @db.Uuid
-  user_id                String?               @db.Uuid
-  auth_code              String
-  code_challenge_method  code_challenge_method
-  code_challenge         String
+  id                     String                 @id @db.Uuid
+  user_id                String?                @db.Uuid
+  auth_code              String?
+  code_challenge_method  code_challenge_method?
+  code_challenge         String?
   provider_type          String
   provider_access_token  String?
   provider_refresh_token String?
-  created_at             DateTime?             @db.Timestamptz(6)
-  updated_at             DateTime?             @db.Timestamptz(6)
+  created_at             DateTime?              @db.Timestamptz(6)
+  updated_at             DateTime?              @db.Timestamptz(6)
   authentication_method  String
-  auth_code_issued_at    DateTime?             @db.Timestamptz(6)
+  auth_code_issued_at    DateTime?              @db.Timestamptz(6)
+  invite_token           String?
+  referrer               String?
+  oauth_client_state_id  String?                @db.Uuid
+  linking_target_id      String?                @db.Uuid
+  email_optional         Boolean                @default(false)
   saml_relay_states      saml_relay_states[]
 
   @@index([created_at(sort: Desc)])
@@ -357,18 +362,53 @@ model blocks {
 }
 
 model profiles {
-  id                  String     @id @db.Uuid
-  username            String     @unique @db.VarChar(50)
+  id                  String          @id @db.Uuid
+  username            String          @unique @db.VarChar(50)
   bio                 String?
-  profile_picture_url String?    @db.VarChar(500)
-  linkedin_url        String?    @db.VarChar(500)
-  github_url          String?    @db.VarChar(500)
-  portfolio_url       String?    @db.VarChar(500)
-  created_at          DateTime?  @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime?  @default(now()) @db.Timestamptz(6)
-  deleted_at          DateTime?  @db.Timestamptz(6)
+  profile_picture_url String?         @db.VarChar(500)
+  linkedin_url        String?         @db.VarChar(500)
+  github_url          String?         @db.VarChar(500)
+  portfolio_url       String?         @db.VarChar(500)
+  created_at          DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?       @default(now()) @db.Timestamptz(6)
+  deleted_at          DateTime?       @db.Timestamptz(6)
+  profile_links       profile_links[]
   versions            versions[]
 
+  @@schema("public")
+}
+
+model link_platforms {
+  id            Int             @id @default(autoincrement())
+  name          String          @unique @db.VarChar(100)
+  display_name  String          @db.VarChar(255)
+  category      String?         @db.VarChar(100)
+  icon          String?         @db.VarChar(100)
+  base_url      String?         @db.VarChar(255)
+  url_pattern   String?         @db.VarChar(255)
+  is_active     Boolean?        @default(true)
+  created_at    DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
+  profile_links profile_links[]
+
+  @@schema("public")
+}
+
+model profile_links {
+  id             Int             @id @default(autoincrement())
+  profile_id     String          @db.Uuid
+  platform_id    Int?
+  url            String          @db.VarChar(500)
+  label          String?         @db.VarChar(100)
+  category       String?         @db.VarChar(100)
+  is_public      Boolean?        @default(true)
+  sort_order     Int?            @default(0)
+  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  link_platforms link_platforms? @relation(fields: [platform_id], references: [id])
+  profiles       profiles        @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@index([profile_id, is_public], map: "idx_profile_links_profile_public")
   @@schema("public")
 }
 
@@ -409,21 +449,22 @@ model versions {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model oauth_clients {
-  id                   String                  @id @db.Uuid
-  client_secret_hash   String?
-  registration_type    oauth_registration_type
-  redirect_uris        String
-  grant_types          String
-  client_name          String?
-  client_uri           String?
-  logo_uri             String?
-  created_at           DateTime                @default(now()) @db.Timestamptz(6)
-  updated_at           DateTime                @default(now()) @db.Timestamptz(6)
-  deleted_at           DateTime?               @db.Timestamptz(6)
-  client_type          oauth_client_type       @default(confidential)
-  oauth_authorizations oauth_authorizations[]
-  oauth_consents       oauth_consents[]
-  sessions             sessions[]
+  id                         String                  @id @db.Uuid
+  client_secret_hash         String?
+  registration_type          oauth_registration_type
+  redirect_uris              String
+  grant_types                String
+  client_name                String?
+  client_uri                 String?
+  logo_uri                   String?
+  created_at                 DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime                @default(now()) @db.Timestamptz(6)
+  deleted_at                 DateTime?               @db.Timestamptz(6)
+  client_type                oauth_client_type       @default(confidential)
+  token_endpoint_auth_method String
+  oauth_authorizations       oauth_authorizations[]
+  oauth_consents             oauth_consents[]
+  sessions                   sessions[]
 
   @@index([deleted_at])
   @@schema("auth")
@@ -597,6 +638,40 @@ model oauth_client_states {
   created_at    DateTime @db.Timestamptz(6)
 
   @@index([created_at], map: "idx_oauth_client_states_created_at")
+  @@schema("auth")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model custom_oauth_providers {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider_type         String
+  identifier            String    @unique
+  name                  String
+  client_id             String
+  client_secret         String
+  acceptable_client_ids String[]  @default([])
+  scopes                String[]  @default([])
+  pkce_enabled          Boolean   @default(true)
+  attribute_mapping     Json      @default("{}")
+  authorization_params  Json      @default("{}")
+  enabled               Boolean   @default(true)
+  email_optional        Boolean   @default(false)
+  issuer                String?
+  discovery_url         String?
+  skip_nonce_check      Boolean   @default(false)
+  cached_discovery      Json?
+  discovery_cached_at   DateTime? @db.Timestamptz(6)
+  authorization_url     String?
+  token_url             String?
+  userinfo_url          String?
+  jwks_uri              String?
+  created_at            DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([created_at])
+  @@index([enabled])
+  @@index([identifier])
+  @@index([provider_type])
   @@schema("auth")
 }
 
