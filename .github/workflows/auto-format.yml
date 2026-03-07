@@ -2,9 +2,9 @@ name: Format Check
 
 on:
   push:
-    branches: [main, dev, stage]
+    branches: [main, stage]
   pull_request:
-    branches: [main, dev, stage]
+    branches: [main, stage]
 
 jobs:
   format-check:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
