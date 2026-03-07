@@ -257,51 +257,24 @@ Note: Deletions are part of the batch version update (they are omitted from the 
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed information about:
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for branch naming, commit conventions, PR workflow, and review expectations.
 
-## Branching and Releases
+### Branching and Releases
 
 Monolenz uses a staging-first flow:
 
 - `main` - Production branch
-- `stage` - Staging/integration branch
+- `stage` - Integration and staging branch
 - `feature/*` branches - Short-lived branches merged into `stage` via PR
 
 Release flow:
 
 1. Merge feature branches into `stage`
-2. Validate on staging
-3. Open a PR from `stage` to `main` for production release
+2. Validate changes in staging
+3. Promote `stage` to `main` via PR for production release
 
 CI triggers:
 
-- Quality checks run for `stage` and `main`
+- Quality checks run on `stage` and `main`
 - Staging deploy runs on pushes to `stage`
 - Production deploy runs on pushes to `main`
-
-- Branch naming conventions
-- Commit message format
-- Pull request workflow
-- Code review guidelines
-
-### Branch Naming Format
-
-```text
-<component>/<type>/[ticket-id/]<description>
-
-# Examples
-frontend/feature/user-dashboard
-backend/bugfix/auth-validation
-ui/feature/design-system
-```
-
-### Commit Message Format
-
-```text
-<type>[optional scope]: <description>
-
-# Examples
-feat(auth): add OAuth login
-fix(api): resolve timeout issue
-docs(readme): update setup instructions
-```
