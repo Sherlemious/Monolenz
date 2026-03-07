@@ -351,28 +351,28 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-40">
-        <div className="animate-spin rounded-full size-6 border-2 border-muted border-t-primary" />
+      <div className='flex items-center justify-center h-40'>
+        <div className='animate-spin rounded-full size-6 border-2 border-muted border-t-primary' />
       </div>
     );
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-2xl space-y-6">
+    <div className='p-6 md:p-8 max-w-2xl space-y-6'>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h2 className="text-base font-semibold">Profile Links</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Add links to your social profiles and websites.</p>
+          <h2 className='text-base font-semibold'>Profile Links</h2>
+          <p className='text-sm text-muted-foreground mt-0.5'>Add links to your social profiles and websites.</p>
         </div>
-        <Button size="sm" onClick={handleSave} disabled={isSaving || !isDirty(drafts, original)}>
+        <Button size='sm' onClick={handleSave} disabled={isSaving || !isDirty(drafts, original)}>
           {isSaving ? 'Saving...' : 'Save Links'}
         </Button>
       </div>
 
       {/* Links list */}
       {drafts.length > 0 && (
-        <Reorder.Group axis="y" values={drafts} onReorder={setDrafts} className="space-y-3">
+        <Reorder.Group axis='y' values={drafts} onReorder={setDrafts} className='space-y-3'>
           {drafts.map((draft) => {
             const platform = draft.platform_id != null ? platformById.get(draft.platform_id) : null;
             const error = errors[draft._key];
@@ -381,7 +381,7 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
             const previewUrl = normalizeDraftLinkValue(draft.url, platform);
 
             return (
-              <Reorder.Item key={draft._key} value={draft} className="list-none">
+              <Reorder.Item key={draft._key} value={draft} className='list-none'>
                 <div
                   className={cn(
                     'flex items-start gap-3 p-3 rounded-xl border bg-card',
@@ -390,33 +390,33 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
                 >
                   {/* Drag handle */}
                   <button
-                    type="button"
-                    className="mt-2.5 cursor-grab text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0"
+                    type='button'
+                    className='mt-2.5 cursor-grab text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0'
                   >
-                    <GripVertical className="size-4" />
+                    <GripVertical className='size-4' />
                   </button>
 
-                  <div className="flex-1 space-y-2 min-w-0">
+                  <div className='flex-1 space-y-2 min-w-0'>
                     {/* Platform badge + label */}
-                    <div className="flex items-center gap-2">
-                      <div className="size-6 rounded-md bg-muted flex items-center justify-center shrink-0">
+                    <div className='flex items-center gap-2'>
+                      <div className='size-6 rounded-md bg-muted flex items-center justify-center shrink-0'>
                         {platform ? (
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">
+                          <span className='text-[9px] font-bold text-muted-foreground uppercase tracking-tight'>
                             {platform.icon?.slice(0, 2) ?? platform.display_name.slice(0, 2)}
                           </span>
                         ) : (
-                          <Globe className="size-3 text-muted-foreground" />
+                          <Globe className='size-3 text-muted-foreground' />
                         )}
                       </div>
                       <Input
                         value={draft.label}
                         onChange={(e) => handleFieldChange(draft._key, 'label', e.target.value)}
                         placeholder={platform?.display_name ?? 'Label'}
-                        className="h-7 text-xs font-medium border-0 bg-transparent px-1 shadow-none focus-visible:ring-0 focus-visible:bg-muted/50 rounded"
+                        className='h-7 text-xs font-medium border-0 bg-transparent px-1 shadow-none focus-visible:ring-0 focus-visible:bg-muted/50 rounded'
                       />
                       {/* Public toggle */}
                       <button
-                        type="button"
+                        type='button'
                         onClick={() => handleFieldChange(draft._key, 'is_public', !draft.is_public)}
                         className={cn(
                           'shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full border transition-colors',
@@ -431,7 +431,7 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
                     </div>
 
                     {/* URL input */}
-                    <div className="relative">
+                    <div className='relative'>
                       {inputPrefix ? (
                         <div
                           className={cn(
@@ -439,45 +439,45 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
                             error && 'border-destructive'
                           )}
                         >
-                          <span className="shrink-0 text-xs text-muted-foreground">{inputPrefix}</span>
+                          <span className='shrink-0 text-xs text-muted-foreground'>{inputPrefix}</span>
                           <input
                             value={displayUrl}
                             onChange={(e) => handleFieldChange(draft._key, 'url', e.target.value)}
-                            placeholder="username or paste full link"
-                            className="w-full bg-transparent outline-none border-0 text-sm"
+                            placeholder='username or paste full link'
+                            className='w-full bg-transparent outline-none border-0 text-sm'
                           />
                         </div>
                       ) : (
                         <Input
                           value={displayUrl}
                           onChange={(e) => handleFieldChange(draft._key, 'url', e.target.value)}
-                          placeholder="username, domain, or full URL"
+                          placeholder='username, domain, or full URL'
                           className={cn('h-8 text-sm pr-7', error && 'border-destructive')}
-                          type="text"
+                          type='text'
                         />
                       )}
                       {draft.url && !error && (
                         <a
                           href={previewUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground"
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground'
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <ExternalLink className="size-3.5" />
+                          <ExternalLink className='size-3.5' />
                         </a>
                       )}
                     </div>
-                    {error && <p className="text-xs text-destructive">{error}</p>}
+                    {error && <p className='text-xs text-destructive'>{error}</p>}
                   </div>
 
                   {/* Remove */}
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => handleRemove(draft._key)}
-                    className="mt-2 text-muted-foreground/40 hover:text-destructive transition-colors shrink-0"
+                    className='mt-2 text-muted-foreground/40 hover:text-destructive transition-colors shrink-0'
                   >
-                    <Trash2 className="size-4" />
+                    <Trash2 className='size-4' />
                   </button>
                 </div>
               </Reorder.Item>
@@ -488,32 +488,32 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
 
       {/* Empty state */}
       {drafts.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-10 text-center border-2 border-dashed rounded-xl">
-          <Globe className="size-8 text-muted-foreground/30 mb-3" />
-          <p className="text-sm font-medium text-muted-foreground mb-1">No links yet</p>
-          <p className="text-xs text-muted-foreground/70">Add links to your social profiles and websites below.</p>
+        <div className='flex flex-col items-center justify-center py-10 text-center border-2 border-dashed rounded-xl'>
+          <Globe className='size-8 text-muted-foreground/30 mb-3' />
+          <p className='text-sm font-medium text-muted-foreground mb-1'>No links yet</p>
+          <p className='text-xs text-muted-foreground/70'>Add links to your social profiles and websites below.</p>
         </div>
       )}
 
       {/* Add link section */}
-      <div className="space-y-3 pt-2">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Add Link</p>
+      <div className='space-y-3 pt-2'>
+        <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wider'>Add Link</p>
 
-        <div className="space-y-3">
+        <div className='space-y-3'>
           {Array.from(platformsByCategory.entries()).map(([category, plats]) => (
             <div key={category}>
-              <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mb-1.5 capitalize">
+              <p className='text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mb-1.5 capitalize'>
                 {category}
               </p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className='flex flex-wrap gap-1.5'>
                 {plats.map((p) => (
                   <button
                     key={p.id}
-                    type="button"
+                    type='button'
                     onClick={() => handleAddLink(p)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-card text-xs font-medium hover:bg-accent hover:border-border/80 transition-colors"
+                    className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-card text-xs font-medium hover:bg-accent hover:border-border/80 transition-colors'
                   >
-                    <Plus className="size-3 text-muted-foreground" />
+                    <Plus className='size-3 text-muted-foreground' />
                     {p.display_name}
                   </button>
                 ))}
@@ -523,11 +523,11 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
         </div>
 
         <button
-          type="button"
+          type='button'
           onClick={handleAddCustomLink}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed bg-card text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed bg-card text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors'
         >
-          <Plus className="size-3" />
+          <Plus className='size-3' />
           Custom link
         </button>
       </div>
