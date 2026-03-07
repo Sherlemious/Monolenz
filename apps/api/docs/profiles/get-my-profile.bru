@@ -1,0 +1,48 @@
+meta {
+  name: Get My Profile
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{v1link}}/profiles/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+docs {
+  # Get My Profile
+  
+  Returns the profile of the currently authenticated user.
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "success": true,
+    "message": "Profile retrieved successfully",
+    "data": {
+      "id": "uuid-here",
+      "username": "johndoe",
+      "bio": "Full-stack developer...",
+      "profile_picture_url": "https://example.com/avatar.jpg",
+      "linkedin_url": "https://linkedin.com/in/johndoe",
+      "github_url": "https://github.com/johndoe",
+      "portfolio_url": "https://johndoe.dev",
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  }
+  ```
+  
+  ## Error Response (404)
+  ```json
+  {
+    "success": false,
+    "message": "Profile not found"
+  }
+  ```
+}

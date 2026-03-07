@@ -1,0 +1,223 @@
+meta {
+  name: Create Skill
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{v1link}}/profiles/me/versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "creations": [
+      {
+        "block_type": "skill",
+        "section_name": "skills",
+        "sort_order": 0,
+        "data": {
+          "name": "TypeScript",
+          "category": "Programming Languages",
+          "proficiency_level": "expert",
+          "years_experience": 5
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+}
+
+docs {
+  # Create Skill
+  
+  Creates a new skill block for your profile. This endpoint uses the batch update system, so you can create multiple skills in a single request.
+  
+  ## Request Body
+  
+  The request uses the batch update format with a `creations` array. Each creation object contains:
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `block_type` | string | ✅ | Must be `"skill"` |
+  | `section_name` | string | ❌ | Section name (e.g., "skills", "technical-skills") |
+  | `sort_order` | number | ❌ | Order within section (0 = first) |
+  | `data` | object | ✅ | Skill data (see below) |
+  
+  ### Skill Data Fields
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `name` | string | ✅ | Skill name (max 255 chars) |
+  | `category` | string | ✅ | Skill category (e.g., "Programming Languages", "Frameworks", "Tools", "Databases") (max 255 chars) |
+  | `proficiency_level` | string | ❌ | Proficiency level (e.g., "beginner", "intermediate", "advanced", "expert") |
+  | `years_experience` | number | ❌ | Years of experience with this skill |
+  
+  ## Example: Programming Language Skill
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "skill",
+        "section_name": "skills",
+        "sort_order": 0,
+        "data": {
+          "name": "Python",
+          "category": "Programming Languages",
+          "proficiency_level": "advanced",
+          "years_experience": 7
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Framework Skill
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "skill",
+        "section_name": "skills",
+        "sort_order": 1,
+        "data": {
+          "name": "React",
+          "category": "Frameworks",
+          "proficiency_level": "expert",
+          "years_experience": 6
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Tool/Database Skill
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "skill",
+        "section_name": "skills",
+        "sort_order": 2,
+        "data": {
+          "name": "PostgreSQL",
+          "category": "Databases",
+          "proficiency_level": "advanced",
+          "years_experience": 4
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Multiple Skills
+  
+  You can create multiple skills in a single request:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "skill",
+        "section_name": "skills",
+        "sort_order": 0,
+        "data": {
+          "name": "JavaScript",
+          "category": "Programming Languages",
+          "proficiency_level": "expert",
+          "years_experience": 8
+        }
+      },
+      {
+        "block_type": "skill",
+        "section_name": "skills",
+        "sort_order": 1,
+        "data": {
+          "name": "Node.js",
+          "category": "Frameworks",
+          "proficiency_level": "advanced",
+          "years_experience": 5
+        }
+      },
+      {
+        "block_type": "skill",
+        "section_name": "skills",
+        "sort_order": 2,
+        "data": {
+          "name": "Docker",
+          "category": "Tools",
+          "proficiency_level": "intermediate",
+          "years_experience": 3
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Minimal Skill Entry
+  
+  Only `name` and `category` are required:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "skill",
+        "section_name": "skills",
+        "data": {
+          "name": "Git",
+          "category": "Tools"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Response (200 OK)
+  
+  ```json
+  {
+    "success": true,
+    "message": "Version updated successfully",
+    "data": {
+      "version": {
+        "id": 7,
+        "version_number": 7,
+        "created_at": "2024-01-16T15:00:00Z"
+      },
+      "created_blocks": [103],
+      "updated_blocks": [],
+      "deleted_blocks": []
+    }
+  }
+  ```
+  
+  ## Notes
+  
+  - Both `name` and `category` are required fields
+  - `proficiency_level` and `years_experience` are optional
+  - Common categories include: "Programming Languages", "Frameworks", "Libraries", "Tools", "Databases", "Cloud Services", "Design Tools", etc.
+  - Proficiency levels are typically: "beginner", "intermediate", "advanced", "expert"
+  - You can organize skills by category using `section_name` (e.g., "technical-skills", "soft-skills")
+  - Each request creates a new version, preserving history
+}
+

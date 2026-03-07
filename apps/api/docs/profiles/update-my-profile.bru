@@ -1,0 +1,54 @@
+meta {
+  name: Update My Profile
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{v1link}}/profiles/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "bio": "Updated bio - Senior developer with 5+ years of experience",
+    "portfolio_url": "https://newportfolio.dev"
+  }
+}
+
+docs {
+  # Update My Profile
+  
+  Updates the profile of the currently authenticated user.
+  All fields are optional - only include the fields you want to update.
+  
+  ## Request Body
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `username` | string | ❌ | 3-50 chars, alphanumeric with underscores/hyphens |
+  | `bio` | string | ❌ | Max 500 characters |
+  | `profile_picture_url` | string | ❌ | Valid URL |
+  | `linkedin_url` | string | ❌ | Valid LinkedIn URL |
+  | `github_url` | string | ❌ | Valid GitHub URL |
+  | `portfolio_url` | string | ❌ | Valid URL |
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "success": true,
+    "message": "Profile updated successfully",
+    "data": {
+      "id": "uuid-here",
+      "username": "johndoe",
+      "bio": "Updated bio...",
+      "updated_at": "2024-01-16T14:20:00Z"
+    }
+  }
+  ```
+}

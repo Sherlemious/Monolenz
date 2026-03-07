@@ -1,0 +1,63 @@
+meta {
+  name: Create Profile
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{v1link}}/profiles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "username": "johndoe",
+    "bio": "Full-stack developer passionate about building great products",
+    "profile_picture_url": "https://example.com/avatar.jpg",
+    "linkedin_url": "https://linkedin.com/in/johndoe",
+    "github_url": "https://github.com/johndoe",
+    "portfolio_url": "https://johndoe.dev"
+  }
+}
+
+docs {
+  # Create Profile
+  
+  Creates a new profile for the authenticated user.
+  
+  ## Request Body
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `username` | string | ✅ | 3-50 chars, alphanumeric with underscores/hyphens |
+  | `bio` | string | ❌ | Max 500 characters |
+  | `profile_picture_url` | string | ❌ | Valid URL |
+  | `linkedin_url` | string | ❌ | Valid LinkedIn URL |
+  | `github_url` | string | ❌ | Valid GitHub URL |
+  | `portfolio_url` | string | ❌ | Valid URL |
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "success": true,
+    "message": "Profile created successfully",
+    "data": {
+      "id": "uuid-here",
+      "username": "johndoe",
+      "bio": "Full-stack developer...",
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    },
+    "meta": {
+      "timestamp": "2024-01-15T10:30:00Z",
+      "requestId": "uuid",
+      "version": "1.0.0"
+    }
+  }
+  ```
+}

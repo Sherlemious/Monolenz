@@ -135,7 +135,7 @@ async function checkDatabase(): Promise<{ status: string; responseTime: number }
       status: 'OK',
       responseTime: Date.now() - startTime,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       status: 'ERROR',
       responseTime: Date.now() - startTime,
@@ -151,7 +151,7 @@ async function checkCache(): Promise<{ status: string; responseTime: number }> {
       status: 'OK',
       responseTime: Date.now() - startTime,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       status: 'ERROR',
       responseTime: Date.now() - startTime,

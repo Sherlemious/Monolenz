@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Bell, Menu, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
@@ -71,7 +72,7 @@ const Header: React.FC = () => {
         >
           {/* Logo */}
           <Link href='/' style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-            <img src='/logo.svg' alt='Monolenz' width={32} height={32} />
+            <Image src='/logo.svg' alt='Monolenz' width={32} height={32} />
             <span style={{ fontSize: '20px', fontWeight: 600, color: 'var(--foreground)' }}>Monolenz</span>
           </Link>
 

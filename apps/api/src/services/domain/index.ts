@@ -1,2 +1,6 @@
-export * from './profile.service';
-export * from './profile-block.service';
+/**
+ * Block services barrel export
+ */
+
+export { ProfileBlockService } from './profile-block.service';
+export { ProfileService } from './profile.service';

@@ -19,9 +19,17 @@
       "types": "./dist/entities/index.d.ts",
       "import": "./dist/entities/index.js"
     },
+    "./entities/blocks": {
+      "types": "./dist/entities/blocks.d.ts",
+      "import": "./dist/entities/blocks.js"
+    },
     "./validation": {
       "types": "./dist/validation/index.d.ts",
       "import": "./dist/validation/index.js"
+    },
+    "./validation/block-schemas": {
+      "types": "./dist/validation/block-schemas.d.ts",
+      "import": "./dist/validation/block-schemas.js"
     },
     "./enums": {
       "types": "./dist/enums/index.d.ts",

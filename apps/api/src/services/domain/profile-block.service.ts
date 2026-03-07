@@ -1,516 +1,382 @@
-import { BaseService, ServiceContext, ServiceError } from '../base.service';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { BlocksRepository, BlockEntity } from '../../repositories/profile/blocks.repository';
-import { BlockCatalogRepository, BlockPropertyEntity } from '../../repositories/profile/block-catalog.repository';
+/**
+ * ProfileBlockService - Handles block versioning, creation, and immutability
+ * Extends BaseService but adapted for immutable block semantics
+ */
+
+import { PrismaClient, Prisma } from '@prisma/client';
+import { BaseService } from '../base.service';
+import { ServiceError } from '../base.service';
+import { BlockEntity, BlockType, TypedBlock, Version } from '@monolenz/types/entities/blocks';
+import { BLOCK_SCHEMAS } from '@monolenz/types/validation/block-schemas';
+import { BlocksRepository } from '../../repositories/blocks/blocks.repository';
 import { VersionsRepository } from '../../repositories/profile/versions.repository';
 import { VersionBlocksRepository } from '../../repositories/profile/version-blocks.repository';
-import { HTTP_STATUS_CODES, PaginationParams } from '@monolenz/types/api';
+import { TypedBlockRepositoryFactory } from '../../repositories/blocks/repository-factory';
+import { ServiceContext } from '../base.service';
 
-export interface CreateAndAttachBlockInput {
-  profileId: string;
-  versionId?: number;
-  blockTypeId?: number;
-  blockTypeName?: string;
+interface CreateBlockInput {
+  blockType: BlockType;
   data: Record<string, unknown>;
   sectionName?: string | null;
-  sortOrder?: number | null;
-  propertyVisibility?: Record<string, boolean>; // key by property_name
-  previousBlockId?: number | null; // if editing an existing block from previous version
+  sortOrder?: number;
 }
 
-export interface BatchVersionUpdateInput {
+interface UpdateBlockInput {
+  parentBlockId: number;
+  blockType: BlockType;
+  data: Record<string, unknown>;
+  sectionName?: string | null;
+  sortOrder?: number;
+}
+
+interface ApplyVersionUpdateInput {
   profileId: string;
-  creations: Array<{
-    blockTypeId?: number;
-    blockTypeName?: string;
-    data: Record<string, unknown>;
-    sectionName?: string | null;
-    sortOrder?: number | null;
-  }>;
-  updates: Array<{
-    parentBlockId: number;
-    blockTypeId?: number;
-    blockTypeName?: string;
-    data: Record<string, unknown>;
-    sectionName?: string | null;
-    sortOrder?: number | null;
-  }>;
+  creations: CreateBlockInput[];
+  updates: UpdateBlockInput[];
   deletions: number[];
 }
 
+interface ProcessedBlock {
+  blockId: number;
+  previousBlockId?: number | null;
+  sectionName?: string | null;
+  sortOrder?: number;
+}
+
+interface BlockToAttach extends ProcessedBlock {
+  previousVersionId?: number | null;
+}
+
 export class ProfileBlockService extends BaseService<BlockEntity> {
+  private typedBlockFactory: TypedBlockRepositoryFactory;
+  private versionsRepo: VersionsRepository;
+  private versionBlocksRepo: VersionBlocksRepository;
+
   constructor(
-    private readonly blocksRepository: BlocksRepository,
-    private readonly catalogRepository: BlockCatalogRepository,
-    private readonly versionsRepository: VersionsRepository,
-    private readonly versionBlocksRepository: VersionBlocksRepository
+    blocksRepo: BlocksRepository,
+    versionsRepo: VersionsRepository,
+    versionBlocksRepo: VersionBlocksRepository,
+    prisma: PrismaClient
   ) {
-    super('ProfileBlockService', blocksRepository);
+    super('ProfileBlockService', blocksRepo);
+    this.versionsRepo = versionsRepo;
+    this.versionBlocksRepo = versionBlocksRepo;
+    this.typedBlockFactory = new TypedBlockRepositoryFactory(prisma);
+    this.prisma = prisma;
   }
 
-  // Catalog
-  async listBlockTypes() {
-    return this.catalogRepository.listBlockTypes(true);
+  // ========================================================================
+  // BaseService Abstract Methods
+  // ========================================================================
+
+  protected async validateAccess(_operation: string, _data: unknown, _context?: ServiceContext): Promise<void> {
+    // For blocks, access control is at profile level
+    // This is validated at the service method level
   }
 
-  // Apply batch version update: creations, updates, deletions -> new version
-  async applyVersionUpdate(input: BatchVersionUpdateInput, context: ServiceContext) {
-    const operation = 'applyVersionUpdate';
-    try {
-      await this.validateAccess(operation, { profileId: input.profileId }, context);
+  protected async validateData(_data: unknown, _operation: 'create' | 'update'): Promise<void> {
+    // Validation done via Zod in middleware, not here
+  }
 
-      return await this.blocksRepository.withTransaction(async (tx) => {
-        const hasProfile = await this.versionsRepository.profileExists(input.profileId, tx);
-        if (!hasProfile) {
-          throw new ServiceError('Profile not found', null, HTTP_STATUS_CODES.NOT_FOUND);
+  protected async applyBusinessRules(
+    data: unknown,
+    _operation: 'create' | 'update',
+    _context?: ServiceContext
+  ): Promise<unknown> {
+    // Blocks are immutable - no business rules to apply
+    return data;
+  }
+
+  protected async applyServiceFilters(
+    filters?: Record<string, any>,
+    context?: ServiceContext
+  ): Promise<Record<string, any>> {
+    // Filter by profile_id if context provided
+    if (context?.userId) {
+      return { ...filters, profile_id: context.userId };
+    }
+    return filters || {};
+  }
+
+  // ========================================================================
+  // Public API Methods
+  // ========================================================================
+
+  /**
+   * Apply batch version update (creations, updates, deletions)
+   * Creates new immutable version with all changes
+   */
+  async applyVersionUpdate(input: ApplyVersionUpdateInput, context?: ServiceContext): Promise<{ versionId: number }> {
+    // Validate profile ownership
+    if (context?.userId !== input.profileId) {
+      throw new ServiceError('Unauthorized', null, 403);
+    }
+
+    return (this.repository as BlocksRepository).withTransaction(async (tx) => {
+      // 1. Validate profile exists
+      const profileExists = await this.versionsRepo.profileExists(input.profileId, tx);
+      if (!profileExists) {
+        throw new ServiceError('Profile not found', null, 404);
+      }
+
+      // 2. Get latest version and current block IDs
+      const latestVersion = await this.versionsRepo.getLatestVersionForProfile(input.profileId, tx);
+      const currentBlockIds = latestVersion ? await this.versionsRepo.listVersionBlockIds(latestVersion.id, tx) : [];
+
+      // 3. Validate update parent blocks exist in current version
+      for (const update of input.updates) {
+        if (!currentBlockIds.includes(update.parentBlockId)) {
+          throw new ServiceError(`Parent block ${update.parentBlockId} not found in current version`, null, 400);
         }
-        const latest = await this.versionsRepository.getLatestVersionForProfile(input.profileId, tx);
-        const currentBlockIds = latest ? await this.versionsRepository.listVersionBlockIds(latest.id, tx) : [];
+      }
 
-        const parentsOfUpdates = new Set(input.updates.map((u) => u.parentBlockId));
-        // Validate that update parents exist in current version (prevent FK errors and ensure lineage)
-        const invalidParents = input.updates
-          .map((u) => u.parentBlockId)
-          .filter((pid) => !currentBlockIds.includes(pid));
-        if (invalidParents.length > 0) {
-          throw new ServiceError(
-            'Validation failed',
-            {
-              errors: invalidParents.map((pid) => ({
-                field: 'parentBlockId',
-                code: 'not_in_latest_version',
-                message: `parentBlockId ${pid} is not part of the latest version`,
-              })),
-            },
-            HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY
-          );
-        }
-        const deletions = new Set(input.deletions);
-        const unmentioned = currentBlockIds.filter((id) => !parentsOfUpdates.has(id) && !deletions.has(id));
+      // 4. Process creations and updates (both create new immutable blocks)
+      const processedCreations = await this.processBlockCreations(input.creations, tx);
+      const processedUpdates = await this.processBlockUpdates(input.updates, tx);
 
-        // Prepare creations
-        const createdBlocks: Array<{ id: number; sectionName?: string | null; sortOrder?: number | null }> = [];
-        for (const c of input.creations) {
-          const blockTypeId = await this.resolveBlockTypeId(
-            { blockTypeId: c.blockTypeId!, blockTypeName: c.blockTypeName } as any,
-            tx
-          );
-          const properties = await this.catalogRepository.listBlockProperties(blockTypeId, true, tx);
-          this.validateBlockData(c.data, properties);
-          const hash = this.blocksRepository.computeContentHash({ block_type_id: blockTypeId, data: c.data });
-          const existing = await this.blocksRepository.findBlockByHash(hash, tx);
-          const block =
-            existing ??
-            (await this.blocksRepository.createBlock(
-              { block_type_id: blockTypeId, data: c.data, content_hash: hash },
-              tx
-            ));
-          const values = this.mapDataToPropertyValues(c.data, properties, undefined);
-          await this.blocksRepository.upsertBlockPropertyValues(block.id, values, tx);
-          createdBlocks.push({ id: block.id, sectionName: c.sectionName ?? null, sortOrder: c.sortOrder ?? null });
-        }
+      // 5. Create new version
+      const newVersion = await this.versionsRepo.createVersion(
+        {
+          profile_id: input.profileId,
+          parent_version_id: latestVersion?.id ?? null,
+          name: null,
+          description: null,
+        },
+        tx
+      );
 
-        // Prepare updates -> new immutable blocks with lineage
-        const updatedBlocks: Array<{
-          newId: number;
-          parentId: number;
-          sectionName?: string | null;
-          sortOrder?: number | null;
-        }> = [];
-        for (const u of input.updates) {
-          const blockTypeId = await this.resolveBlockTypeId(
-            { blockTypeId: u.blockTypeId!, blockTypeName: u.blockTypeName } as any,
-            tx
-          );
-          const properties = await this.catalogRepository.listBlockProperties(blockTypeId, true, tx);
-          this.validateBlockData(u.data, properties);
-          const hash = this.blocksRepository.computeContentHash({ block_type_id: blockTypeId, data: u.data });
-          const existing = await this.blocksRepository.findBlockByHash(hash, tx);
-          const block =
-            existing ??
-            (await this.blocksRepository.createBlock(
-              { block_type_id: blockTypeId, data: u.data, content_hash: hash },
-              tx
-            ));
-          const values = this.mapDataToPropertyValues(u.data, properties, undefined);
-          await this.blocksRepository.upsertBlockPropertyValues(block.id, values, tx);
-          updatedBlocks.push({
-            newId: block.id,
-            parentId: u.parentBlockId,
-            sectionName: u.sectionName ?? null,
-            sortOrder: u.sortOrder ?? null,
-          });
-        }
+      // 6. Compute blocks to attach (carry-forward + new/updated, excluding deleted)
+      const blocksToAttach = this.computeBlocksToAttach(
+        currentBlockIds,
+        processedCreations,
+        processedUpdates,
+        input.deletions,
+        latestVersion?.id
+      );
 
-        // Create new version inheriting from current
-        const newVersion = await this.versionsRepository.createVersion(
-          { profile_id: input.profileId, parent_version_id: latest?.id ?? null },
+      // 7. Attach blocks to new version
+      for (const block of blocksToAttach) {
+        await this.versionBlocksRepo.attachBlockToVersion(
+          {
+            version_id: newVersion.id,
+            block_id: block.blockId,
+            previous_block_id: block.previousBlockId ?? null,
+            previous_version_id: block.previousVersionId ?? null,
+            section_name: block.sectionName ?? null,
+            sort_order: block.sortOrder ?? 0,
+            is_visible: true,
+          },
           tx
         );
+      }
 
-        // Attach unmentioned (carry-forward)
-        let order = 0;
-        for (const bid of unmentioned) {
-          await this.versionBlocksRepository.attachBlockToVersion(
-            { version_id: newVersion.id, block_id: bid, is_visible: true, sort_order: order++ },
-            tx
-          );
-        }
+      return { versionId: newVersion.id };
+    });
+  }
 
-        // Attach creations (append after unmentioned)
-        for (const c of createdBlocks) {
-          await this.versionBlocksRepository.attachBlockToVersion(
-            {
-              version_id: newVersion.id,
-              block_id: c.id,
-              is_visible: true,
-              section_name: c.sectionName ?? null,
-              sort_order: order++,
-            },
-            tx
-          );
-        }
+  /**
+   * Get all blocks for a version with typed data
+   */
+  async listBlocksForVersion(
+    versionId: number,
+    options?: { sectionName?: string; blockType?: BlockType }
+  ): Promise<TypedBlock[]> {
+    return (this.repository as BlocksRepository).withTransaction(async (tx) => {
+      // 1. Get version_blocks with base block info
+      const versionBlocks = await this.versionBlocksRepo.listVersionBlocks(versionId, options, tx);
 
-        // Attach updates with lineage (append after creations)
-        for (const u of updatedBlocks) {
-          await this.versionBlocksRepository.attachBlockToVersion(
-            {
-              version_id: newVersion.id,
-              block_id: u.newId,
-              previous_block_id: u.parentId,
-              is_visible: true,
-              section_name: u.sectionName ?? null,
-              sort_order: order++,
-            },
-            tx
-          );
-        }
+      // 2. Group by block_type for batch fetching
+      const blocksByType = new Map<BlockType, number[]>();
+      for (const vb of versionBlocks) {
+        const blockType = vb.block_type as BlockType;
+        const ids = blocksByType.get(blockType) || [];
+        ids.push(vb.block_id);
+        blocksByType.set(blockType, ids);
+      }
 
-        return { versionId: newVersion.id };
+      // 3. Batch fetch typed data for each block type in parallel
+      const typedDataPromises = Array.from(blocksByType.entries()).map(async ([blockType, blockIds]) => {
+        const repo = this.typedBlockFactory.getRepository(blockType);
+        const typedBlocks = await repo.findManyByBlockIds(blockIds, tx);
+        return { blockType, typedBlocks };
       });
-    } catch (error) {
-      this.logger.error(`${operation} failed`, { error: error as Error, input });
-      const err: any = error;
-      throw new ServiceError(
-        'Failed to apply version update',
-        err?.cause ?? err,
-        typeof err?.statusCode === 'number' ? err.statusCode : undefined
-      );
-    }
-  }
 
-  async listBlockProperties(blockTypeId: number) {
-    return this.catalogRepository.listBlockProperties(blockTypeId, true);
-  }
+      const typedDataResults = await Promise.all(typedDataPromises);
 
-  // Core create-and-attach (immutable visibility per version)
-  async createAndAttachBlock(input: CreateAndAttachBlockInput, context: ServiceContext) {
-    const operation = 'createAndAttachBlock';
-    try {
-      await this.validateAccess(operation, { profileId: input.profileId }, context);
-
-      return await this.blocksRepository.withTransaction(async (tx) => {
-        // Resolve block type
-        const blockTypeId = await this.resolveBlockTypeId(input, tx);
-
-        // Validate data against block properties
-        const properties = await this.catalogRepository.listBlockProperties(blockTypeId, true, tx);
-        this.validateBlockData(input.data, properties);
-
-        // Compute content hash and deduplicate
-        const content_hash = this.blocksRepository.computeContentHash({ block_type_id: blockTypeId, data: input.data });
-        const existing = await this.blocksRepository.findBlockByHash(content_hash, tx);
-        const block =
-          existing ??
-          (await this.blocksRepository.createBlock({ block_type_id: blockTypeId, data: input.data, content_hash }, tx));
-
-        // Upsert property values
-        const values = this.mapDataToPropertyValues(input.data, properties, input.propertyVisibility);
-        await this.blocksRepository.upsertBlockPropertyValues(block.id, values, tx);
-
-        // Resolve target version (latest if none)
-        const version = input.versionId
-          ? await this.versionsRepository.getVersionById(input.versionId, tx)
-          : await this.versionsRepository.getLatestVersionForProfile(input.profileId, tx);
-
-        if (!version) {
-          // Create a new version if none exists
-          const created = await this.versionsRepository.createVersion({ profile_id: input.profileId }, tx);
-          // Attach block to new version
-          await this.versionBlocksRepository.attachBlockToVersion(
-            {
-              version_id: created.id,
-              block_id: block.id,
-              is_visible: true,
-              section_name: input.sectionName ?? null,
-              sort_order: input.sortOrder ?? 0,
-            },
-            tx
-          );
-          return { versionId: created.id, block };
+      // 4. Build map of block_id -> typed data
+      const typedDataMap = new Map<number, any>();
+      for (const result of typedDataResults) {
+        for (const typedBlock of result.typedBlocks) {
+          typedDataMap.set((typedBlock as any).block_id, typedBlock);
         }
+      }
 
-        // Attach block to existing version
-        await this.versionBlocksRepository.attachBlockToVersion(
+      // 5. Combine base + typed data into TypedBlock[]
+      return versionBlocks.map((vb) => {
+        const blockType = vb.block_type as BlockType;
+        const typedData = typedDataMap.get(vb.block_id);
+
+        return {
+          id: vb.block_id,
+          block_type: blockType,
+          content_hash: vb.content_hash,
+          created_at: vb.created_at,
+          data: typedData,
+          section_name: vb.section_name,
+          sort_order: vb.sort_order,
+        } as TypedBlock;
+      });
+    });
+  }
+
+  /**
+   * Get latest version for profile
+   */
+  async getLatestVersion(profileId: string): Promise<Version | null> {
+    return this.versionsRepo.getLatestVersionForProfile(profileId);
+  }
+
+  // ========================================================================
+  // Private Helper Methods
+  // ========================================================================
+
+  private async processBlockCreations(
+    creations: CreateBlockInput[],
+    tx: Prisma.TransactionClient
+  ): Promise<ProcessedBlock[]> {
+    const results: ProcessedBlock[] = [];
+
+    for (const creation of creations) {
+      // Validate data against schema
+      const schema = BLOCK_SCHEMAS[creation.blockType];
+      if (!schema) {
+        throw new ServiceError(`Unknown block type: ${creation.blockType}`, null, 400);
+      }
+
+      const validatedData = schema.parse(creation.data);
+
+      // Compute content hash (includes block_type)
+      const hash = (this.repository as BlocksRepository).computeContentHash(creation.blockType, validatedData);
+
+      // Check for existing block (deduplication)
+      let baseBlock = await (this.repository as BlocksRepository).findBlockByHash(hash, tx);
+
+      if (!baseBlock) {
+        // Create base block
+        baseBlock = await (this.repository as BlocksRepository).createBaseBlock(
           {
-            version_id: version.id,
-            block_id: block.id,
-            previous_block_id: input.previousBlockId ?? null,
-            is_visible: true,
-            section_name: input.sectionName ?? null,
-            sort_order: input.sortOrder ?? 0,
+            block_type: creation.blockType,
+            content_hash: hash,
           },
           tx
         );
 
-        return { versionId: version.id, block };
+        // Create typed block data
+        const typedRepo = this.typedBlockFactory.getRepository(creation.blockType);
+        await typedRepo.create(baseBlock.id, validatedData, tx);
+      }
+
+      results.push({
+        blockId: baseBlock.id,
+        sectionName: creation.sectionName,
+        sortOrder: creation.sortOrder,
       });
-    } catch (error) {
-      this.logger.error(`${operation} failed`, { error: error as Error, input });
-      throw new ServiceError('Failed to create and attach block', error);
     }
+
+    return results;
   }
 
-  // Delete (immutable): create new version without the given block
-  async deleteBlockFromVersion(profileId: string, versionId: number, blockId: number, context: ServiceContext) {
-    const operation = 'deleteBlockFromVersion';
-    try {
-      await this.validateAccess(operation, { profileId }, context);
+  private async processBlockUpdates(
+    updates: UpdateBlockInput[],
+    tx: Prisma.TransactionClient
+  ): Promise<ProcessedBlock[]> {
+    const results: ProcessedBlock[] = [];
 
-      return await this.blocksRepository.withTransaction(async (tx) => {
-        const currentVersion = await this.versionsRepository.getVersionById(versionId, tx);
-        if (!currentVersion) throw new ServiceError('Version not found', null, HTTP_STATUS_CODES.NOT_FOUND);
+    for (const update of updates) {
+      // Validate data against schema
+      const schema = BLOCK_SCHEMAS[update.blockType];
+      if (!schema) {
+        throw new ServiceError(`Unknown block type: ${update.blockType}`, null, 400);
+      }
 
-        // Create a new version
-        const nextVersion = await this.versionsRepository.createVersion(
-          { profile_id: profileId, parent_version_id: versionId },
+      const validatedData = schema.parse(update.data);
+
+      // Compute content hash
+      const hash = (this.repository as BlocksRepository).computeContentHash(update.blockType, validatedData);
+
+      // Check for existing block (deduplication)
+      let baseBlock = await (this.repository as BlocksRepository).findBlockByHash(hash, tx);
+
+      if (!baseBlock) {
+        // Create new base block (immutable update)
+        baseBlock = await (this.repository as BlocksRepository).createBaseBlock(
+          {
+            block_type: update.blockType,
+            content_hash: hash,
+          },
           tx
         );
 
-        // Reattach all blocks except the one being deleted
-        const blockIds = await this.versionsRepository.listVersionBlockIds(versionId, tx);
-        let sort = 0;
-        for (const id of blockIds) {
-          if (id === blockId) continue;
-          await this.versionBlocksRepository.attachBlockToVersion(
-            { version_id: nextVersion.id, block_id: id, is_visible: true, sort_order: sort++ },
-            tx
-          );
-        }
-
-        return { versionId: nextVersion.id };
-      });
-    } catch (error) {
-      this.logger.error(`${operation} failed`, { error: error as Error, profileId, versionId, blockId });
-      throw new ServiceError('Failed to delete block from version', error);
-    }
-  }
-
-  // List blocks for a version (respecting publicOnly for unauthenticated)
-  async listBlocksForVersion(
-    versionId: number,
-    options?: { sectionName?: string; publicOnly?: boolean },
-    context?: ServiceContext
-  ) {
-    const publicOnly = options?.publicOnly ?? !context?.userId;
-    return this.versionBlocksRepository.listVersionBlocks(versionId, { sectionName: options?.sectionName, publicOnly });
-  }
-
-  // Enforce access: write operations require owner/admin; reads are public
-  protected async validateAccess(operation: string, data: any, context?: ServiceContext): Promise<void> {
-    const isRead = operation.startsWith('find') || operation.startsWith('list');
-    if (isRead) return;
-
-    if (!context?.userId) {
-      throw new ServiceError('Authentication required', null, HTTP_STATUS_CODES.UNAUTHORIZED);
-    }
-
-    // For now, allow owners or admins to mutate. Expect caller to pass profileId when needed
-    if (data?.profileId && data.profileId !== context.userId && context.userRole !== 'admin') {
-      throw new ServiceError('Access denied', null, HTTP_STATUS_CODES.FORBIDDEN);
-    }
-  }
-
-  protected async validateData(): Promise<void> {
-    // No generic schema at this layer; validation is done per block type in validateBlockData
-  }
-
-  protected async applyBusinessRules<T>(data: T): Promise<T> {
-    return data;
-  }
-
-  protected async applyServiceFilters(filters?: Record<string, any>): Promise<Record<string, any>> {
-    return filters || {};
-  }
-
-  private async resolveBlockTypeId(
-    input: { blockTypeId?: number; blockTypeName?: string },
-    tx: Prisma.TransactionClient
-  ): Promise<number> {
-    if (input.blockTypeId !== undefined) {
-      const byId = await this.catalogRepository.getBlockTypeById(input.blockTypeId, tx);
-      if (!byId) {
-        throw new ServiceError('Invalid block type id', null, HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY);
-      }
-      return byId.id;
-    }
-    if (!input.blockTypeName) {
-      throw new ServiceError('blockTypeId or blockTypeName is required', null, HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY);
-    }
-    const type = await this.catalogRepository.getBlockTypeByName(input.blockTypeName, tx);
-    if (!type) throw new ServiceError('Block type not found', null, HTTP_STATUS_CODES.NOT_FOUND);
-    return type.id;
-  }
-
-  private validateBlockData(data: Record<string, unknown>, properties: BlockPropertyEntity[]) {
-    const propByName = new Map(properties.map((p) => [p.property_name, p]));
-    const errors: Array<{ field: string; code: string; message: string }> = [];
-
-    // Required checks
-    for (const p of properties) {
-      const v = data[p.property_name];
-      if (p.is_required && (v === undefined || v === null || v === '')) {
-        errors.push({ field: p.property_name, code: 'required', message: `${p.property_name} is required` });
-      }
-    }
-
-    // Type and rules checks
-    for (const [key, value] of Object.entries(data)) {
-      const def = propByName.get(key);
-      if (!def) continue; // ignore unknowns
-      if (value === null || value === undefined) continue;
-
-      const expected = def.property_type;
-      if (!this.isTypeValid(value, expected)) {
-        errors.push({ field: key, code: 'type', message: `Invalid type: expected ${expected}` });
-        continue;
+        // Create typed block data
+        const typedRepo = this.typedBlockFactory.getRepository(update.blockType);
+        await typedRepo.create(baseBlock.id, validatedData, tx);
       }
 
-      // validation_rules stored as JSON
-      const rules = (def.validation_rules || {}) as Record<string, any>;
-      this.applyValidationRules(key, value, expected, rules, errors);
-    }
-
-    if (errors.length > 0) {
-      throw new ServiceError('Validation failed', { errors }, HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY);
-    }
-  }
-
-  private applyValidationRules(
-    field: string,
-    value: unknown,
-    expectedType: string,
-    rules: Record<string, any>,
-    errors: Array<{ field: string; code: string; message: string }>
-  ) {
-    // String/array length and patterns
-    if (typeof value === 'string') {
-      if (typeof rules.minLength === 'number' && value.length < rules.minLength) {
-        errors.push({ field, code: 'minLength', message: `Must be at least ${rules.minLength} characters` });
-      }
-      if (typeof rules.maxLength === 'number' && value.length > rules.maxLength) {
-        errors.push({ field, code: 'maxLength', message: `Must be at most ${rules.maxLength} characters` });
-      }
-      if (typeof rules.pattern === 'string') {
-        try {
-          const re = new RegExp(rules.pattern);
-          if (!re.test(value)) {
-            errors.push({ field, code: 'pattern', message: 'Invalid format' });
-          }
-        } catch {
-          // ignore invalid regex
-        }
-      }
-      if (rules.format === 'uri') {
-        try {
-          // new URL will throw on invalid URLs
-          // eslint-disable-next-line no-new
-          new URL(value);
-        } catch {
-          errors.push({ field, code: 'format', message: 'Invalid URI format' });
-        }
-      }
-    }
-
-    // Enum
-    if (Array.isArray(rules.enum)) {
-      if (!rules.enum.includes(value)) {
-        errors.push({ field, code: 'enum', message: `Must be one of: ${rules.enum.join(', ')}` });
-      }
-    }
-
-    // Numeric bounds
-    if (typeof value === 'number') {
-      if (typeof rules.minimum === 'number' && value < rules.minimum) {
-        errors.push({ field, code: 'minimum', message: `Must be >= ${rules.minimum}` });
-      }
-      if (typeof rules.maximum === 'number' && value > rules.maximum) {
-        errors.push({ field, code: 'maximum', message: `Must be <= ${rules.maximum}` });
-      }
-    }
-
-    // Date handling (expectedType === 'date')
-    if (expectedType === 'date' && typeof value === 'string') {
-      const isoDate = /^\d{4}-\d{2}-\d{2}$/;
-      if (!isoDate.test(value) || Number.isNaN(Date.parse(value))) {
-        errors.push({ field, code: 'date', message: 'Must be a valid ISO date (YYYY-MM-DD)' });
-      }
-    }
-
-    // Array item type
-    if (Array.isArray(value) && rules.items && typeof rules.items.type === 'string') {
-      const t = rules.items.type as string;
-      for (let i = 0; i < value.length; i++) {
-        const ok = this.isTypeValid((value as unknown[])[i], t);
-        if (!ok) {
-          errors.push({ field, code: 'items', message: `Invalid item type at index ${i}: expected ${t}` });
-          break;
-        }
-      }
-    }
-  }
-
-  private isTypeValid(value: unknown, propertyType: string): boolean {
-    switch (propertyType) {
-      case 'string':
-      case 'text':
-        return typeof value === 'string';
-      case 'integer':
-        return Number.isInteger(value);
-      case 'decimal':
-        return typeof value === 'number' && !Number.isNaN(value);
-      case 'boolean':
-        return typeof value === 'boolean';
-      case 'date':
-        return typeof value === 'string' || value instanceof Date;
-      case 'array':
-        return Array.isArray(value);
-      case 'object':
-        return value !== null && typeof value === 'object' && !Array.isArray(value);
-      default:
-        return true;
-    }
-  }
-
-  private mapDataToPropertyValues(
-    data: Record<string, unknown>,
-    properties: BlockPropertyEntity[],
-    propertyVisibility?: Record<string, boolean>
-  ) {
-    const byName = new Map(properties.map((p) => [p.property_name, p]));
-    const values: Array<{ property_id: number; value: any; is_public?: boolean; is_active?: boolean }> = [];
-
-    for (const [name, def] of byName) {
-      const v = data[name];
-      if (v === undefined) continue;
-      values.push({
-        property_id: def.id,
-        value: v as any,
-        is_public: propertyVisibility?.[name] ?? true,
-        is_active: true,
+      results.push({
+        blockId: baseBlock.id,
+        previousBlockId: update.parentBlockId,
+        sectionName: update.sectionName,
+        sortOrder: update.sortOrder,
       });
     }
 
-    return values;
+    return results;
+  }
+
+  private computeBlocksToAttach(
+    currentBlockIds: number[],
+    processedCreations: ProcessedBlock[],
+    processedUpdates: ProcessedBlock[],
+    deletions: number[],
+    latestVersionId?: number
+  ): BlockToAttach[] {
+    const deletionSet = new Set(deletions);
+    const updatedBlockMap = new Map(processedUpdates.map((u) => [u.previousBlockId!, u]));
+
+    const blocksToAttach: BlockToAttach[] = [];
+
+    // 1. Carry forward blocks from current version that aren't being updated/deleted
+    for (const blockId of currentBlockIds) {
+      if (!deletionSet.has(blockId) && !updatedBlockMap.has(blockId)) {
+        // Carry forward unchanged block
+        blocksToAttach.push({
+          blockId,
+          previousVersionId: latestVersionId,
+        });
+      }
+    }
+
+    // 2. Add new creations
+    for (const creation of processedCreations) {
+      blocksToAttach.push({
+        blockId: creation.blockId,
+        sectionName: creation.sectionName,
+        sortOrder: creation.sortOrder,
+        previousVersionId: latestVersionId,
+      });
+    }
+
+    // 3. Add updates (new blocks with lineage)
+    for (const update of processedUpdates) {
+      blocksToAttach.push({
+        blockId: update.blockId,
+        previousBlockId: update.previousBlockId,
+        sectionName: update.sectionName,
+        sortOrder: update.sortOrder,
+        previousVersionId: latestVersionId,
+      });
+    }
+
+    return blocksToAttach;
   }
 }

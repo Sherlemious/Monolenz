@@ -1,0 +1,75 @@
+meta {
+  name: List Blocks for Version
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{v1link}}/profiles/:identifier/versions/:versionId/blocks
+  body: none
+  auth: none
+}
+
+params:path {
+  identifier: johndoe
+  versionId: 5
+}
+
+params:query {
+  ~section_name: experience
+  ~block_type: work_experience
+}
+
+docs {
+  # List Blocks for Version
+  
+  Retrieves all blocks for a specific profile version.
+  Can filter by section name and/or block type.
+  
+  ## Path Parameters
+  
+  | Parameter | Type | Description |
+  |-----------|------|-------------|
+  | `identifier` | string | Profile ID (UUID) or username |
+  | `versionId` | number | Version ID (positive integer) |
+  
+  ## Query Parameters
+  
+  | Parameter | Type | Description |
+  |-----------|------|-------------|
+  | `section_name` | string | Filter by section name |
+  | `block_type` | string | Filter by block type (see below) |
+  
+  ## Block Types
+  - `work_experience`
+  - `education`
+  - `skill`
+  - `project`
+  - `certification`
+  - `language`
+  - `volunteer`
+  - `award`
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "success": true,
+    "message": "Blocks retrieved successfully",
+    "data": [
+      {
+        "id": 42,
+        "block_type": "work_experience",
+        "section_name": "experience",
+        "sort_order": 0,
+        "data": {
+          "company_name": "Tech Corp",
+          "position_title": "Senior Developer",
+          "start_date": "2022-01-15",
+          "is_current": true,
+          "description": "Building awesome things"
+        }
+      }
+    ]
+  }
+  ```
+}

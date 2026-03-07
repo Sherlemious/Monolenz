@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { ApiResponse, HTTP_STATUS_CODES, PaginationMeta } from '@monolenz/types/api';
+import { ServiceError } from '../services/base.service';
 
 /**
  * Request preprocessing middleware
@@ -129,53 +130,63 @@ export const logRequestResponse = (req: Request, res: Response, next: NextFuncti
 /**
  * Global error handling middleware
  */
-export const handleErrors = (err: any, req: Request, res: Response, next: NextFunction) => {
+export const handleErrors = (err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  // Narrow the error type for safe property access
+  const error = err instanceof Error ? err : new Error(String(err));
+  const errorCode = (err as any)?.code as string | undefined;
+  const errorErrors = (err as any)?.errors as any[] | undefined;
+
   console.error('Request Error:', {
     requestId: req.requestId,
-    error: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    error: error.message,
+    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     path: req.path,
     method: req.method,
     userId: req.userId,
     timestamp: new Date().toISOString(),
   });
 
+  // Handle ServiceError (preserve original statusCode)
+  if (err instanceof ServiceError) {
+    return res.error(err.message, err.statusCode);
+  }
+
   // Handle Zod validation errors
-  if (err.name === 'ZodError') {
-    const zodErrors = err.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`);
+  if (error.name === 'ZodError' && errorErrors) {
+    const zodErrors = errorErrors.map((e: any) => `${e.path.join('.')}: ${e.message}`);
     return res.error('Validation failed', HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY, zodErrors);
   }
 
   // Handle Prisma errors
-  if (err.code === 'P2002') {
+  if (errorCode === 'P2002') {
     return res.error('Duplicate entry', HTTP_STATUS_CODES.CONFLICT, ['Resource already exists']);
   }
 
-  if (err.code === 'P2025') {
+  if (errorCode === 'P2025') {
     return res.error('Resource not found', HTTP_STATUS_CODES.NOT_FOUND);
   }
 
   // Handle Supabase auth errors
-  if (err.name === 'AuthError' || err.message?.includes('JWT')) {
+  if (error.name === 'AuthError' || error.message?.includes('JWT')) {
     return res.error('Authentication failed', HTTP_STATUS_CODES.UNAUTHORIZED);
   }
 
   // Handle specific error types
-  if (err.name === 'ValidationError') {
-    return res.error('Validation failed', HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY, err.errors);
+  if (error.name === 'ValidationError' && errorErrors) {
+    return res.error('Validation failed', HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY, errorErrors);
   }
 
-  if (err.name === 'UnauthorizedError') {
+  if (error.name === 'UnauthorizedError') {
     return res.error('Unauthorized access', HTTP_STATUS_CODES.UNAUTHORIZED);
   }
 
-  if (err.code === 'ECONNREFUSED') {
+  if (errorCode === 'ECONNREFUSED') {
     return res.error('Service temporarily unavailable', HTTP_STATUS_CODES.SERVICE_UNAVAILABLE);
   }
 
   // Default error response
   const message =
-    process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message || 'Unknown error occurred';
+    process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message || 'Unknown error occurred';
 
   return res.error(message, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
 };

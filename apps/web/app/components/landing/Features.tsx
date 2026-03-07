@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Check, GitBranch, Layers, FileText, Globe, Briefcase, BarChart3, History } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Check, GitBranch, Layers, FileText, Globe, BarChart3, History } from 'lucide-react';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const bullets = [
   {

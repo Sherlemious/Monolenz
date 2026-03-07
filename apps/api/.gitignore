@@ -3,3 +3,6 @@ node_modules
 .env
 
 /generated/prisma
+
+# Bruno local environment (contains secrets)
+docs/environments/local.bru

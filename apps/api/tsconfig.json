@@ -1,7 +1,9 @@
 {
   "extends": "@monolenz/typescript-config/node.json",
   "compilerOptions": {
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "module": "ESNext",
     "target": "ES2022",
     "strict": true,
@@ -17,6 +19,11 @@
     "rootDir": "./src",
     "baseUrl": "./src"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

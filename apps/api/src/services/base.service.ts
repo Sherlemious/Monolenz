@@ -33,7 +33,7 @@ export abstract class BaseService<T extends BaseEntity> {
     this.metrics = metrics || new MetricsCollector();
   }
 
-  async findById(id: string | number, context?: ServiceContext, options?: ServiceOptions): Promise<T | null> {
+  async findById(id: string | number, context?: ServiceContext, _options?: ServiceOptions): Promise<T | null> {
     const operation = 'findById';
     const startTime = Date.now();
 
@@ -54,16 +54,17 @@ export abstract class BaseService<T extends BaseEntity> {
     } catch (error) {
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.errors`);
       this.logger.error(`${operation} failed`, { id, error: error as Error, context });
+      if (error instanceof ServiceError) throw error;
       throw new ServiceError(`Failed to find ${this.serviceName} by id`, error);
     }
   }
 
   async findMany(
     pagination: PaginationParams,
-    filters?: Record<string, any>,
+    filters?: Record<string, unknown>,
     context?: ServiceContext,
-    options?: ServiceOptions
-  ): Promise<{ data: T[]; total: number; meta: any }> {
+    _options?: ServiceOptions
+  ): Promise<{ data: T[]; total: number; meta: unknown }> {
     const operation = 'findMany';
     const startTime = Date.now();
 
@@ -107,6 +108,7 @@ export abstract class BaseService<T extends BaseEntity> {
     } catch (error) {
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.errors`);
       this.logger.error(`${operation} failed`, { pagination, filters, error: error as Error });
+      if (error instanceof ServiceError) throw error;
       throw new ServiceError(`Failed to find ${this.serviceName} records`, error);
     }
   }
@@ -145,7 +147,8 @@ export abstract class BaseService<T extends BaseEntity> {
     } catch (error) {
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.errors`);
       this.logger.error(`${operation} failed`, { error: error as Error, context });
-      throw new ServiceError(`Failed to create, ${this.serviceName}`, error);
+      if (error instanceof ServiceError) throw error;
+      throw new ServiceError(`Failed to create ${this.serviceName}`, error);
     }
   }
 
@@ -188,6 +191,7 @@ export abstract class BaseService<T extends BaseEntity> {
     } catch (error) {
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.errors`);
       this.logger.error(`${operation} failed`, { id, error: error as Error });
+      if (error instanceof ServiceError) throw error;
       throw new ServiceError(`Failed to update ${this.serviceName}`, error);
     }
   }
@@ -230,6 +234,7 @@ export abstract class BaseService<T extends BaseEntity> {
     } catch (error) {
       this.metrics.incrementCounter(`${this.serviceName}.${operation}.errors`);
       this.logger.error(`${operation} failed`, { id, error: error as Error });
+      if (error instanceof ServiceError) throw error;
       throw new ServiceError(`Failed to delete ${this.serviceName}`, error);
     }
   }

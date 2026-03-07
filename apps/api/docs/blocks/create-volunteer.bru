@@ -1,0 +1,261 @@
+meta {
+  name: Create Volunteer
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{v1link}}/profiles/me/versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "creations": [
+      {
+        "block_type": "volunteer",
+        "section_name": "volunteer",
+        "sort_order": 0,
+        "data": {
+          "organization_name": "Local Food Bank",
+          "role": "Web Developer",
+          "cause": "Hunger Relief",
+          "start_date": "2022-01-15",
+          "end_date": "2023-12-31",
+          "is_current": false,
+          "description": "Developed and maintained the organization's website, improving online donation process and increasing contributions by 40%.",
+          "highlights": [
+            "Redesigned donation flow, increasing completion rate by 35%",
+            "Implemented automated email notifications",
+            "Trained staff on content management system"
+          ]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+}
+
+docs {
+  # Create Volunteer
+  
+  Creates a new volunteer work block for your profile. This endpoint uses the batch update system, so you can create multiple volunteer experiences in a single request.
+  
+  ## Request Body
+  
+  The request uses the batch update format with a `creations` array. Each creation object contains:
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `block_type` | string | ✅ | Must be `"volunteer"` |
+  | `section_name` | string | ❌ | Section name (e.g., "volunteer", "community-service") |
+  | `sort_order` | number | ❌ | Order within section (0 = first) |
+  | `data` | object | ✅ | Volunteer data (see below) |
+  
+  ### Volunteer Data Fields
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `organization_name` | string | ✅ | Organization name (max 255 chars) |
+  | `role` | string | ✅ | Volunteer role/title (max 255 chars) |
+  | `cause` | string | ❌ | Cause or focus area (e.g., "Education", "Environment", "Health") (max 255 chars) |
+  | `start_date` | string | ❌ | Start date in `YYYY-MM-DD` format |
+  | `end_date` | string | ❌ | End date in `YYYY-MM-DD` format |
+  | `is_current` | boolean | ❌ | Whether currently volunteering (default: `false`) |
+  | `description` | string | ❌ | Description of volunteer work |
+  | `highlights` | array | ❌ | Array of achievements or highlights |
+  
+  ## Example: Current Volunteer Position
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "volunteer",
+        "section_name": "volunteer",
+        "sort_order": 0,
+        "data": {
+          "organization_name": "Code for Good",
+          "role": "Mentor",
+          "cause": "Education",
+          "start_date": "2023-06-01",
+          "is_current": true,
+          "description": "Mentoring aspiring developers from underrepresented communities, providing guidance on career development and technical skills.",
+          "highlights": [
+            "Mentored 15+ students",
+            "Organized monthly coding workshops",
+            "Helped 5 students land their first tech jobs"
+          ]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Past Volunteer Experience
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "volunteer",
+        "section_name": "volunteer",
+        "sort_order": 0,
+        "data": {
+          "organization_name": "Habitat for Humanity",
+          "role": "Construction Volunteer",
+          "cause": "Housing",
+          "start_date": "2021-03-15",
+          "end_date": "2022-11-30",
+          "is_current": false,
+          "description": "Participated in building homes for families in need, contributing over 200 hours of volunteer work.",
+          "highlights": [
+            "Completed 200+ volunteer hours",
+            "Assisted in building 3 homes",
+            "Led volunteer orientation sessions"
+          ]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Environmental Volunteer
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "volunteer",
+        "section_name": "volunteer",
+        "sort_order": 0,
+        "data": {
+          "organization_name": "Ocean Cleanup Initiative",
+          "role": "Event Coordinator",
+          "cause": "Environment",
+          "start_date": "2022-05-01",
+          "end_date": "2023-08-31",
+          "is_current": false,
+          "description": "Organized beach cleanup events and educational workshops on marine conservation.",
+          "highlights": [
+            "Organized 12 cleanup events",
+            "Collected 500+ pounds of waste",
+            "Educated 200+ participants"
+          ]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Multiple Volunteer Experiences
+  
+  You can create multiple volunteer experiences in a single request:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "volunteer",
+        "section_name": "volunteer",
+        "sort_order": 0,
+        "data": {
+          "organization_name": "Local Animal Shelter",
+          "role": "Dog Walker",
+          "cause": "Animal Welfare",
+          "start_date": "2023-01-10",
+          "is_current": true,
+          "description": "Regularly walk and socialize shelter dogs to help them find forever homes.",
+          "highlights": [
+            "Walked 50+ dogs",
+            "Helped 10 dogs get adopted"
+          ]
+        }
+      },
+      {
+        "block_type": "volunteer",
+        "section_name": "volunteer",
+        "sort_order": 1,
+        "data": {
+          "organization_name": "Tech for Seniors",
+          "role": "Technology Instructor",
+          "cause": "Education",
+          "start_date": "2022-09-01",
+          "end_date": "2023-05-31",
+          "is_current": false,
+          "description": "Taught basic computer and smartphone skills to senior citizens.",
+          "highlights": [
+            "Taught 30+ seniors",
+            "Created beginner-friendly curriculum"
+          ]
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Minimal Volunteer Entry
+  
+  Only `organization_name` and `role` are required:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "volunteer",
+        "section_name": "volunteer",
+        "data": {
+          "organization_name": "Community Center",
+          "role": "Tutor"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Response (200 OK)
+  
+  ```json
+  {
+    "success": true,
+    "message": "Version updated successfully",
+    "data": {
+      "version": {
+        "id": 11,
+        "version_number": 11,
+        "created_at": "2024-01-16T15:00:00Z"
+      },
+      "created_blocks": [107],
+      "updated_blocks": [],
+      "deleted_blocks": []
+    }
+  }
+  ```
+  
+  ## Notes
+  
+  - Both `organization_name` and `role` are required fields
+  - Dates must be in `YYYY-MM-DD` format
+  - If `is_current` is `true`, `end_date` is not required
+  - Common causes include: "Education", "Environment", "Health", "Housing", "Animal Welfare", "Hunger Relief", "Community Development", etc.
+  - Arrays (`highlights`) default to empty arrays if not provided
+  - Volunteer work demonstrates community involvement and can complement professional experience
+  - Each request creates a new version, preserving history
+}
+
