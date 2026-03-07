@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Profile, VersionBlockDetail } from '@monolenz/types/entities';
 import { createServerApiClient } from '@/lib/api/server';
 import { createProfileApi } from '@/lib/api/profile';
@@ -79,9 +80,11 @@ function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: Vers
         <div className='max-w-3xl mx-auto px-6 py-12'>
           <div className='flex items-start gap-5'>
             {profile.profile_picture_url ? (
-              <img
+              <Image
                 src={profile.profile_picture_url}
                 alt={profile.username}
+                width={80}
+                height={80}
                 className='size-20 rounded-2xl object-cover border-2 border-border shadow-sm shrink-0'
               />
             ) : (

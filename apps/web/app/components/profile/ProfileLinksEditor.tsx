@@ -5,7 +5,7 @@ import { Reorder } from 'framer-motion';
 import { GripVertical, Plus, Trash2, Globe, ExternalLink } from 'lucide-react';
 import type { ProfileApi, ProfileLink, LinkPlatform, SyncLinkPayload } from '@/lib/api/profile';
 import { Button } from '@/components/ui/button';
-import { Input, Label } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 

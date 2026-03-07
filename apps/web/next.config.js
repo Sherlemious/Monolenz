@@ -13,7 +13,11 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: '*.supabase.co' },
+    ],
     formats: ['image/webp', 'image/avif'],
   },
 
@@ -65,10 +69,8 @@ const nextConfig = {
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
   },
 
-  // Experimental features for better performance
-  experimental: {
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
-  },
+  // External packages that should not be bundled for server components
+  serverExternalPackages: ['@supabase/supabase-js'],
 };
 
 export default nextConfig;

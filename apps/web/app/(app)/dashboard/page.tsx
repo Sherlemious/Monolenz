@@ -13,7 +13,7 @@ export default function DashboardPage() {
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    profileApi.getMyProfile().then((p) => setUsername(p?.username ?? null)).catch((err) => console.error('Failed to fetch profile:', err));
+    profileApi
       .getMyProfile()
       .then((p) => setUsername(p?.username ?? null))
       .catch((err) => console.error('Failed to fetch profile:', err));
