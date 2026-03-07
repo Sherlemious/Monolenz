@@ -71,8 +71,8 @@ RUN ls -la /app/node_modules/.prisma/client/ || echo "⚠️  Prisma client not 
 ###Explicity generate the prisma client (might change for security)
 RUN cd apps/api && pnpm prisma generate
 
-# Ensure proper ownership
-RUN mkdir -p logs && chown -R apiuser:nodejs /app
+# Ensure proper ownership — create logs dir at runtime WORKDIR
+RUN mkdir -p /app/apps/api/logs && chown -R apiuser:nodejs /app
 USER apiuser
 
 # Add health check

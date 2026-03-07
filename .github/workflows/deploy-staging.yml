@@ -260,6 +260,7 @@ jobs:
         run: docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }}
 
       - name: Deploy API to Cloud Run
+        id: deploy-api
         run: |
           gcloud run deploy monolenz-api-staging \
             --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }} \
@@ -272,9 +273,61 @@ jobs:
             --min-instances 0 \
             --max-instances 5 \
             --cpu-boost \
+            --no-traffic \
+            --tag candidate-${GITHUB_SHA::8} \
             --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
             --set-env-vars="NODE_ENV=staging" \
             --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_URL=SUPABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,SUPABASE_ANON_KEY=SUPABASE_ANON_KEY:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
+
+      - name: Capture API container logs on failure
+        if: failure() && steps.deploy-api.outcome == 'failure'
+        run: |
+          echo "=== Cloud Run container logs (last 5 minutes) ==="
+          gcloud run services logs read monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --limit 100 \
+            --freshness 5m || echo "Could not retrieve logs"
+
+      - name: Health check API candidate
+        id: health-check-api
+        run: |
+          CANDIDATE_URL=$(gcloud run services describe monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format json \
+            | jq -r ".status.traffic[] | select(.tag==\"candidate-${GITHUB_SHA::8}\") | .url")
+
+          echo "candidate_url=${CANDIDATE_URL}" >> $GITHUB_OUTPUT
+          echo "Testing candidate revision: $CANDIDATE_URL"
+
+          for i in {1..30}; do
+            if curl -sf "$CANDIDATE_URL/health" > /dev/null 2>&1; then
+              echo "Health check passed on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 10 seconds..."
+            sleep 10
+          done
+          echo "Health check failed after 5 minutes"
+          exit 1
+
+      - name: Capture API container logs on health-check failure
+        if: failure() && steps.health-check-api.outcome == 'failure'
+        run: |
+          echo "=== Cloud Run container logs (last 5 minutes) ==="
+          gcloud run services logs read monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --limit 100 \
+            --freshness 5m || echo "Could not retrieve logs"
+
+      - name: Switch API traffic to new revision
+        run: |
+          gcloud run services update-traffic monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --to-tags candidate-${GITHUB_SHA::8}=100
 
       - name: Clean up old revisions
         run: |
