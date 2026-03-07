@@ -1,15 +1,13 @@
 import app from './app';
 import { config } from 'dotenv';
-import findOpenPort from './utils/find-open-port';
 
 // Load environment variables
 config();
 
 const startServer = async () => {
-  const preferredPort = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
-  const PORT = await findOpenPort(preferredPort, preferredPort + 100);
+  const PORT = parseInt(process.env.PORT || '8080', 10);
 
-  const server = app.listen(PORT, () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 Health check: http://localhost:${PORT}/health`);
