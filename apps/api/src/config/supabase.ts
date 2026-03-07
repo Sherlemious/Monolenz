@@ -5,9 +5,20 @@ dotenv.config();
 
 // Detailed logging for debugging
 console.log('🔍 Checking Supabase environment variables...');
-console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? `✅ Set (${process.env.SUPABASE_URL.substring(0, 20)}...)` : '❌ Missing');
-console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `✅ Set (length: ${process.env.SUPABASE_SERVICE_ROLE_KEY.length})` : '❌ Missing');
-console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? `✅ Set (length: ${process.env.SUPABASE_ANON_KEY.length})` : '❌ Missing');
+console.log(
+  'SUPABASE_URL:',
+  process.env.SUPABASE_URL ? `✅ Set (${process.env.SUPABASE_URL.substring(0, 20)}...)` : '❌ Missing'
+);
+console.log(
+  'SUPABASE_SERVICE_ROLE_KEY:',
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? `✅ Set (length: ${process.env.SUPABASE_SERVICE_ROLE_KEY.length})`
+    : '❌ Missing'
+);
+console.log(
+  'SUPABASE_ANON_KEY:',
+  process.env.SUPABASE_ANON_KEY ? `✅ Set (length: ${process.env.SUPABASE_ANON_KEY.length})` : '❌ Missing'
+);
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -20,8 +31,13 @@ if (!supabaseUrl || !supabaseServiceKey || !supabaseAnonKey) {
   if (!supabaseAnonKey) missing.push('SUPABASE_ANON_KEY');
 
   console.error('❌ Missing Supabase environment variables:', missing.join(', '));
-  console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('SUPABASE')).join(', '));
-  
+  console.error(
+    'Available env vars:',
+    Object.keys(process.env)
+      .filter((k) => k.includes('SUPABASE'))
+      .join(', ')
+  );
+
   throw new Error(
     `Missing Supabase environment variables: ${missing.join(', ')}. ` +
       `Please ensure these are set in your environment or Google Cloud Secret Manager.`
