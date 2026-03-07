@@ -372,8 +372,8 @@ model profiles {
   created_at          DateTime?       @default(now()) @db.Timestamptz(6)
   updated_at          DateTime?       @default(now()) @db.Timestamptz(6)
   deleted_at          DateTime?       @db.Timestamptz(6)
-  versions            versions[]
   profile_links       profile_links[]
+  versions            versions[]
 
   @@schema("public")
 }
@@ -396,7 +396,7 @@ model link_platforms {
 
 model profile_links {
   id             Int             @id @default(autoincrement())
-  profile_id     String?         @db.Uuid
+  profile_id     String          @db.Uuid
   platform_id    Int?
   url            String          @db.VarChar(500)
   label          String?         @db.VarChar(100)
@@ -405,8 +405,8 @@ model profile_links {
   sort_order     Int?            @default(0)
   created_at     DateTime?       @default(now()) @db.Timestamptz(6)
   updated_at     DateTime?       @default(now()) @db.Timestamptz(6)
-  profiles       profiles?       @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  link_platforms link_platforms? @relation(fields: [platform_id], references: [id], onDelete: SetNull)
+  link_platforms link_platforms? @relation(fields: [platform_id], references: [id])
+  profiles       profiles        @relation(fields: [profile_id], references: [id], onDelete: Cascade)
 
   @@index([profile_id, is_public], map: "idx_profile_links_profile_public")
   @@schema("public")

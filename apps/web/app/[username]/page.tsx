@@ -73,27 +73,27 @@ const BLOCK_TYPE_META: Record<string, { label: string; accent: string; bgAccent:
 
 function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: VersionBlockDetail[] }) {
   return (
-    <div className='min-h-screen bg-background'>
+    <div className="min-h-screen bg-background">
       {/* Hero */}
-      <header className='border-b bg-card'>
-        <div className='max-w-3xl mx-auto px-6 py-12'>
-          <div className='flex items-start gap-5'>
+      <header className="border-b bg-card">
+        <div className="max-w-3xl mx-auto px-6 py-12">
+          <div className="flex items-start gap-5">
             {profile.profile_picture_url ? (
               <img
                 src={profile.profile_picture_url}
                 alt={profile.username}
-                className='size-20 rounded-2xl object-cover border-2 border-border shadow-sm shrink-0'
+                className="size-20 rounded-2xl object-cover border-2 border-border shadow-sm shrink-0"
               />
             ) : (
-              <div className='size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold shrink-0'>
+              <div className="size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold shrink-0">
                 {profile.username.charAt(0).toUpperCase()}
               </div>
             )}
 
-            <div className='min-w-0'>
-              <h1 className='text-2xl font-bold tracking-tight'>@{profile.username}</h1>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold tracking-tight">@{profile.username}</h1>
               {profile.bio && (
-                <p className='text-sm text-muted-foreground mt-1.5 max-w-lg leading-relaxed'>{profile.bio}</p>
+                <p className="text-sm text-muted-foreground mt-1.5 max-w-lg leading-relaxed">{profile.bio}</p>
               )}
               <ProfileLinks profile={profile} />
             </div>
@@ -102,10 +102,10 @@ function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: Vers
       </header>
 
       {/* Content */}
-      <main className='max-w-3xl mx-auto px-6 py-10'>
+      <main className="max-w-3xl mx-auto px-6 py-10">
         {blocks.length === 0 ? (
-          <div className='flex flex-col items-center justify-center text-center py-20'>
-            <p className='text-muted-foreground text-sm'>This profile doesn&apos;t have any content yet.</p>
+          <div className="flex flex-col items-center justify-center text-center py-20">
+            <p className="text-muted-foreground text-sm">This profile doesn&apos;t have any content yet.</p>
           </div>
         ) : (
           <ContentSections blocks={blocks} />
@@ -113,8 +113,8 @@ function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: Vers
       </main>
 
       {/* Footer */}
-      <footer className='border-t py-6 text-center'>
-        <Link href='/' className='text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors'>
+      <footer className="border-t py-6 text-center">
+        <Link href="/" className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors">
           Built with Monolenz
         </Link>
       </footer>
@@ -127,19 +127,28 @@ function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: Vers
 // ============================================================================
 
 function ProfileLinks({ profile }: { profile: Profile }) {
+  const isSafeUrl = (value: string) => {
+    try {
+      const protocol = new URL(value).protocol;
+      return protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:';
+    } catch {
+      return false;
+    }
+  };
+
   // Prefer the new profile_links array when available
   if (profile.profile_links && profile.profile_links.length > 0) {
-    const links = profile.profile_links.filter((l) => l.is_public !== false);
+    const links = profile.profile_links.filter((l) => l.is_public !== false && isSafeUrl(l.url));
     if (links.length === 0) return null;
     return (
-      <div className='flex flex-wrap gap-2 mt-3'>
+      <div className="flex flex-wrap gap-2 mt-3">
         {links.map((link) => (
           <a
             key={link.id}
             href={link.url}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='inline-flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md hover:text-foreground hover:bg-accent transition-colors'
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md hover:text-foreground hover:bg-accent transition-colors"
           >
             {link.label || link.link_platforms?.display_name || 'Link'}
           </a>
@@ -153,19 +162,19 @@ function ProfileLinks({ profile }: { profile: Profile }) {
     { url: profile.linkedin_url, label: 'LinkedIn' },
     { url: profile.github_url, label: 'GitHub' },
     { url: profile.portfolio_url, label: 'Portfolio' },
-  ].filter((l) => l.url);
+  ].filter((l) => l.url && isSafeUrl(l.url));
 
   if (links.length === 0) return null;
 
   return (
-    <div className='flex gap-2 mt-3'>
+    <div className="flex gap-2 mt-3">
       {links.map((link) => (
         <a
           key={link.label}
           href={link.url!}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='inline-flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md hover:text-foreground hover:bg-accent transition-colors'
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md hover:text-foreground hover:bg-accent transition-colors"
         >
           {link.label}
         </a>
@@ -190,13 +199,13 @@ function ContentSections({ blocks }: { blocks: VersionBlockDetail[] }) {
   }
 
   return (
-    <div className='space-y-10'>
+    <div className="space-y-10">
       {Array.from(byCategory.entries()).map(([category, categoryBlocks]) => (
         <section key={category}>
-          <h2 className='text-sm font-semibold text-foreground uppercase tracking-wider mb-4 pb-3 border-b'>
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4 pb-3 border-b">
             {category}
           </h2>
-          <div className='space-y-3'>
+          <div className="space-y-3">
             {categoryBlocks.map((block) => (
               <BlockCard key={block.id} block={block} />
             ))}
@@ -220,14 +229,14 @@ function BlockCard({ block }: { block: VersionBlockDetail }) {
 
   return (
     <article className={`bg-card border rounded-xl p-5 border-l-[3px] ${meta?.accent ?? 'border-l-muted'}`}>
-      <div className='flex items-start justify-between gap-3'>
-        <div className='min-w-0'>
-          <h3 className='font-semibold text-[15px]'>{title}</h3>
-          {subtitle && <p className='text-sm text-muted-foreground mt-0.5'>{subtitle}</p>}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-[15px]">{title}</h3>
+          {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
         </div>
       </div>
-      {dates && <p className='text-xs text-muted-foreground mt-2'>{dates}</p>}
-      {description && <p className='text-sm text-muted-foreground mt-3 leading-relaxed'>{description}</p>}
+      {dates && <p className="text-xs text-muted-foreground mt-2">{dates}</p>}
+      {description && <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{description}</p>}
     </article>
   );
 }

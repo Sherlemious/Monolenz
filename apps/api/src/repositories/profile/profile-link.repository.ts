@@ -1,26 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-export interface ProfileLinkEntity {
-  id: number;
-  profile_id: string | null;
-  platform_id: number | null;
-  url: string;
-  label: string | null;
-  category: string | null;
-  is_public: boolean | null;
-  sort_order: number | null;
-  created_at: Date | null;
-  updated_at: Date | null;
-  link_platforms?: {
-    id: number;
-    name: string;
-    display_name: string;
-    category: string | null;
-    icon: string | null;
-    base_url: string | null;
-    is_active: boolean | null;
-  } | null;
-}
+import { Prisma, PrismaClient } from '@prisma/client';
 
 export interface SyncLinkInput {
   id?: number;
@@ -29,6 +7,19 @@ export interface SyncLinkInput {
   label?: string | null;
   is_public?: boolean;
   sort_order?: number;
+}
+
+export interface LinkPlatformEntity {
+  id: number;
+  name: string;
+  display_name: string;
+  category: string | null;
+  icon: string | null;
+  base_url: string | null;
+  url_pattern: string | null;
+  is_active: boolean | null;
+  created_at: Date | null;
+  updated_at: Date | null;
 }
 
 const PLATFORM_INCLUDE = {
@@ -45,8 +36,26 @@ const PLATFORM_INCLUDE = {
   },
 } as const;
 
+export type ProfileLinkEntity = Prisma.profile_linksGetPayload<{
+  include: typeof PLATFORM_INCLUDE;
+}>;
+
 export class ProfileLinkRepository {
   constructor(private readonly prisma: PrismaClient) {}
+
+  async listActivePlatforms(): Promise<LinkPlatformEntity[]> {
+    return this.prisma.link_platforms.findMany({
+      where: { is_active: true },
+      orderBy: [{ category: 'asc' }, { display_name: 'asc' }],
+    });
+  }
+
+  async getPlatformsByIds(ids: number[]) {
+    return this.prisma.link_platforms.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, name: true, display_name: true, base_url: true, url_pattern: true },
+    });
+  }
 
   async findByProfileId(profileId: string, publicOnly = false): Promise<ProfileLinkEntity[]> {
     const where: Record<string, unknown> = { profile_id: profileId };
@@ -56,7 +65,7 @@ export class ProfileLinkRepository {
       where,
       include: PLATFORM_INCLUDE,
       orderBy: { sort_order: 'asc' },
-    }) as unknown as ProfileLinkEntity[];
+    });
   }
 
   /**
@@ -103,7 +112,7 @@ export class ProfileLinkRepository {
         where: { profile_id: profileId },
         include: PLATFORM_INCLUDE,
         orderBy: { sort_order: 'asc' },
-      }) as unknown as ProfileLinkEntity[];
+      });
     });
   }
 }

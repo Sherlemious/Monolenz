@@ -7,6 +7,8 @@ import { z } from 'zod';
 import profileBlockRouter from './blocks.routes';
 import { listPlatforms } from '../../../controllers/profile/profile';
 
+const linkInputSchema = z.string().trim().min(1, 'URL is required').max(500, 'URL is too long');
+
 const router: Router = Router();
 
 // Platforms (public, no auth)
@@ -89,7 +91,7 @@ router.put(
       z.object({
         id: z.number().int().positive().optional(),
         platform_id: z.number().int().positive().nullable().optional(),
-        url: z.string().url('Invalid URL'),
+        url: linkInputSchema,
         label: z.string().max(100).nullable().optional(),
         is_public: z.boolean().optional(),
         sort_order: z.number().int().min(0).optional(),

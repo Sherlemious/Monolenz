@@ -16,7 +16,7 @@ export default function DashboardPage() {
     profileApi
       .getMyProfile()
       .then((p) => setUsername(p?.username ?? null))
-      .catch(() => {});
+      .catch((err) => console.error('Failed to fetch profile:', err));
   }, [profileApi]);
 
   return (
