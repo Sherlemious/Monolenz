@@ -12,8 +12,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20"
-  PNPM_VERSION: "10.14.0"
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.14.0'
 
 jobs:
   # Always build everything for now - simpler and more reliable

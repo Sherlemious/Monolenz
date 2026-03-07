@@ -259,6 +259,26 @@ Note: Deletions are part of the batch version update (they are omitted from the 
 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed information about:
 
+## Branching and Releases
+
+Monolenz uses a staging-first flow:
+
+- `main` - Production branch
+- `stage` - Staging/integration branch
+- `feature/*` branches - Short-lived branches merged into `stage` via PR
+
+Release flow:
+
+1. Merge feature branches into `stage`
+2. Validate on staging
+3. Open a PR from `stage` to `main` for production release
+
+CI triggers:
+
+- Quality checks run for `stage` and `main`
+- Staging deploy runs on pushes to `stage`
+- Production deploy runs on pushes to `main`
+
 - Branch naming conventions
 - Commit message format
 - Pull request workflow

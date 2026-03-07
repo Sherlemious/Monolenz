@@ -85,7 +85,16 @@ docs/bugfix/installation-steps
 
 - `main` - Production ready code
 - `stage` - Staging environment for testing
-- `dev` - Development integration branch
+
+### Branching Flow
+
+Use a staging-first flow:
+
+1. Create a short-lived feature branch from `stage`
+2. Open a PR into `stage` for integration and verification
+3. Promote tested changes from `stage` to `main` via PR
+
+`dev` is being phased out and should not be used as a long-lived integration branch.
 
 ## Component Guidelines
 

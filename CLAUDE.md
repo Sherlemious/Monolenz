@@ -47,6 +47,12 @@ pnpm build            # tsup
 
 There are no automated tests currently.
 
+## Branch Policy
+
+- Use `stage` as the integration branch and `main` as production.
+- `dev` is being phased out and should not be used for new PR targets.
+- CI quality checks are expected on `stage` and `main`.
+
 ## Architecture
 
 ### Monorepo Layout
