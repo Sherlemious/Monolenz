@@ -102,7 +102,7 @@ const HeroSection = () => {
     { name: 'Skills', filled: true },
     { name: 'Projects', filled: false },
     { name: 'Publications', filled: false },
-    { name: 'Awards', filled: false },
+    { name: 'Award', filled: false },
   ];
 
   return (
