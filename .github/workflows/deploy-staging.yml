@@ -375,7 +375,10 @@ jobs:
     steps:
       - name: Notify deployment status
         run: |
-          if [ "${{ needs.deploy-web.result }}" = "success" ] && [ "${{ needs.deploy-api.result }}" = "success" ]; then
+          if [ "${{ needs.deploy-web.result }}" != "failure" ] && \
+             [ "${{ needs.deploy-web.result }}" != "cancelled" ] && \
+             [ "${{ needs.deploy-api.result }}" != "failure" ] && \
+             [ "${{ needs.deploy-api.result }}" != "cancelled" ]; then
             echo "✅ Staging deployment successful!"
           else
             echo "❌ Staging deployment failed!"
