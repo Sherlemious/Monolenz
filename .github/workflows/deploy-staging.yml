@@ -10,6 +10,7 @@ env:
   REGISTRY: europe-west1-docker.pkg.dev
   REPOSITORY: monolenz
   REGION: europe-west1
+  CANDIDATE_TAG: candidate
 
 jobs:
   changes:
@@ -18,8 +19,8 @@ jobs:
       web: ${{ steps.changes.outputs.web }}
       api: ${{ steps.changes.outputs.api }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      - uses: actions/checkout@v4 # Download repo content into runner , without checkout  runner can't inspect the repo
+      - uses: dorny/paths-filter@v2 #checks which files changed in the push
         id: changes
         with:
           filters: |
@@ -161,7 +162,7 @@ jobs:
             --min-instances 0 \
             --max-instances 5 \
             --no-traffic \
-            --tag candidate-${GITHUB_SHA::8} \
+            --tag ${{ env.CANDIDATE_TAG }} \
             --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
             --set-env-vars="NODE_ENV=staging"
 
@@ -173,7 +174,7 @@ jobs:
           CANDIDATE_URL=$(gcloud run services describe monolenz-web-staging \
             --platform managed \
             --region ${{ env.REGION }} \
-            --format json | jq -r ".status.traffic[] | select(.tag==\"candidate-${GITHUB_SHA::8}\") | .url")
+            --format json | jq -r ".status.traffic[] | select(.tag==\"${{ env.CANDIDATE_TAG }}\") | .url")
           echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
 
       - name: Get service URL (new service)
@@ -212,7 +213,16 @@ jobs:
           gcloud run services update-traffic monolenz-web-staging \
             --platform managed \
             --region ${{ env.REGION }} \
-            --to-tags candidate-${GITHUB_SHA::8}=100
+            --to-tags ${{ env.CANDIDATE_TAG }}=100
+
+      - name: Clear Web candidate tag
+        if: steps.check-web-service.outputs.exists == 'true'
+        run: |
+          gcloud run services update-traffic monolenz-web-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --clear-tags \
+            --to-latest
 
       - name: Clean up old revisions
         run: |
@@ -274,7 +284,7 @@ jobs:
             --max-instances 5 \
             --cpu-boost \
             --no-traffic \
-            --tag candidate-${GITHUB_SHA::8} \
+            --tag ${{ env.CANDIDATE_TAG }} \
             --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
             --set-env-vars="NODE_ENV=staging" \
             --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_URL=SUPABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,SUPABASE_ANON_KEY=SUPABASE_ANON_KEY:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
@@ -296,7 +306,7 @@ jobs:
             --platform managed \
             --region ${{ env.REGION }} \
             --format json \
-            | jq -r ".status.traffic[] | select(.tag==\"candidate-${GITHUB_SHA::8}\") | .url")
+            | jq -r ".status.traffic[] | select(.tag==\"${{ env.CANDIDATE_TAG }}\") | .url")
 
           echo "candidate_url=${CANDIDATE_URL}" >> $GITHUB_OUTPUT
           echo "Testing candidate revision: $CANDIDATE_URL"
@@ -327,7 +337,15 @@ jobs:
           gcloud run services update-traffic monolenz-api-staging \
             --platform managed \
             --region ${{ env.REGION }} \
-            --to-tags candidate-${GITHUB_SHA::8}=100
+            --to-tags ${{ env.CANDIDATE_TAG }}=100
+
+      - name: Clear API candidate tag
+        run: |
+          gcloud run services update-traffic monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --clear-tags \
+            --to-latest
 
       - name: Clean up old revisions
         run: |
