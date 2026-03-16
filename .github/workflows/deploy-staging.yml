@@ -287,7 +287,7 @@ jobs:
             --no-traffic \
             --tag ${{ env.CANDIDATE_TAG }} \
             --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
-            --set-env-vars="NODE_ENV=staging" \
+            --set-env-vars="NODE_ENV=staging,ALLOWED_ORIGINS=https://stage.monolenz.com" \
             --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_URL=SUPABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,SUPABASE_ANON_KEY=SUPABASE_ANON_KEY:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
       - name: Capture API container logs on failure
