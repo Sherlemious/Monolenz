@@ -25,9 +25,22 @@ app.use(
 );
 
 // 2. CORS (early, before auth)
+const getAllowedOrigins = (): string[] => {
+  if (process.env.ALLOWED_ORIGINS) {
+    return process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim());
+  }
+  if (process.env.NODE_ENV === 'staging') {
+    return ['https://stage.monolenz.com'];
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return ['https://monolenz.com'];
+  }
+  return ['http://localhost:3000'];
+};
+
 app.use(
   cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+    origin: getAllowedOrigins(),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
