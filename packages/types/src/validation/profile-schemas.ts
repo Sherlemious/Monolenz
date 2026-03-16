@@ -16,6 +16,7 @@ export const profileDataSchema = z.object({
   linkedin_url: z.string().url('Invalid LinkedIn URL').optional(),
   github_url: z.string().url('Invalid GitHub URL').optional(),
   portfolio_url: z.string().url('Invalid portfolio URL').optional(),
+  theme: z.string().max(50).optional(),
 });
 
 // Profile schemas for different use cases

@@ -44,6 +44,7 @@ export interface Profile {
   linkedin_url?: string;
   github_url?: string;
   portfolio_url?: string;
+  theme?: string | null;
   created_at: Date;
   updated_at: Date;
   deleted_at?: Date | null;
