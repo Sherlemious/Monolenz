@@ -27,7 +27,13 @@ app.use(
 // 2. CORS (early, before auth)
 const getAllowedOrigins = (): string[] => {
   if (process.env.ALLOWED_ORIGINS) {
-    return process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim());
+    return [
+      ...new Set(
+        process.env.ALLOWED_ORIGINS.split(',')
+          .map((o) => o.trim())
+          .filter(Boolean)
+      ),
+    ];
   }
   if (process.env.NODE_ENV === 'staging') {
     return ['https://stage.monolenz.com'];

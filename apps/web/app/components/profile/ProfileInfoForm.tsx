@@ -176,12 +176,13 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
 
   async function handleThemeSelect(themeId: string) {
     if (themeId === selectedTheme || themeSaving) return;
+    const previousTheme = selectedTheme;
     setSelectedTheme(themeId);
     setThemeSaving(true);
     try {
       await api.updateProfile({ theme: themeId });
     } catch {
-      setSelectedTheme(selectedTheme);
+      setSelectedTheme(previousTheme);
     } finally {
       setThemeSaving(false);
     }
@@ -371,9 +372,7 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
         <div className='text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 pb-2 border-b'>
           Profile Theme
         </div>
-        <p className='text-xs text-muted-foreground mb-3'>
-          Choose how your public profile page looks to visitors.
-        </p>
+        <p className='text-xs text-muted-foreground mb-3'>Choose how your public profile page looks to visitors.</p>
         <div className='flex flex-wrap gap-3'>
           {THEMES.map((t) => (
             <button

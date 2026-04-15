@@ -821,4 +821,3 @@ function getItemSubtitle(block: DraftBlock): string | null {
       return null;
   }
 }
-
