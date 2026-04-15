@@ -5,6 +5,7 @@ import Image from 'next/image';
 import type { Profile, VersionBlockDetail } from '@monolenz/types/entities';
 import { createServerApiClient } from '@/lib/api/server';
 import { createProfileApi } from '@/lib/api/profile';
+import { getTheme } from '@/lib/themes';
 
 // ============================================================================
 // Metadata
@@ -73,8 +74,9 @@ const BLOCK_TYPE_META: Record<string, { label: string; accent: string; bgAccent:
 // ============================================================================
 
 function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: VersionBlockDetail[] }) {
+  const theme = getTheme(profile.theme);
   return (
-    <div className='min-h-screen bg-background'>
+    <div className='min-h-screen bg-background' style={theme.cssVars as React.CSSProperties}>
       {/* Hero */}
       <header className='border-b bg-card'>
         <div className='max-w-3xl mx-auto px-6 py-12'>

@@ -369,6 +369,7 @@ model profiles {
   linkedin_url        String?         @db.VarChar(500)
   github_url          String?         @db.VarChar(500)
   portfolio_url       String?         @db.VarChar(500)
+  theme               String?         @default("default") @db.VarChar(50)
   created_at          DateTime?       @default(now()) @db.Timestamptz(6)
   updated_at          DateTime?       @default(now()) @db.Timestamptz(6)
   deleted_at          DateTime?       @db.Timestamptz(6)

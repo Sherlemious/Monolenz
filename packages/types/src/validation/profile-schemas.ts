@@ -4,6 +4,9 @@ import { z } from 'zod';
  * Profile validation schemas - shared between frontend and backend
  */
 
+export const PROFILE_THEME_IDS = ['default', 'midnight', 'ocean', 'forest', 'sunset'] as const;
+export type ProfileThemeId = (typeof PROFILE_THEME_IDS)[number];
+
 // Base profile data validation
 export const profileDataSchema = z.object({
   username: z
@@ -16,6 +19,7 @@ export const profileDataSchema = z.object({
   linkedin_url: z.string().url('Invalid LinkedIn URL').optional(),
   github_url: z.string().url('Invalid GitHub URL').optional(),
   portfolio_url: z.string().url('Invalid portfolio URL').optional(),
+  theme: z.enum(PROFILE_THEME_IDS).optional(),
 });
 
 // Profile schemas for different use cases

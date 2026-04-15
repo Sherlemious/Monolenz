@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, User, Pencil, LogOut, Menu, ChevronsUpDown } from 'lucide-react';
+import { LayoutDashboard, User, Pencil, LogOut, Menu, ChevronsUpDown, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { createClient } from '@/utils/supabase/client';
 import { signOut } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
@@ -56,6 +57,7 @@ function isActive(pathname: string | null, href: string, exact?: boolean) {
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const user = useUserInfo();
+  const { resolvedTheme, setTheme } = useTheme();
 
   return (
     <div className='flex flex-col h-full'>
@@ -89,6 +91,21 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
       </nav>
+
+      <Separator />
+
+      {/* Dark mode toggle */}
+      <div className='px-3 py-2'>
+        <button
+          type='button'
+          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+          className='flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors'
+          title={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {resolvedTheme === 'dark' ? <Sun className='size-4 shrink-0' /> : <Moon className='size-4 shrink-0' />}
+          {resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}
+        </button>
+      </div>
 
       <Separator />
 

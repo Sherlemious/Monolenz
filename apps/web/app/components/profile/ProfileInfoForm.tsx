@@ -12,6 +12,7 @@ import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { validateUsername, isUsernameValidForChecking, USERNAME_MAX_LENGTH } from '@/lib/validation/username';
+import { THEMES, getTheme } from '@/lib/themes';
 
 // ============================================================================
 // Types
@@ -59,6 +60,10 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Theme selector state (saves immediately on selection)
+  const [selectedTheme, setSelectedTheme] = useState(() => getTheme(profile.theme).id);
+  const [themeSaving, setThemeSaving] = useState(false);
 
   // Username availability
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
@@ -166,6 +171,20 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
 
     if (field === 'username') {
       checkUsername(value);
+    }
+  }
+
+  async function handleThemeSelect(themeId: string) {
+    if (themeId === selectedTheme || themeSaving) return;
+    const previousTheme = selectedTheme;
+    setSelectedTheme(themeId);
+    setThemeSaving(true);
+    try {
+      await api.updateProfile({ theme: themeId });
+    } catch {
+      setSelectedTheme(previousTheme);
+    } finally {
+      setThemeSaving(false);
     }
   }
 
@@ -345,6 +364,40 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
             aria-invalid={!!errors.portfolio_url}
           />
           {errors.portfolio_url && <p className='text-xs text-destructive'>{errors.portfolio_url}</p>}
+        </div>
+      </div>
+
+      {/* Profile Theme */}
+      <div className='mt-6'>
+        <div className='text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 pb-2 border-b'>
+          Profile Theme
+        </div>
+        <p className='text-xs text-muted-foreground mb-3'>Choose how your public profile page looks to visitors.</p>
+        <div className='flex flex-wrap gap-3'>
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              type='button'
+              onClick={() => handleThemeSelect(t.id)}
+              disabled={themeSaving}
+              className={cn(
+                'flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all',
+                selectedTheme === t.id
+                  ? 'border-primary ring-2 ring-primary/20'
+                  : 'border-border hover:border-muted-foreground/40'
+              )}
+              title={t.label}
+            >
+              {/* Color swatch */}
+              <div
+                className='size-10 rounded-md border border-border/50 overflow-hidden flex items-end'
+                style={{ background: t.preview.bg }}
+              >
+                <div className='h-3 w-full' style={{ background: t.preview.accent }} />
+              </div>
+              <span className='text-[10px] font-medium text-muted-foreground'>{t.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 

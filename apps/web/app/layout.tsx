@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
 import { PostHogProvider } from '@/app/providers/PostHogProvider';
+import { ThemeProvider } from '@/app/providers/theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from 'sonner';
 import { Suspense } from 'react';
@@ -24,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en'>
+    <html lang='en' suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -36,14 +37,16 @@ export default function RootLayout({
         />
       </head>
       <body className={montserrat.variable}>
-        <Suspense fallback={null}>
-          <PostHogProvider>
-            <TooltipProvider>
-              {children}
-              <Toaster position='bottom-right' richColors />
-            </TooltipProvider>
-          </PostHogProvider>
-        </Suspense>
+        <ThemeProvider>
+          <Suspense fallback={null}>
+            <PostHogProvider>
+              <TooltipProvider>
+                {children}
+                <Toaster position='bottom-right' richColors />
+              </TooltipProvider>
+            </PostHogProvider>
+          </Suspense>
+        </ThemeProvider>
       </body>
     </html>
   );
