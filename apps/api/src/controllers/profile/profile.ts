@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ProfileService } from '../../services/domain/profile.service';
 import { ProfileRepository } from '../../repositories/profile/profile';
 import { ProfileLinkRepository, SyncLinkInput } from '../../repositories/profile/profile-link.repository';
+import { s3UploadService } from '../../services/domain/s3-upload.service';
 import { prisma } from '../../config/prisma';
 import { asyncHandler } from '../../utils/async-handler';
 import { ServiceContext } from '../../services/base.service';
@@ -238,6 +239,39 @@ class ProfileController {
     const result = await profileService.searchProfiles(searchParams, context);
 
     return res.paginated(result.data, result.total, 'Profiles retrieved successfully');
+  });
+
+  /**
+   * Request a presigned URL for uploading a profile avatar to S3
+   * GET /api/v1/profiles/me/avatar/upload-url?contentType=image/jpeg&fileSize=102400
+   */
+  requestAvatarUploadUrl = asyncHandler(async (req: Request, res: Response) => {
+    const context: ServiceContext = {
+      userId: req.userId,
+      userRole: req.userRole,
+      requestId: req.requestId,
+    };
+
+    const { contentType, fileSize } = req.validatedQuery as { contentType: string; fileSize: number };
+
+    // Fetch current profile to schedule old avatar deletion
+    const currentProfile = await profileService.findById(req.userId!, context);
+    const oldS3Key = currentProfile?.profile_picture_url
+      ? s3UploadService.extractS3Key(currentProfile.profile_picture_url)
+      : null;
+
+    const { uploadUrl, objectUrl } = await s3UploadService.generateAvatarPresignedUrl({
+      userId: req.userId!,
+      contentType,
+      fileSize,
+    });
+
+    // Fire-and-forget deletion of the previous avatar
+    if (oldS3Key) {
+      s3UploadService.deleteObject(oldS3Key).catch(() => {});
+    }
+
+    return res.success({ uploadUrl, objectUrl }, 'Upload URL generated');
   });
 
   /**
