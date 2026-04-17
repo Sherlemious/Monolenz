@@ -1,13 +1,12 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { MonolenzLockup } from '@/components/brand/Logo';
 
 export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className='min-h-[100svh] grid place-items-center p-4 sm:p-6'>
       <div className='w-full flex flex-col items-center'>
-        <Link href='/' className='flex items-center gap-3 mb-8'>
-          <Image src='/logo.svg' alt='Monolenz' width={32} height={32} />
-          <span className='text-xl font-semibold text-foreground'>Monolenz</span>
+        <Link href='/' className='mb-8 text-foreground hover:opacity-80 transition-opacity'>
+          <MonolenzLockup height={26} />
         </Link>
         {children}
       </div>

@@ -29,8 +29,23 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: 'Monolenz',
-  description: 'Monolenz',
+  title: 'Monolenz — Your Career\'s Source of Truth',
+  description:
+    'Build one master profile, generate tailored resumes, share a live portfolio, and track applications — all perfectly synchronised.',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/logos/icon/apple-touch-icon.svg',
+  },
+  openGraph: {
+    title: 'Monolenz',
+    description: 'Your career\'s source of truth.',
+    images: [{ url: '/logos/social/og-image.svg' }],
+    type: 'website',
+  },
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)',  color: '#0f172a' },
+    { media: '(prefers-color-scheme: light)', color: '#fafaf9' },
+  ],
 };
 
 export default function RootLayout({

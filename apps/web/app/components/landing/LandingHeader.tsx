@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
+import { MonolenzLockup } from '@/components/brand/Logo';
 
 const LandingHeader: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -24,9 +24,8 @@ const LandingHeader: React.FC = () => {
         <div className='flex items-center justify-between h-16'>
           {/* Logo */}
           <div className='flex-shrink-0'>
-            <Link href='/' className='flex items-center gap-3 text-decoration-none'>
-              <Image src='/logo.svg' alt='Monolenz' width={32} height={32} />
-              <span className='text-xl font-semibold text-foreground'>Monolenz</span>
+            <Link href='/' className='text-foreground hover:opacity-80 transition-opacity'>
+              <MonolenzLockup height={24} />
             </Link>
           </div>
 
