@@ -179,11 +179,7 @@ const HeroSection = () => {
 
           {/* Master profile card */}
           <div className='w-full md:w-auto flex flex-col items-center md:items-start justify-center shrink-0'>
-            <div
-              ref={masterRef}
-              style={{ transition: 'transform 0.1s ease-out' }}
-              className='relative z-20'
-            >
+            <div ref={masterRef} style={{ transition: 'transform 0.1s ease-out' }} className='relative z-20'>
               <div className='bg-surface border border-border rounded-lg shadow-[var(--shadow-2)] p-5 w-[280px]'>
                 <div className='flex items-center justify-between mb-4'>
                   <div className='flex items-center gap-1.5'>
@@ -239,7 +235,9 @@ const HeroSection = () => {
             {outputs.map((output, index) => (
               <div
                 key={output.id}
-                ref={(el) => { outputRefs.current[index] = el; }}
+                ref={(el) => {
+                  outputRefs.current[index] = el;
+                }}
                 className='group/card cursor-pointer w-full md:w-auto'
                 onMouseEnter={() => setActiveOutput(output.id)}
                 onMouseLeave={() => setActiveOutput(null)}
@@ -278,9 +276,7 @@ const HeroSection = () => {
                     />
                   </div>
 
-                  <h4 className='font-semibold text-[13px] text-foreground mb-1 tracking-[-0.005em]'>
-                    {output.title}
-                  </h4>
+                  <h4 className='font-semibold text-[13px] text-foreground mb-1 tracking-[-0.005em]'>{output.title}</h4>
                   <p className='text-xs text-fg-muted mb-2'>{output.description}</p>
                   <p className='text-[10px] font-mono text-fg-subtle'>{output.stats}</p>
 
