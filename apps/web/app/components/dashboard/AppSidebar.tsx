@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { MonolenzLockup } from '@/components/brand/Logo';
 import { LayoutDashboard, User, Pencil, LogOut, Menu, ChevronsUpDown, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { createClient } from '@/utils/supabase/client';
@@ -62,9 +62,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className='flex flex-col h-full'>
       {/* Logo */}
-      <div className='flex items-center gap-3 px-5 h-14 shrink-0'>
-        <Image src='/logo.svg' alt='Monolenz' width={28} height={28} />
-        <span className='text-lg font-semibold text-sidebar-foreground'>Monolenz</span>
+      <div className='flex items-center px-5 h-14 shrink-0 text-sidebar-foreground'>
+        <MonolenzLockup height={22} />
       </div>
 
       <Separator />
@@ -170,9 +169,8 @@ export function AppSidebar() {
           </SheetContent>
         </Sheet>
 
-        <Link href='/dashboard' className='flex items-center gap-2'>
-          <Image src='/logo.svg' alt='Monolenz' width={24} height={24} />
-          <span className='text-base font-semibold'>Monolenz</span>
+        <Link href='/dashboard' className='text-foreground'>
+          <MonolenzLockup height={20} />
         </Link>
       </div>
     </>

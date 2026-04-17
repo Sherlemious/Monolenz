@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Montserrat } from 'next/font/google';
+import { Inter, JetBrains_Mono, Instrument_Serif } from 'next/font/google';
 import './globals.css';
 import { PostHogProvider } from '@/app/providers/PostHogProvider';
 import { ThemeProvider } from '@/app/providers/theme-provider';
@@ -7,16 +7,45 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from 'sonner';
 import { Suspense } from 'react';
 
-const montserrat = Montserrat({
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-montserrat',
-  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-inter',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-jetbrains-mono',
+  weight: ['400', '500', '600'],
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-instrument-serif',
+  weight: ['400'],
+  style: ['normal', 'italic'],
 });
 
 export const metadata: Metadata = {
-  title: 'Monolenz',
-  description: 'Monolenz',
+  title: 'Monolenz — Your Career\'s Source of Truth',
+  description:
+    'Build one master profile, generate tailored resumes, share a live portfolio, and track applications — all perfectly synchronised.',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/logos/icon/apple-touch-icon.svg',
+  },
+  openGraph: {
+    title: 'Monolenz',
+    description: 'Your career\'s source of truth.',
+    images: [{ url: '/logos/social/og-image.svg' }],
+    type: 'website',
+  },
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)',  color: '#0f172a' },
+    { media: '(prefers-color-scheme: light)', color: '#fafaf9' },
+  ],
 };
 
 export default function RootLayout({
@@ -36,7 +65,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={montserrat.variable}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable}`}>
         <ThemeProvider>
           <Suspense fallback={null}>
             <PostHogProvider>

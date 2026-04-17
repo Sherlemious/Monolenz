@@ -58,7 +58,7 @@ const FeaturesSection: React.FC = () => {
           {bullets.map((item) => (
             <Card key={item.title} className='h-full'>
               <CardHeader>
-                <div className='inline-flex items-center justify-center size-9 rounded-md bg-muted text-muted-foreground'>
+                <div className='inline-flex items-center justify-center size-9 rounded-md bg-secondary text-fg-muted border border-border'>
                   <item.icon className='size-5' />
                 </div>
                 <CardTitle className='mt-2 text-base'>{item.title}</CardTitle>
@@ -68,15 +68,15 @@ const FeaturesSection: React.FC = () => {
           ))}
         </div>
 
-        <div className='mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground'>
+        <div className='mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-fg-muted'>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-[var(--chart-1)]' /> 18+ content blocks
+            <Check className='size-4 text-accent-ml' /> 18+ content blocks
           </div>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-[var(--chart-2)]' /> Live portfolio URL
+            <Check className='size-4 text-success' /> Live portfolio URL
           </div>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-[var(--chart-3)]' /> Infinite versions
+            <Check className='size-4 text-info' /> Infinite versions
           </div>
         </div>
       </div>
