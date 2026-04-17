@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Montserrat } from 'next/font/google';
+import { Inter, JetBrains_Mono, Instrument_Serif } from 'next/font/google';
 import './globals.css';
 import { PostHogProvider } from '@/app/providers/PostHogProvider';
 import { ThemeProvider } from '@/app/providers/theme-provider';
@@ -7,11 +7,25 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from 'sonner';
 import { Suspense } from 'react';
 
-const montserrat = Montserrat({
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-montserrat',
-  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-inter',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-jetbrains-mono',
+  weight: ['400', '500', '600'],
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-instrument-serif',
+  weight: ['400'],
+  style: ['normal', 'italic'],
 });
 
 export const metadata: Metadata = {
@@ -36,7 +50,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={montserrat.variable}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable}`}>
         <ThemeProvider>
           <Suspense fallback={null}>
             <PostHogProvider>
