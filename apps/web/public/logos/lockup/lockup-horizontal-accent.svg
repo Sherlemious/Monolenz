@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="32" viewBox="0 0 160 32" fill="none" role="img" aria-label="Monolenz">
+  <circle cx="8" cy="16" r="3.5" fill="currentColor"></circle>
+  <path d="M8 16 L26 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.9"></path>
+  <path d="M8 16 L26 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.7"></path>
+  <path d="M8 16 L26 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.5"></path>
+  <path d="M8 16 L26 26" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.35"></path>
+  <circle cx="26" cy="6" r="1.6" fill="#c5f23a"></circle>
+  <circle cx="26" cy="12" r="1.6" fill="currentColor"></circle>
+  <circle cx="26" cy="20" r="1.6" fill="currentColor"></circle>
+  <circle cx="26" cy="26" r="1.6" fill="currentColor"></circle>
+  <text x="44" y="22" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="20" font-weight="700" letter-spacing="-0.03em" fill="currentColor">mono<tspan fill="#c5f23a">lenz</tspan></text>
+</svg>

@@ -14,6 +14,22 @@
   --ml-lime-solid: #c5f23a;
   --ml-lime-ink: oklch(0.32 0.12 128);
 
+  /*
+   * Soft semantic palette — auto-computes from the theme-specific
+   * --success / --warning / --info / --danger / --accent-color values.
+   * CSS custom properties substitute lazily, so these correctly pick up
+   * the overridden dark-mode values even though they're declared here.
+   */
+  --success-soft: color-mix(in oklab, var(--success) 18%, transparent);
+  --success-border: color-mix(in oklab, var(--success) 40%, transparent);
+  --warning-soft: color-mix(in oklab, var(--warning) 18%, transparent);
+  --warning-border: color-mix(in oklab, var(--warning) 40%, transparent);
+  --info-soft: color-mix(in oklab, var(--info) 18%, transparent);
+  --info-border: color-mix(in oklab, var(--info) 40%, transparent);
+  --danger-soft: color-mix(in oklab, var(--danger) 18%, transparent);
+  --danger-border: color-mix(in oklab, var(--danger) 40%, transparent);
+  --accent-border: color-mix(in oklab, var(--accent-color) 40%, transparent);
+
   /* Radii */
   --r-xs: 4px;
   --r-sm: 6px;
@@ -212,10 +228,19 @@
   --color-fg-subtle: var(--fg-subtle);
   --color-accent-ml: var(--accent-color);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-border: var(--accent-border);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-border: var(--danger-border);
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-border: var(--success-border);
   --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-border: var(--warning-border);
   --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-border: var(--info-border);
 
   /* Font families */
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;

@@ -1,153 +1,150 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, FileText, Globe, Briefcase, BarChart3, Plus, Circle, Square } from 'lucide-react';
+import { ArrowRight, FileText, Globe, Briefcase, BarChart3, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const outputs = [
+  {
+    id: 'resume',
+    title: 'Dynamic Resumes',
+    icon: FileText,
+    accent: 'var(--accent-color)',
+    description: 'Tailored for each application',
+    stats: '95% ATS pass rate',
+  },
+  {
+    id: 'portfolio',
+    title: 'Live Portfolio',
+    icon: Globe,
+    accent: 'var(--info)',
+    description: 'monolenz.com/you',
+    stats: 'Real-time updates',
+  },
+  {
+    id: 'applications',
+    title: 'Application Tracker',
+    icon: Briefcase,
+    accent: 'var(--success)',
+    description: 'Never lose track',
+    stats: 'All in one place',
+  },
+  {
+    id: 'analytics',
+    title: 'Insights',
+    icon: BarChart3,
+    accent: 'var(--warning)',
+    description: 'Performance metrics',
+    stats: 'Track success',
+  },
+];
+
+const contentBlocks = [
+  { name: 'Experience', filled: true },
+  { name: 'Education', filled: true },
+  { name: 'Skills', filled: true },
+  { name: 'Projects', filled: false },
+  { name: 'Publications', filled: false },
+  { name: 'Awards', filled: false },
+];
+
 const HeroSection = () => {
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [activeOutput, setActiveOutput] = useState<string | null>(null);
-  const [hoveredBlock, setHoveredBlock] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const masterRef = useRef<HTMLDivElement | null>(null);
-  const outputRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [linePositions, setLinePositions] = useState<
     Array<{ startX: number; startY: number; endX: number; endY: number }>
   >([]);
+  const [linesReady, setLinesReady] = useState(false);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const masterRef = useRef<HTMLDivElement | null>(null);
+  const outputRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  /* Parallax — direct DOM mutation, no state → no re-renders */
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePosition({
-          x: (e.clientX - rect.left - rect.width / 2) / 50,
-          y: (e.clientY - rect.top - rect.height / 2) / 50,
-        });
-      }
+      if (!masterRef.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left - rect.width / 2) / 50;
+      const y = (e.clientY - rect.top - rect.height / 2) / 50;
+      masterRef.current.style.transform = `perspective(1000px) rotateY(${x * 0.5}deg) rotateX(${-y * 0.5}deg)`;
     };
-
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  /* Connection lines — calculated once after mount, faded in */
   const calculateLinePositions = () => {
     if (!containerRef.current || !masterRef.current) return;
-
     const containerRect = containerRef.current.getBoundingClientRect();
     const masterRect = masterRef.current.getBoundingClientRect();
 
-    const newPositions = outputRefs.current.map((outputRef) => {
-      if (!outputRef) return { startX: 0, startY: 0, endX: 0, endY: 0 };
-
-      const outputRect = outputRef.getBoundingClientRect();
-
+    const newPositions = outputRefs.current.map((ref) => {
+      if (!ref) return { startX: 0, startY: 0, endX: 0, endY: 0 };
+      const r = ref.getBoundingClientRect();
       return {
         startX: masterRect.right - containerRect.left,
         startY: masterRect.top + masterRect.height / 2 - containerRect.top,
-        endX: outputRect.left - containerRect.left,
-        endY: outputRect.top + outputRect.height / 2 - containerRect.top,
+        endX: r.left - containerRect.left,
+        endY: r.top + r.height / 2 - containerRect.top,
       };
     });
 
     setLinePositions(newPositions);
+    setLinesReady(true);
   };
 
   useEffect(() => {
-    const timer = setTimeout(calculateLinePositions, 100);
+    const timer = setTimeout(calculateLinePositions, 120);
     window.addEventListener('resize', calculateLinePositions);
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', calculateLinePositions);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const outputs = [
-    {
-      id: 'resume',
-      title: 'Dynamic Resumes',
-      icon: FileText,
-      accent: 'var(--primary)',
-      description: 'Tailored for each application',
-      stats: '95% ATS pass rate',
-    },
-    {
-      id: 'portfolio',
-      title: 'Live Portfolio',
-      icon: Globe,
-      accent: 'var(--chart-1)',
-      description: 'monolenz.com/you',
-      stats: 'Real-time updates',
-    },
-    {
-      id: 'applications',
-      title: 'Application Tracker',
-      icon: Briefcase,
-      accent: 'var(--chart-2)',
-      description: 'Never lose track',
-      stats: 'All in one place',
-    },
-    {
-      id: 'analytics',
-      title: 'Insights',
-      icon: BarChart3,
-      accent: 'var(--destructive)',
-      description: 'Performance metrics',
-      stats: 'Track success',
-    },
-  ];
-
-  const contentBlocks = [
-    { name: 'Experience', filled: true },
-    { name: 'Education', filled: true },
-    { name: 'Skills', filled: true },
-    { name: 'Projects', filled: false },
-    { name: 'Publications', filled: false },
-    { name: 'Award', filled: false },
-  ];
-
   return (
-    <div className='relative min-h-[100svh] bg-transparent text-foreground overflow-hidden w-full'>
-      {/* Global header now lives in layout */}
-
-      {/* Grid pattern moved to marketing layout */}
-
-      {/* Floating geometric shapes */}
-      <div className='absolute inset-0 pointer-events-none'>
+    <div className='relative min-h-[100svh] bg-transparent text-foreground w-full'>
+      {/* Floating shapes — isolated overflow-hidden so they don't clip content */}
+      <div className='absolute inset-0 overflow-hidden pointer-events-none' aria-hidden='true'>
         <div className='shape-circle' />
         <div className='shape-square' />
       </div>
 
-      <div className='relative z-10 max-w-[1200px] mx-auto w-full box-border py-20 md:py-24 px-4'>
-        {/* Header */}
+      <div className='relative z-10 max-w-[1200px] mx-auto w-full py-20 md:py-24 px-4'>
+        {/* Heading */}
         <div className='text-center mb-20'>
-          <div className='inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-[12px] font-mono uppercase tracking-[0.1em] mb-8 border'>
-            <Circle className='w-3 h-3 text-[var(--chart-1)] fill-current' />
+          <div className='inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-[11px] font-mono uppercase tracking-[0.1em] mb-8 border'>
+            <span className='w-1.5 h-1.5 rounded-full bg-accent-ml' />
             <span>Your Career&apos;s Source of Truth</span>
           </div>
 
-          <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6'>
+          <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] mb-6'>
             <span className='text-foreground'>One Profile.</span>
             <br />
-            <span className='text-muted-foreground'>Infinite Possibilities.</span>
+            <span className='text-fg-muted'>Infinite Possibilities.</span>
           </h1>
 
-          <p className='mx-auto max-w-2xl text-center text-muted-foreground text-lg leading-relaxed'>
+          <p className='mx-auto max-w-2xl text-center text-fg-muted text-lg leading-relaxed'>
             Stop managing scattered documents. Build your master profile once, then generate tailored resumes,
-            portfolios, and track applications, all perfectly synchronized.
+            portfolios, and track applications — all perfectly synchronised.
           </p>
         </div>
 
-        {/* Document Flow Visualization */}
+        {/* Visualisation */}
         <div
           ref={containerRef}
-          className='relative max-w-[1000px] mx-auto mb-20 h-auto md:h-[500px] flex flex-col md:flex-row items-center justify-between px-5'
+          className='relative max-w-[1000px] mx-auto mb-20 flex flex-col md:flex-row items-center md:items-stretch justify-between gap-8 md:gap-0 px-5'
         >
-          {/* Connection Lines */}
-          <svg className='absolute inset-0 w-full h-full pointer-events-none z-10 hidden md:block'>
+          {/* SVG connection lines (desktop only) */}
+          <svg
+            className='absolute inset-0 w-full h-full pointer-events-none z-10 hidden md:block'
+            style={{ opacity: linesReady ? 1 : 0, transition: 'opacity 400ms ease' }}
+          >
             {linePositions.map((pos, index) => {
               const output = outputs[index];
               if (!output) return null;
-
+              const active = activeOutput === output.id;
               return (
                 <g key={output.id}>
                   <line
@@ -155,191 +152,173 @@ const HeroSection = () => {
                     y1={pos.startY}
                     x2={pos.endX}
                     y2={pos.endY}
-                    stroke={activeOutput === output.id ? (output.accent as string) : 'var(--border)'}
-                    strokeWidth={activeOutput === output.id ? 3 : 2}
-                    strokeDasharray={activeOutput === output.id ? '0' : '8,8'}
-                    style={{ transition: 'all 0.3s ease' }}
-                    opacity={activeOutput === output.id ? 1 : 0.6}
+                    stroke={active ? output.accent : 'var(--border-color)'}
+                    strokeWidth={active ? 2 : 1.5}
+                    strokeDasharray={active ? '0' : '6,6'}
+                    opacity={active ? 1 : 0.5}
+                    style={{ transition: 'stroke 300ms, stroke-width 300ms, opacity 300ms' }}
                   />
                   <circle
                     cx={pos.startX}
                     cy={pos.startY}
-                    r={activeOutput === output.id ? 5 : 3}
-                    fill={activeOutput === output.id ? (output.accent as string) : 'var(--muted)'}
-                    style={{ transition: 'all 0.3s ease' }}
+                    r={active ? 4 : 2.5}
+                    fill={active ? output.accent : 'var(--border-color)'}
+                    style={{ transition: 'all 300ms' }}
                   />
                   <circle
                     cx={pos.endX}
                     cy={pos.endY}
-                    r={activeOutput === output.id ? 5 : 3}
-                    fill={activeOutput === output.id ? (output.accent as string) : 'var(--muted)'}
-                    style={{ transition: 'all 0.3s ease' }}
+                    r={active ? 4 : 2.5}
+                    fill={active ? output.accent : 'var(--border-color)'}
+                    style={{ transition: 'all 300ms' }}
                   />
                 </g>
               );
             })}
           </svg>
 
-          <div className='w-full md:w-auto flex flex-col items-center'>
-            {/* Master Document - Left Side */}
+          {/* Master profile card */}
+          <div className='w-full md:w-auto flex flex-col items-center md:items-start justify-center shrink-0'>
             <div
               ref={masterRef}
-              style={{
-                transform: `perspective(1000px) rotateY(${mousePosition.x * 0.5}deg) rotateX(${
-                  -mousePosition.y * 0.5
-                }deg)`,
-                transition: 'transform 0.1s ease-out',
-              }}
-              className='relative z-20 shrink-0 mb-8 md:mb-0'
+              style={{ transition: 'transform 0.1s ease-out' }}
+              className='relative z-20'
             >
-              <div className='bg-card border rounded-lg shadow-xl p-5 w-[280px]'>
-                {/* Document Header */}
+              <div className='bg-surface border border-border rounded-lg shadow-[var(--shadow-2)] p-5 w-[280px]'>
                 <div className='flex items-center justify-between mb-4'>
-                  <div className='flex items-center gap-2'>
-                    <span className='w-1.5 h-1.5 rounded-full bg-muted' />
-                    <span className='w-1.5 h-1.5 rounded-full bg-muted' />
-                    <span className='w-1.5 h-1.5 rounded-full bg-muted' />
+                  <div className='flex items-center gap-1.5'>
+                    <span className='w-2 h-2 rounded-full bg-danger opacity-70' />
+                    <span className='w-2 h-2 rounded-full bg-warning opacity-70' />
+                    <span className='w-2 h-2 rounded-full bg-success opacity-70' />
                   </div>
-                  <span className='text-[10px] font-mono uppercase tracking-[0.1em] text-muted-foreground'>
+                  <span className='text-[10px] font-mono uppercase tracking-[0.12em] text-fg-subtle'>
                     Master Profile
                   </span>
                 </div>
 
-                {/* Content Blocks */}
                 <div className='mb-3'>
                   <div className='text-center mb-3'>
-                    <h3 className='text-[11px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1'>
+                    <h3 className='text-[10px] font-mono uppercase tracking-[0.12em] text-fg-subtle mb-1'>
                       Content Blocks
                     </h3>
-                    <span className='text-[11px] text-muted-foreground'>18+ sections</span>
+                    <span className='text-[11px] text-fg-muted font-mono'>18+ sections</span>
                   </div>
 
                   <div className='flex flex-col gap-1.5'>
-                    {contentBlocks.map((block, index) => (
+                    {contentBlocks.map((block) => (
                       <div
                         key={block.name}
-                        className='cursor-pointer'
-                        onMouseEnter={() => setHoveredBlock(index)}
-                        onMouseLeave={() => setHoveredBlock(null)}
+                        className={`group/block w-full h-6 rounded-xs flex items-center justify-between px-2.5 transition-colors duration-[120ms] ${
+                          block.filled
+                            ? 'bg-secondary hover:bg-secondary/80'
+                            : 'border border-dashed border-border hover:border-border-strong'
+                        }`}
                       >
-                        <div
-                          className={`w-full h-6 rounded-sm flex items-center justify-between px-2.5 transition-all ${
-                            block.filled ? 'bg-muted' : 'border border-dashed'
-                          } ${hoveredBlock === index ? 'scale-[1.02] shadow-xs' : ''}`}
-                        >
-                          <span className='text-[11px] font-medium text-card-foreground'>{block.name}</span>
-                          {!block.filled && <Plus className='w-2.5 h-2.5 text-muted-foreground' />}
-                        </div>
+                        <span className='text-[11px] font-medium text-foreground'>{block.name}</span>
+                        {!block.filled && (
+                          <Plus className='w-2.5 h-2.5 text-fg-subtle group-hover/block:text-fg-muted transition-colors' />
+                        )}
                       </div>
                     ))}
                   </div>
 
-                  <div className='flex items-center justify-center pt-2'>
+                  <div className='flex items-center justify-center pt-2.5'>
                     <div className='flex gap-1'>
-                      <span className='w-1 h-1 rounded-full bg-muted' />
-                      <span className='w-1 h-1 rounded-full bg-muted' />
-                      <span className='w-1 h-1 rounded-full bg-muted' />
+                      <span className='w-1 h-1 rounded-full bg-border-strong' />
+                      <span className='w-1 h-1 rounded-full bg-border-strong' />
+                      <span className='w-1 h-1 rounded-full bg-border-strong' />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            {/* Center Label for mobile */}
-            <div className='block md:hidden my-4 text-center'>
-              <div className='text-[12px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1'>
-                Generates
-              </div>
-              <ArrowRight className='w-4 h-4 text-muted-foreground mx-auto rotate-90' />
-            </div>
           </div>
-          {/* Output Documents - Right Side */}
-          <div className='relative z-20 shrink-0 w-full md:w-auto ml-auto'>
-            <div className='flex flex-col gap-4 items-center'>
-              {outputs.map((output, index) => (
+
+          {/* Output cards */}
+          <div className='relative z-20 shrink-0 w-full md:w-auto md:ml-auto flex flex-col gap-3 items-center md:items-end justify-center'>
+            {outputs.map((output, index) => (
+              <div
+                key={output.id}
+                ref={(el) => { outputRefs.current[index] = el; }}
+                className='group/card cursor-pointer w-full md:w-auto'
+                onMouseEnter={() => setActiveOutput(output.id)}
+                onMouseLeave={() => setActiveOutput(null)}
+              >
                 <div
-                  key={output.id}
-                  ref={(el) => {
-                    outputRefs.current[index] = el;
-                  }}
-                  className={`cursor-pointer transition-transform ${activeOutput === output.id ? 'scale-105' : ''}`}
-                  onMouseEnter={() => setActiveOutput(output.id)}
-                  onMouseLeave={() => setActiveOutput(null)}
+                  className={`relative bg-surface border rounded-lg p-4 w-full md:w-[220px] transition-all duration-200 ${
+                    activeOutput === output.id
+                      ? 'border-border-strong shadow-[var(--shadow-2)] -translate-y-0.5'
+                      : 'border-border shadow-[var(--shadow-1)]'
+                  }`}
                 >
+                  {/* Active top accent line */}
                   <div
-                    className={`bg-card border rounded-lg p-4 w-[220px] relative transition-all ${activeOutput === output.id ? 'shadow-2xl' : 'shadow-sm'}`}
+                    className='absolute top-0 left-0 w-full h-[2px] rounded-t-lg transition-opacity duration-200'
+                    style={{
+                      background: output.accent,
+                      opacity: activeOutput === output.id ? 1 : 0,
+                    }}
+                  />
+
+                  {/* Icon */}
+                  <div
+                    className='inline-flex p-2 rounded-md mb-3 transition-all duration-200'
+                    style={
+                      activeOutput === output.id
+                        ? {
+                            backgroundColor: `color-mix(in oklab, ${output.accent} 18%, transparent)`,
+                            color: output.accent,
+                          }
+                        : {}
+                    }
                   >
-                    <div
-                      className={`absolute top-0 left-0 w-full h-0.5 rounded-t-lg transition-all ${activeOutput === output.id ? '' : 'bg-transparent'}`}
-                      style={{ backgroundColor: activeOutput === output.id ? (output.accent as string) : undefined }}
-                    />
-
-                    <div
-                      className={`inline-flex p-2 rounded-md mb-3 transition-all ${activeOutput === output.id ? 'text-[inherit]' : 'bg-muted text-muted-foreground'}`}
-                      style={{
-                        backgroundColor:
-                          activeOutput === output.id
-                            ? `color-mix(in srgb, ${output.accent as string} 20%, transparent)`
-                            : undefined,
-                        color: activeOutput === output.id ? (output.accent as string) : undefined,
-                      }}
-                    >
-                      <output.icon className='w-5 h-5' />
-                    </div>
-
-                    <h4 className='font-semibold text-sm text-card-foreground mb-1'>{output.title}</h4>
-                    <p className='text-xs text-muted-foreground mb-2'>{output.description}</p>
-                    <p className='text-[10px] font-mono text-muted-foreground m-0'>{output.stats}</p>
-
-                    <ArrowRight
-                      className='absolute bottom-3 right-3 w-3.5 h-3.5 transition-all'
-                      style={{
-                        color: output.accent as string,
-                        opacity: activeOutput === output.id ? 1 : 0,
-                        transform: activeOutput === output.id ? 'translateX(0)' : 'translateX(-8px)',
-                      }}
+                    <output.icon
+                      className='w-5 h-5 transition-colors duration-200'
+                      style={activeOutput === output.id ? {} : { color: 'var(--fg-muted)' }}
                     />
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Center Label */}
-          <div className='absolute inset-0 hidden md:flex items-center justify-center z-10 text-center pointer-events-none'>
-            <div>
-              <div className='text-[12px] font-mono uppercase tracking-[0.1em] text-muted-foreground mb-1'>
-                Generates
+                  <h4 className='font-semibold text-[13px] text-foreground mb-1 tracking-[-0.005em]'>
+                    {output.title}
+                  </h4>
+                  <p className='text-xs text-fg-muted mb-2'>{output.description}</p>
+                  <p className='text-[10px] font-mono text-fg-subtle'>{output.stats}</p>
+
+                  {/* Arrow — CSS hover only, no React state → no flash */}
+                  <ArrowRight
+                    className='absolute bottom-3 right-3 w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0 transition-[opacity,transform] duration-200'
+                    style={{ color: output.accent }}
+                  />
+                </div>
               </div>
-              <ArrowRight className='w-4 h-4 text-muted-foreground mx-auto' />
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* CTA Buttons */}
-        <div className='flex items-center justify-center gap-4 mt-20 flex-wrap'>
-          <Button className='h-11 px-8 gap-3'>
+        {/* CTA */}
+        <div className='flex items-center justify-center gap-4 mt-4 flex-wrap'>
+          <Button size='lg' className='gap-3 px-8'>
             <span>Start Building</span>
             <ArrowRight className='w-4 h-4' />
           </Button>
-          <Button variant='outline' className='h-11 px-8 gap-3'>
-            <span>See Examples</span>
-            <Square className='w-3 h-3' />
+          <Button variant='outline' size='lg' className='px-8'>
+            See Examples
           </Button>
         </div>
 
-        {/* Simple metrics */}
-        <div className='flex items-center justify-center gap-12 mt-16 text-sm text-muted-foreground flex-wrap'>
+        {/* Metrics */}
+        <div className='flex items-center justify-center gap-12 mt-16 text-sm text-fg-muted flex-wrap'>
           <div className='text-center'>
-            <div className='text-3xl font-bold text-foreground mb-1'>18+</div>
-            <div className='text-xs'>Content Blocks</div>
+            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>18+</div>
+            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Content Blocks</div>
           </div>
           <div className='text-center'>
-            <div className='text-3xl font-bold text-foreground mb-1'>100+</div>
-            <div className='text-xs'>Templates</div>
+            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>∞</div>
+            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Versions</div>
           </div>
           <div className='text-center'>
-            <div className='text-3xl font-bold text-foreground mb-1'>∞</div>
-            <div className='text-xs'>Versions</div>
+            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>1</div>
+            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Source of Truth</div>
           </div>
         </div>
       </div>
@@ -347,43 +326,33 @@ const HeroSection = () => {
       <style>{`
         .shape-circle {
           position: absolute;
-          top: 25%;
-          left: 25%;
-          width: 128px;
-          height: 128px;
-          border: 1px solid var(--border);
+          top: 22%;
+          left: 18%;
+          width: 120px;
+          height: 120px;
+          border: 1px solid var(--border-color);
           border-radius: 9999px;
           animation: float-slow 20s ease-in-out infinite;
-          opacity: 0.4;
+          opacity: 0.35;
         }
         .shape-square {
           position: absolute;
-          bottom: 25%;
-          right: 25%;
-          width: 96px;
-          height: 96px;
-          border: 1px solid var(--border);
+          bottom: 22%;
+          right: 18%;
+          width: 88px;
+          height: 88px;
+          border: 1px solid var(--border-color);
           transform: rotate(45deg);
           animation: float-slower 25s ease-in-out infinite;
-          opacity: 0.4;
+          opacity: 0.35;
         }
         @keyframes float-slow {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(180deg);
-          }
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
         }
         @keyframes float-slower {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(45deg);
-          }
-          50% {
-            transform: translateY(-15px) rotate(225deg);
-          }
+          0%, 100% { transform: translateY(0px) rotate(45deg); }
+          50% { transform: translateY(-15px) rotate(225deg); }
         }
       `}</style>
     </div>
