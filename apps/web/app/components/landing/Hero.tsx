@@ -243,7 +243,7 @@ const HeroSection = () => {
                 onMouseLeave={() => setActiveOutput(null)}
               >
                 <div
-                  className={`relative bg-surface border rounded-lg p-4 w-full md:w-[220px] transition-all duration-200 ${
+                  className={`relative bg-surface border rounded-lg p-4 w-full md:w-[220px] transition-all duration-200 overflow-hidden ${
                     activeOutput === output.id
                       ? 'border-border-strong shadow-[var(--shadow-2)] -translate-y-0.5'
                       : 'border-border shadow-[var(--shadow-1)]'
