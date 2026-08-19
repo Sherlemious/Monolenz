@@ -1,0 +1,79 @@
+name: Format Check
+
+on:
+  push:
+    branches: [main, stage]
+  pull_request:
+    branches: [main, stage]
+
+jobs:
+  format-check:
+    name: Check Code Formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.14.0
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          echo "📦 Installing dependencies..."
+
+          # Try frozen lockfile first, fall back if needed
+          if ! pnpm install --frozen-lockfile; then
+            echo "⚠️ Frozen lockfile failed, installing without frozen lockfile..."
+            pnpm install --no-frozen-lockfile
+          fi
+
+          echo "✅ Dependencies installed"
+
+      - name: Check code formatting
+        run: |
+          echo "🎨 Checking code formatting with Prettier..."
+          echo "Using configuration from .prettierrc:"
+          cat .prettierrc 2>/dev/null || echo "No .prettierrc found, using defaults"
+          echo ""
+
+          if pnpm format:check; then
+            echo "✅ All code is properly formatted!"
+          else
+            echo ""
+            echo "❌ Code formatting issues found!"
+            echo ""
+            echo "To fix formatting issues, run locally:"
+            echo "  pnpm format"
+            echo ""
+            echo "Or fix specific files:"
+            echo "  npx prettier --write path/to/your/file.ts"
+            echo ""
+            exit 1
+          fi
+
+      - name: Formatting success
+        run: |
+          echo "🎉 Code formatting check passed!"
+          echo "All files follow the project's formatting standards."

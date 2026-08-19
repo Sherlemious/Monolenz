@@ -1,0 +1,251 @@
+meta {
+  name: Create Certification
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{v1link}}/profiles/me/versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+body:json {
+  {
+    "creations": [
+      {
+        "block_type": "certification",
+        "section_name": "certifications",
+        "sort_order": 0,
+        "data": {
+          "name": "AWS Certified Solutions Architect",
+          "issuing_organization": "Amazon Web Services",
+          "organization_url": "https://aws.amazon.com",
+          "credential_id": "AWS-123456789",
+          "credential_url": "https://aws.amazon.com/verification",
+          "issue_date": "2023-05-15",
+          "expiration_date": "2026-05-15",
+          "does_not_expire": false
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+}
+
+docs {
+  # Create Certification
+  
+  Creates a new certification block for your profile. This endpoint uses the batch update system, so you can create multiple certifications in a single request.
+  
+  ## Request Body
+  
+  The request uses the batch update format with a `creations` array. Each creation object contains:
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `block_type` | string | ✅ | Must be `"certification"` |
+  | `section_name` | string | ❌ | Section name (e.g., "certifications", "credentials") |
+  | `sort_order` | number | ❌ | Order within section (0 = first) |
+  | `data` | object | ✅ | Certification data (see below) |
+  
+  ### Certification Data Fields
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `name` | string | ✅ | Certification name (max 255 chars) |
+  | `issuing_organization` | string | ✅ | Organization that issued the certification (max 255 chars) |
+  | `organization_url` | string | ❌ | Issuing organization's website URL |
+  | `credential_id` | string | ❌ | Certification/credential ID or license number |
+  | `credential_url` | string | ❌ | URL to verify the credential (e.g., verification page) |
+  | `issue_date` | string | ❌ | Issue date in `YYYY-MM-DD` format |
+  | `expiration_date` | string | ❌ | Expiration date in `YYYY-MM-DD` format |
+  | `does_not_expire` | boolean | ❌ | Whether the certification never expires (default: `false`) |
+  
+  ## Example: Certification with Expiration
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "certification",
+        "section_name": "certifications",
+        "sort_order": 0,
+        "data": {
+          "name": "Google Cloud Professional Cloud Architect",
+          "issuing_organization": "Google Cloud",
+          "organization_url": "https://cloud.google.com",
+          "credential_id": "GCP-PCA-123456",
+          "credential_url": "https://www.credential.net/verify",
+          "issue_date": "2023-03-20",
+          "expiration_date": "2025-03-20",
+          "does_not_expire": false
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Certification Without Expiration
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "certification",
+        "section_name": "certifications",
+        "sort_order": 0,
+        "data": {
+          "name": "Certified Kubernetes Administrator",
+          "issuing_organization": "Cloud Native Computing Foundation",
+          "organization_url": "https://www.cncf.io",
+          "credential_id": "CKA-123456",
+          "credential_url": "https://www.cncf.io/certification/cka",
+          "issue_date": "2022-11-10",
+          "does_not_expire": true
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Professional License
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "certification",
+        "section_name": "certifications",
+        "sort_order": 0,
+        "data": {
+          "name": "Professional Engineer License",
+          "issuing_organization": "State Board of Professional Engineers",
+          "organization_url": "https://stateboard.example.gov",
+          "credential_id": "PE-12345",
+          "issue_date": "2020-06-15",
+          "expiration_date": "2024-06-15",
+          "does_not_expire": false
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Multiple Certifications
+  
+  You can create multiple certifications in a single request:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "certification",
+        "section_name": "certifications",
+        "sort_order": 0,
+        "data": {
+          "name": "AWS Certified Developer",
+          "issuing_organization": "Amazon Web Services",
+          "organization_url": "https://aws.amazon.com",
+          "credential_id": "AWS-DEV-789",
+          "issue_date": "2023-01-10",
+          "expiration_date": "2026-01-10",
+          "does_not_expire": false
+        }
+      },
+      {
+        "block_type": "certification",
+        "section_name": "certifications",
+        "sort_order": 1,
+        "data": {
+          "name": "Microsoft Azure Fundamentals",
+          "issuing_organization": "Microsoft",
+          "organization_url": "https://azure.microsoft.com",
+          "credential_id": "AZ-900-123456",
+          "credential_url": "https://learn.microsoft.com/verify",
+          "issue_date": "2022-08-05",
+          "expiration_date": null,
+          "does_not_expire": true
+        }
+      },
+      {
+        "block_type": "certification",
+        "section_name": "certifications",
+        "sort_order": 2,
+        "data": {
+          "name": "Certified Scrum Master",
+          "issuing_organization": "Scrum Alliance",
+          "organization_url": "https://www.scrumalliance.org",
+          "credential_id": "CSM-456789",
+          "issue_date": "2021-05-20",
+          "expiration_date": "2023-05-20",
+          "does_not_expire": false
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Example: Minimal Certification Entry
+  
+  Only `name` and `issuing_organization` are required:
+  
+  ```json
+  {
+    "creations": [
+      {
+        "block_type": "certification",
+        "section_name": "certifications",
+        "data": {
+          "name": "First Aid Certification",
+          "issuing_organization": "Red Cross"
+        }
+      }
+    ],
+    "updates": [],
+    "deletions": []
+  }
+  ```
+  
+  ## Response (200 OK)
+  
+  ```json
+  {
+    "success": true,
+    "message": "Version updated successfully",
+    "data": {
+      "version": {
+        "id": 9,
+        "version_number": 9,
+        "created_at": "2024-01-16T15:00:00Z"
+      },
+      "created_blocks": [105],
+      "updated_blocks": [],
+      "deleted_blocks": []
+    }
+  }
+  ```
+  
+  ## Notes
+  
+  - Both `name` and `issuing_organization` are required fields
+  - Dates must be in `YYYY-MM-DD` format
+  - If `does_not_expire` is `true`, `expiration_date` should be `null` or omitted
+  - `credential_id` and `credential_url` are useful for verification purposes
+  - Common certification types include: cloud platforms, programming languages, project management, security, etc.
+  - Each request creates a new version, preserving history
+}
+

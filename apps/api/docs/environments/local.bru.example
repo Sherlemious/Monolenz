@@ -1,0 +1,9 @@
+vars {
+  link: http://localhost:3001/api
+  v1link: http://localhost:3001/api/v1
+  supabaseUrl: https://your-project.supabase.co
+  supabaseAnonKey: YOUR_SUPABASE_ANON_KEY
+  testEmail: your-test-email@example.com
+  testPassword: your-test-password
+  testJWT: 
+}

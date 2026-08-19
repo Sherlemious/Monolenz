@@ -1,0 +1,416 @@
+/**
+ * ProfileBlockService - Handles block versioning, creation, and immutability
+ * Extends BaseService but adapted for immutable block semantics
+ */
+
+import { PrismaClient, Prisma } from '@prisma/client';
+import { BaseService } from '../base.service';
+import { ServiceError } from '../base.service';
+import { BlockEntity, BlockType, TypedBlock, Version } from '@monolenz/types/entities/blocks';
+import { BLOCK_SCHEMAS } from '@monolenz/types/validation/block-schemas';
+import { BlocksRepository } from '../../repositories/blocks/blocks.repository';
+import { VersionsRepository } from '../../repositories/profile/versions.repository';
+import { VersionBlocksRepository } from '../../repositories/profile/version-blocks.repository';
+import { TypedBlockRepositoryFactory } from '../../repositories/blocks/repository-factory';
+import { ServiceContext } from '../base.service';
+
+interface CreateBlockInput {
+  blockType: BlockType;
+  data: Record<string, unknown>;
+  sectionName?: string | null;
+  sortOrder?: number;
+  isVisible?: boolean;
+}
+
+interface UpdateBlockInput {
+  parentBlockId: number;
+  blockType: BlockType;
+  data: Record<string, unknown>;
+  sectionName?: string | null;
+  sortOrder?: number;
+  isVisible?: boolean;
+}
+
+interface ApplyVersionUpdateInput {
+  profileId: string;
+  creations: CreateBlockInput[];
+  updates: UpdateBlockInput[];
+  deletions: number[];
+}
+
+interface ProcessedBlock {
+  blockId: number;
+  previousBlockId?: number | null;
+  sectionName?: string | null;
+  sortOrder?: number;
+  isVisible?: boolean;
+}
+
+interface BlockToAttach extends ProcessedBlock {
+  previousVersionId?: number | null;
+}
+
+export class ProfileBlockService extends BaseService<BlockEntity> {
+  private typedBlockFactory: TypedBlockRepositoryFactory;
+  private versionsRepo: VersionsRepository;
+  private versionBlocksRepo: VersionBlocksRepository;
+
+  constructor(
+    blocksRepo: BlocksRepository,
+    versionsRepo: VersionsRepository,
+    versionBlocksRepo: VersionBlocksRepository,
+    prisma: PrismaClient
+  ) {
+    super('ProfileBlockService', blocksRepo);
+    this.versionsRepo = versionsRepo;
+    this.versionBlocksRepo = versionBlocksRepo;
+    this.typedBlockFactory = new TypedBlockRepositoryFactory(prisma);
+    this.prisma = prisma;
+  }
+
+  // ========================================================================
+  // BaseService Abstract Methods
+  // ========================================================================
+
+  protected async validateAccess(_operation: string, _data: unknown, _context?: ServiceContext): Promise<void> {
+    // For blocks, access control is at profile level
+    // This is validated at the service method level
+  }
+
+  protected async validateData(_data: unknown, _operation: 'create' | 'update'): Promise<void> {
+    // Validation done via Zod in middleware, not here
+  }
+
+  protected async applyBusinessRules(
+    data: unknown,
+    _operation: 'create' | 'update',
+    _context?: ServiceContext
+  ): Promise<unknown> {
+    // Blocks are immutable - no business rules to apply
+    return data;
+  }
+
+  protected async applyServiceFilters(
+    filters?: Record<string, any>,
+    context?: ServiceContext
+  ): Promise<Record<string, any>> {
+    // Filter by profile_id if context provided
+    if (context?.userId) {
+      return { ...filters, profile_id: context.userId };
+    }
+    return filters || {};
+  }
+
+  // ========================================================================
+  // Public API Methods
+  // ========================================================================
+
+  /**
+   * Apply batch version update (creations, updates, deletions)
+   * Creates new immutable version with all changes
+   */
+  async applyVersionUpdate(input: ApplyVersionUpdateInput, context?: ServiceContext): Promise<{ versionId: number }> {
+    // Validate profile ownership
+    if (context?.userId !== input.profileId) {
+      throw new ServiceError('Unauthorized', null, 403);
+    }
+
+    return (this.repository as BlocksRepository).withTransaction(async (tx) => {
+      // 1. Validate profile exists
+      const profileExists = await this.versionsRepo.profileExists(input.profileId, tx);
+      if (!profileExists) {
+        throw new ServiceError('Profile not found', null, 404);
+      }
+
+      // 2. Get latest version and current block IDs
+      const latestVersion = await this.versionsRepo.getLatestVersionForProfile(input.profileId, tx);
+      const currentBlocks = latestVersion
+        ? await this.versionBlocksRepo.listVersionBlocks(latestVersion.id, undefined, tx)
+        : [];
+      const currentBlockIds = currentBlocks.map((b) => b.block_id as number);
+      const currentMeta = new Map(currentBlocks.map((b) => [b.block_id as number, b]));
+
+      // 3. Validate update parent blocks exist in current version
+      for (const update of input.updates) {
+        if (!currentBlockIds.includes(update.parentBlockId)) {
+          throw new ServiceError(`Parent block ${update.parentBlockId} not found in current version`, null, 400);
+        }
+      }
+
+      // 4. Process creations and updates (both create new immutable blocks)
+      const processedCreations = await this.processBlockCreations(input.creations, tx);
+      const processedUpdates = await this.processBlockUpdates(input.updates, tx);
+
+      // 5. Create new version
+      const newVersion = await this.versionsRepo.createVersion(
+        {
+          profile_id: input.profileId,
+          parent_version_id: latestVersion?.id ?? null,
+          name: null,
+          description: null,
+        },
+        tx
+      );
+
+      // 6. Compute blocks to attach (carry-forward + new/updated, excluding deleted)
+      const blocksToAttach = this.computeBlocksToAttach(
+        currentBlockIds,
+        currentMeta,
+        processedCreations,
+        processedUpdates,
+        input.deletions,
+        latestVersion?.id
+      );
+
+      // 7. Attach blocks to new version
+      for (const block of blocksToAttach) {
+        await this.versionBlocksRepo.attachBlockToVersion(
+          {
+            version_id: newVersion.id,
+            block_id: block.blockId,
+            previous_block_id: block.previousBlockId ?? null,
+            previous_version_id: block.previousVersionId ?? null,
+            section_name: block.sectionName ?? null,
+            sort_order: block.sortOrder ?? 0,
+            is_visible: block.isVisible ?? true,
+          },
+          tx
+        );
+      }
+
+      return { versionId: newVersion.id };
+    });
+  }
+
+  /**
+   * Get all blocks for a version with typed data
+   */
+  async listBlocksForVersion(
+    versionId: number,
+    options?: { sectionName?: string; blockType?: BlockType; publicOnly?: boolean }
+  ): Promise<TypedBlock[]> {
+    return (this.repository as BlocksRepository).withTransaction(async (tx) => {
+      // 1. Get version_blocks with base block info
+      const versionBlocks = await this.versionBlocksRepo.listVersionBlocks(
+        versionId,
+        { sectionName: options?.sectionName, publicOnly: options?.publicOnly },
+        tx
+      );
+
+      // 2. Group by block_type for batch fetching
+      const blocksByType = new Map<BlockType, number[]>();
+      for (const vb of versionBlocks) {
+        const blockType = vb.block_type as BlockType;
+        const ids = blocksByType.get(blockType) || [];
+        ids.push(vb.block_id);
+        blocksByType.set(blockType, ids);
+      }
+
+      // 3. Batch fetch typed data for each block type in parallel
+      const typedDataPromises = Array.from(blocksByType.entries()).map(async ([blockType, blockIds]) => {
+        const repo = this.typedBlockFactory.getRepository(blockType);
+        const typedBlocks = await repo.findManyByBlockIds(blockIds, tx);
+        return { blockType, typedBlocks };
+      });
+
+      const typedDataResults = await Promise.all(typedDataPromises);
+
+      // 4. Build map of block_id -> typed data
+      const typedDataMap = new Map<number, any>();
+      for (const result of typedDataResults) {
+        for (const typedBlock of result.typedBlocks) {
+          typedDataMap.set((typedBlock as any).block_id, typedBlock);
+        }
+      }
+
+      // 5. Combine base + typed data into TypedBlock[]
+      const combined = versionBlocks.map((vb) => {
+        const blockType = vb.block_type as BlockType;
+        const typedData = typedDataMap.get(vb.block_id);
+
+        return {
+          id: vb.block_id,
+          block_type: blockType,
+          content_hash: vb.content_hash,
+          created_at: vb.created_at,
+          data: typedData,
+          section_name: vb.section_name,
+          sort_order: vb.sort_order,
+          is_visible: vb.is_visible,
+          version_id: vb.version_id,
+        } as TypedBlock;
+      });
+
+      if (options?.blockType) {
+        return combined.filter((b) => b.block_type === options.blockType);
+      }
+      return combined;
+    });
+  }
+
+  async assertVersionBelongsToProfile(versionId: number, profileId: string): Promise<void> {
+    const version = await this.versionsRepo.getVersionById(versionId);
+    if (!version || version.profile_id !== profileId) {
+      throw new ServiceError('Version not found', null, 404);
+    }
+  }
+
+  /**
+   * Get latest version for profile
+   */
+  async getLatestVersion(profileId: string): Promise<Version | null> {
+    return this.versionsRepo.getLatestVersionForProfile(profileId);
+  }
+
+  // ========================================================================
+  // Private Helper Methods
+  // ========================================================================
+
+  private async processBlockCreations(
+    creations: CreateBlockInput[],
+    tx: Prisma.TransactionClient
+  ): Promise<ProcessedBlock[]> {
+    const results: ProcessedBlock[] = [];
+
+    for (const creation of creations) {
+      // Validate data against schema
+      const schema = BLOCK_SCHEMAS[creation.blockType];
+      if (!schema) {
+        throw new ServiceError(`Unknown block type: ${creation.blockType}`, null, 400);
+      }
+
+      const validatedData = schema.parse(creation.data);
+
+      // Compute content hash (includes block_type)
+      const hash = (this.repository as BlocksRepository).computeContentHash(creation.blockType, validatedData);
+
+      // Check for existing block (deduplication)
+      let baseBlock = await (this.repository as BlocksRepository).findBlockByHash(hash, tx);
+
+      if (!baseBlock) {
+        // Create base block
+        baseBlock = await (this.repository as BlocksRepository).createBaseBlock(
+          {
+            block_type: creation.blockType,
+            content_hash: hash,
+          },
+          tx
+        );
+
+        // Create typed block data
+        const typedRepo = this.typedBlockFactory.getRepository(creation.blockType);
+        await typedRepo.create(baseBlock.id, validatedData, tx);
+      }
+
+      results.push({
+        blockId: baseBlock.id,
+        sectionName: creation.sectionName,
+        sortOrder: creation.sortOrder,
+        isVisible: creation.isVisible ?? true,
+      });
+    }
+
+    return results;
+  }
+
+  private async processBlockUpdates(
+    updates: UpdateBlockInput[],
+    tx: Prisma.TransactionClient
+  ): Promise<ProcessedBlock[]> {
+    const results: ProcessedBlock[] = [];
+
+    for (const update of updates) {
+      // Validate data against schema
+      const schema = BLOCK_SCHEMAS[update.blockType];
+      if (!schema) {
+        throw new ServiceError(`Unknown block type: ${update.blockType}`, null, 400);
+      }
+
+      const validatedData = schema.parse(update.data);
+
+      // Compute content hash
+      const hash = (this.repository as BlocksRepository).computeContentHash(update.blockType, validatedData);
+
+      // Check for existing block (deduplication)
+      let baseBlock = await (this.repository as BlocksRepository).findBlockByHash(hash, tx);
+
+      if (!baseBlock) {
+        // Create new base block (immutable update)
+        baseBlock = await (this.repository as BlocksRepository).createBaseBlock(
+          {
+            block_type: update.blockType,
+            content_hash: hash,
+          },
+          tx
+        );
+
+        // Create typed block data
+        const typedRepo = this.typedBlockFactory.getRepository(update.blockType);
+        await typedRepo.create(baseBlock.id, validatedData, tx);
+      }
+
+      results.push({
+        blockId: baseBlock.id,
+        previousBlockId: update.parentBlockId,
+        sectionName: update.sectionName,
+        sortOrder: update.sortOrder,
+        isVisible: update.isVisible ?? true,
+      });
+    }
+
+    return results;
+  }
+
+  private computeBlocksToAttach(
+    currentBlockIds: number[],
+    currentMeta: Map<number, { section_name?: string | null; sort_order?: number | null; is_visible?: boolean | null }>,
+    processedCreations: ProcessedBlock[],
+    processedUpdates: ProcessedBlock[],
+    deletions: number[],
+    latestVersionId?: number
+  ): BlockToAttach[] {
+    const deletionSet = new Set(deletions);
+    const updatedBlockMap = new Map(processedUpdates.map((u) => [u.previousBlockId!, u]));
+
+    const blocksToAttach: BlockToAttach[] = [];
+
+    // 1. Carry forward blocks from current version that aren't being updated/deleted
+    for (const blockId of currentBlockIds) {
+      if (!deletionSet.has(blockId) && !updatedBlockMap.has(blockId)) {
+        const meta = currentMeta.get(blockId);
+        blocksToAttach.push({
+          blockId,
+          previousVersionId: latestVersionId,
+          sectionName: meta?.section_name ?? null,
+          sortOrder: meta?.sort_order ?? 0,
+          isVisible: meta?.is_visible ?? true,
+        });
+      }
+    }
+
+    // 2. Add new creations
+    for (const creation of processedCreations) {
+      blocksToAttach.push({
+        blockId: creation.blockId,
+        sectionName: creation.sectionName,
+        sortOrder: creation.sortOrder,
+        isVisible: creation.isVisible ?? true,
+        previousVersionId: latestVersionId,
+      });
+    }
+
+    // 3. Add updates (new blocks with lineage)
+    for (const update of processedUpdates) {
+      blocksToAttach.push({
+        blockId: update.blockId,
+        previousBlockId: update.previousBlockId,
+        sectionName: update.sectionName,
+        sortOrder: update.sortOrder,
+        isVisible: update.isVisible ?? true,
+        previousVersionId: latestVersionId,
+      });
+    }
+
+    return blocksToAttach;
+  }
+}

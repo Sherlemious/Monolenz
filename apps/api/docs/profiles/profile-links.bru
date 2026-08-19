@@ -1,0 +1,188 @@
+meta {
+  name: Profile Links Guide
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{v1link}}/profiles/me?include_links=true
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testJWT}}
+}
+
+docs {
+  # Profile Links
+  
+  Profile links allow you to add custom social media and professional links to your profile beyond the core URLs (LinkedIn, GitHub, Portfolio).
+  
+  ## Overview
+  
+  Profile links are stored separately from the main profile and can be:
+  - **Public** (`is_public: true`) - Visible to everyone viewing your profile
+  - **Private** (`is_public: false`) - Only visible to you
+  
+  Links can be associated with predefined platforms (like Twitter, Instagram, etc.) or be custom links.
+  
+  ## Getting Profile Links
+  
+  To retrieve your profile with links included, use the `include_links` query parameter:
+  
+  ```
+  GET /api/v1/profiles/me?include_links=true
+  GET /api/v1/profiles/:identifier?include_links=true
+  ```
+  
+  ### Response Example
+  
+  ```json
+  {
+    "success": true,
+    "message": "Profile retrieved successfully",
+    "data": {
+      "id": "uuid-here",
+      "username": "johndoe",
+      "bio": "Full-stack developer...",
+      "profile_links": [
+        {
+          "id": 1,
+          "profile_id": "uuid-here",
+          "platform_id": 2,
+          "url": "https://twitter.com/johndoe",
+          "category": "social",
+          "is_public": true,
+          "sort_order": 0,
+          "created_at": "2024-01-15T10:30:00Z",
+          "updated_at": "2024-01-15T10:30:00Z",
+          "link_platforms": {
+            "id": 2,
+            "name": "twitter",
+            "display_name": "Twitter",
+            "category": "social",
+            "icon": "twitter"
+          }
+        },
+        {
+          "id": 2,
+          "profile_id": "uuid-here",
+          "platform_id": null,
+          "url": "https://myblog.dev",
+          "category": "personal",
+          "is_public": true,
+          "sort_order": 1,
+          "created_at": "2024-01-15T10:35:00Z",
+          "updated_at": "2024-01-15T10:35:00Z",
+          "link_platforms": null
+        }
+      ]
+    }
+  }
+  ```
+  
+  ## Profile Link Structure
+  
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | `id` | number | Unique link ID |
+  | `profile_id` | string (UUID) | Profile owner ID |
+  | `platform_id` | number \| null | Optional reference to predefined platform |
+  | `url` | string | The link URL (required, must be valid URL) |
+  | `category` | string \| null | Link category (e.g., "social", "professional", "personal") |
+  | `is_public` | boolean | Whether link is visible publicly (default: `true`) |
+  | `sort_order` | number | Display order (0 = first, default: `0`) |
+  | `created_at` | string | Creation timestamp |
+  | `updated_at` | string | Last update timestamp |
+  | `link_platforms` | object \| null | Platform metadata if `platform_id` is set |
+  
+  ## Link Categories
+  
+  Common categories for organizing links:
+  - `social` - Social media profiles
+  - `professional` - Professional networks and platforms
+  - `personal` - Personal websites and blogs
+  - `portfolio` - Portfolio and showcase sites
+  - `community` - Community platforms and forums
+  - `other` - Other types of links
+  
+  ## Public vs Private Links
+  
+  - **Public links** (`is_public: true`) are visible to anyone viewing your profile
+  - **Private links** (`is_public: false`) are only visible to you when authenticated
+  
+  When viewing someone else's profile, only their public links are returned.
+  
+  ## Platform Integration
+  
+  Links can be associated with predefined platforms in the system. Platforms provide:
+  - Display name
+  - Icon/logo
+  - Category
+  - URL validation patterns
+  
+  If `platform_id` is `null`, the link is a custom link without platform association.
+  
+  ## Example Use Cases
+  
+  ### Social Media Links
+  ```json
+  {
+    "url": "https://twitter.com/username",
+    "category": "social",
+    "is_public": true,
+    "sort_order": 0
+  }
+  ```
+  
+  ### Personal Blog
+  ```json
+  {
+    "url": "https://myblog.dev",
+    "category": "personal",
+    "is_public": true,
+    "sort_order": 1
+  }
+  ```
+  
+  ### Private Portfolio
+  ```json
+  {
+    "url": "https://private-portfolio.com",
+    "category": "portfolio",
+    "is_public": false,
+    "sort_order": 2
+  }
+  ```
+  
+  ### Professional Platform
+  ```json
+  {
+    "platform_id": 5,
+    "url": "https://dribbble.com/username",
+    "category": "professional",
+    "is_public": true,
+    "sort_order": 0
+  }
+  ```
+  
+  ## Notes
+  
+  - Profile links are separate from core profile URLs (`linkedin_url`, `github_url`, `portfolio_url`)
+  - Links are returned in `sort_order` order (ascending)
+  - Only public links are included when viewing other users' profiles
+  - URL validation ensures all links are properly formatted
+  - Custom links (without `platform_id`) are fully supported
+  
+  ## Future Endpoints
+  
+  Dedicated CRUD endpoints for profile links may be available:
+  - `POST /api/v1/profiles/me/links` - Create a new link
+  - `PUT /api/v1/profiles/me/links/:id` - Update a link
+  - `DELETE /api/v1/profiles/me/links/:id` - Delete a link
+  - `GET /api/v1/profiles/me/links` - List all your links
+  
+  Check the API documentation for the latest endpoint availability.
+}
+

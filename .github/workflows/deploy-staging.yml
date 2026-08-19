@@ -1,0 +1,386 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [stage]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGISTRY: europe-west1-docker.pkg.dev
+  REPOSITORY: monolenz
+  REGION: europe-west1
+  CANDIDATE_TAG: candidate
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.changes.outputs.web }}
+      api: ${{ steps.changes.outputs.api }}
+    steps:
+      - uses: actions/checkout@v4 # Download repo content into runner , without checkout  runner can't inspect the repo
+      - uses: dorny/paths-filter@v2 #checks which files changed in the push
+        id: changes
+        with:
+          base: ${{ github.ref }}
+          filters: |
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'turbo.json'
+            api:
+              - 'apps/api/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'turbo.json'
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.14.0
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm check-types
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build packages
+        run: |
+          # Build shared packages first
+          pnpm --filter="@monolenz/*" build
+          # Build API without database
+          pnpm --filter=api build:without-db
+          # Build web normally
+          pnpm --filter=web build
+
+      - name: Test (if tests exist)
+        run: |
+          if [ -f "package.json" ] && grep -q '"test"' package.json; then
+            pnpm test
+          else
+            echo "No tests found, skipping..."
+          fi
+
+  deploy-web:
+    needs: [changes, build-and-test]
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }}
+
+      - name: Build Web Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL_STAGING }} \
+            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY_STAGING }} \
+            --build-arg NEXT_PUBLIC_API_URL=https://monolenz-api-staging-${{ secrets.GCP_SERVICE_SUFFIX }}.a.run.app \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }} \
+            -f Dockerfile.web .
+
+      - name: Push Web Docker image
+        run: docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }}
+
+      - name: Check if Web service exists
+        id: check-web-service
+        run: |
+          if gcloud run services describe monolenz-web-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format="value(metadata.name)" 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy Web to Cloud Run (new service)
+        if: steps.check-web-service.outputs.exists == 'false'
+        run: |
+          gcloud run deploy monolenz-web-staging \
+            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 5 \
+            --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
+            --set-env-vars="NODE_ENV=staging"
+
+      - name: Deploy Web to Cloud Run (update with no traffic)
+        if: steps.check-web-service.outputs.exists == 'true'
+        run: |
+          gcloud run deploy monolenz-web-staging \
+            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 5 \
+            --no-traffic \
+            --tag ${{ env.CANDIDATE_TAG }} \
+            --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
+            --set-env-vars="NODE_ENV=staging"
+
+      - name: Get candidate URL
+        if: steps.check-web-service.outputs.exists == 'true'
+        id: get-url
+        run: |
+          # Get the URL for the specific traffic tag
+          CANDIDATE_URL=$(gcloud run services describe monolenz-web-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format json | jq -r ".status.traffic[] | select(.tag==\"${{ env.CANDIDATE_TAG }}\") | .url")
+          echo "candidate_url=$CANDIDATE_URL" >> $GITHUB_OUTPUT
+
+      - name: Get service URL (new service)
+        if: steps.check-web-service.outputs.exists == 'false'
+        id: get-service-url
+        run: |
+          SERVICE_URL=$(gcloud run services describe monolenz-web-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
+
+      - name: Health check Web
+        run: |
+          if [ "${{ steps.check-web-service.outputs.exists }}" = "true" ]; then
+            URL="${{ steps.get-url.outputs.candidate_url }}"
+          else
+            URL="${{ steps.get-service-url.outputs.service_url }}"
+          fi
+
+          echo "Testing deployment: $URL"
+          for i in {1..30}; do
+            if curl -f "$URL/health" 2>/dev/null; then
+              echo "Health check passed!"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 10 seconds..."
+            sleep 10
+          done
+          echo "Health check failed after 5 minutes"
+          exit 1
+
+      - name: Switch traffic to new revision
+        if: steps.check-web-service.outputs.exists == 'true'
+        run: |
+          gcloud run services update-traffic monolenz-web-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --to-tags ${{ env.CANDIDATE_TAG }}=100
+
+      - name: Clear Web candidate tag
+        if: steps.check-web-service.outputs.exists == 'true'
+        run: |
+          gcloud run services update-traffic monolenz-web-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --clear-tags \
+            --to-latest
+
+      - name: Clean up old revisions
+        run: |
+          # Keep only the latest 2 revisions for staging
+          gcloud run revisions list \
+            --service monolenz-web-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --filter="NOT traffic.percent:0" \
+            --sort-by="~metadata.creationTimestamp" \
+            --format="value(metadata.name)" \
+            --limit=10 | tail -n +3 | while read revision; do
+              if [ ! -z "$revision" ]; then
+                echo "Deleting old revision: $revision"
+                gcloud run revisions delete $revision \
+                  --platform managed \
+                  --region ${{ env.REGION }} \
+                  --quiet
+              fi
+            done
+
+  deploy-api:
+    needs: [changes, build-and-test]
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }}
+
+      - name: Build API Docker image
+        run: |
+          docker build \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }} \
+            -f Dockerfile.api .
+
+      - name: Push API Docker image
+        run: docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }}
+
+      - name: Deploy API to Cloud Run
+        id: deploy-api
+        run: |
+          gcloud run deploy monolenz-api-staging \
+            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-api-staging:${{ github.sha }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --port 8080 \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 5 \
+            --cpu-boost \
+            --no-traffic \
+            --tag ${{ env.CANDIDATE_TAG }} \
+            --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
+            --set-env-vars="NODE_ENV=staging,ALLOWED_ORIGINS=https://stage.monolenz.com" \
+            --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_URL=SUPABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,SUPABASE_ANON_KEY=SUPABASE_ANON_KEY:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
+
+      - name: Capture API container logs on failure
+        if: failure() && steps.deploy-api.outcome == 'failure'
+        run: |
+          echo "=== Cloud Run container logs (last 5 minutes) ==="
+          gcloud run services logs read monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --limit 100 \
+            --freshness 5m || echo "Could not retrieve logs"
+
+      - name: Health check API candidate
+        id: health-check-api
+        run: |
+          CANDIDATE_URL=$(gcloud run services describe monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format json \
+            | jq -r ".status.traffic[] | select(.tag==\"${{ env.CANDIDATE_TAG }}\") | .url")
+
+          echo "candidate_url=${CANDIDATE_URL}" >> $GITHUB_OUTPUT
+          echo "Testing candidate revision: $CANDIDATE_URL"
+
+          for i in {1..30}; do
+            if curl -sf "$CANDIDATE_URL/health" > /dev/null 2>&1; then
+              echo "Health check passed on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 10 seconds..."
+            sleep 10
+          done
+          echo "Health check failed after 5 minutes"
+          exit 1
+
+      - name: Capture API container logs on health-check failure
+        if: failure() && steps.health-check-api.outcome == 'failure'
+        run: |
+          echo "=== Cloud Run container logs (last 5 minutes) ==="
+          gcloud run services logs read monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --limit 100 \
+            --freshness 5m || echo "Could not retrieve logs"
+
+      - name: Switch API traffic to new revision
+        run: |
+          gcloud run services update-traffic monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --to-tags ${{ env.CANDIDATE_TAG }}=100
+
+      - name: Clear API candidate tag
+        run: |
+          gcloud run services update-traffic monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --clear-tags \
+            --to-latest
+
+      - name: Clean up old revisions
+        run: |
+          # Keep only the latest 2 revisions for staging
+          gcloud run revisions list \
+            --service monolenz-api-staging \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --filter="NOT traffic.percent:0" \
+            --sort-by="~metadata.creationTimestamp" \
+            --format="value(metadata.name)" \
+            --limit=10 | tail -n +3 | while read revision; do
+              if [ ! -z "$revision" ]; then
+                echo "Deleting old revision: $revision"
+                gcloud run revisions delete $revision \
+                  --platform managed \
+                  --region ${{ env.REGION }} \
+                  --quiet
+              fi
+            done
+
+  notify:
+    needs: [deploy-web, deploy-api]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify deployment status
+        run: |
+          if [ "${{ needs.deploy-web.result }}" != "failure" ] && \
+             [ "${{ needs.deploy-web.result }}" != "cancelled" ] && \
+             [ "${{ needs.deploy-api.result }}" != "failure" ] && \
+             [ "${{ needs.deploy-api.result }}" != "cancelled" ]; then
+            echo "✅ Staging deployment successful!"
+          else
+            echo "❌ Staging deployment failed!"
+            exit 1
+          fi

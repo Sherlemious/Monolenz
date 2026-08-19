@@ -1,0 +1,13 @@
+{
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "cSpell.words": [
+    "monolenz"
+  ],
+  "chat.tools.terminal.autoApprove": {
+    "pnpm": true
+  }
+}

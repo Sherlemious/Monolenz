@@ -1,0 +1,24 @@
+{
+  "name": "monolenz",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "build:without-db": "turbo run build:without-db",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-path .prettierignore",
+    "check-types": "turbo run check-types",
+    "clean": "turbo run clean",
+    "pre-commit": "pnpm format && pnpm lint && pnpm check-types"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.4",
+    "turbo": "^2.7.2",
+    "typescript": "5.8.3"
+  },
+  "packageManager": "pnpm@10.14.0",
+  "engines": {
+    "node": ">=18"
+  }
+}

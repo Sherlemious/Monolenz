@@ -1,0 +1,68 @@
+meta {
+  name: Search Profiles
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{v1link}}/profiles/search
+  body: none
+  auth: none
+}
+
+params:query {
+  ~search: developer
+  ~query: developer
+  ~page: 1
+  ~limit: 10
+  ~sort: created_at
+  ~order: desc
+}
+
+docs {
+  # Search Profiles
+  
+  Search and filter profiles. Authentication is optional but may provide
+  better results (e.g., seeing more profile details).
+  
+  ## Query Parameters
+  
+  | Parameter | Type | Default | Description |
+  |-----------|------|---------|-------------|
+  | `search` | string | - | Search query (searches username, bio) |
+  | `query` | string | - | Alias for `search` |
+  | `page` | number | 1 | Page number for pagination |
+  | `limit` | number | 10 | Results per page (max 100) |
+  | `sort` | string | - | Field to sort by |
+  | `order` | string | asc | Sort order: `asc` or `desc` |
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "success": true,
+    "message": "Profiles retrieved successfully",
+    "data": [
+      {
+        "id": "uuid-1",
+        "username": "johndoe",
+        "bio": "Full-stack developer..."
+      },
+      {
+        "id": "uuid-2",
+        "username": "janedoe",
+        "bio": "Frontend developer..."
+      }
+    ],
+    "meta": {
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 42,
+        "totalPages": 5,
+        "hasNext": true,
+        "hasPrevious": false
+      }
+    }
+  }
+  ```
+}

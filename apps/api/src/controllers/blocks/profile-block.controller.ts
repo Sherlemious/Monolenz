@@ -1,0 +1,131 @@
+/**
+ * ProfileBlockController - HTTP handlers for block operations
+ */
+
+import { asyncHandler } from '../../utils/async-handler';
+import { Request, Response } from 'express';
+import { ProfileBlockService } from '../../services/domain/profile-block.service';
+import { BlocksRepository } from '../../repositories/blocks/blocks.repository';
+import { VersionsRepository } from '../../repositories/profile/versions.repository';
+import { VersionBlocksRepository } from '../../repositories/profile/version-blocks.repository';
+import { ProfileRepository } from '../../repositories/profile/profile';
+import { prisma } from '../../config/prisma';
+import { ServiceContext } from '../../services/base.service';
+import { BlockType } from '@monolenz/types/entities/blocks';
+import { HTTP_STATUS_CODES } from '@monolenz/types/api';
+
+class ProfileBlockController {
+  private blockService: ProfileBlockService;
+  private profileRepository: ProfileRepository;
+
+  constructor() {
+    const blocksRepo = new BlocksRepository(prisma);
+    const versionsRepo = new VersionsRepository(prisma);
+    const versionBlocksRepo = new VersionBlocksRepository(prisma);
+    this.blockService = new ProfileBlockService(blocksRepo, versionsRepo, versionBlocksRepo, prisma);
+    this.profileRepository = new ProfileRepository(prisma);
+  }
+
+  /**
+   * Apply batch version update (creations, updates, deletions)
+   */
+  applyVersionUpdate = asyncHandler(async (req: Request, res: Response) => {
+    const context: ServiceContext = {
+      userId: req.userId,
+      requestId: req.requestId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    };
+
+    const { creations, updates, deletions } = req.validatedBody;
+
+    const result = await this.blockService.applyVersionUpdate(
+      {
+        profileId: req.userId!,
+        creations: creations.map((c: any) => ({
+          blockType: c.block_type,
+          data: c.data,
+          sectionName: c.section_name,
+          sortOrder: c.sort_order,
+          isVisible: c.is_visible,
+        })),
+        updates: updates.map((u: any) => ({
+          parentBlockId: u.parent_block_id,
+          blockType: u.block_type,
+          data: u.data,
+          sectionName: u.section_name,
+          sortOrder: u.sort_order,
+          isVisible: u.is_visible,
+        })),
+        deletions,
+      },
+      context
+    );
+
+    return res.success(result, 'Version updated successfully');
+  });
+
+  /**
+   * List blocks for a specific version
+   */
+  listBlocksForVersion = asyncHandler(async (req: Request, res: Response) => {
+    const { versionId, identifier } = req.validatedParams;
+    const { section_name, block_type } = req.validatedQuery || {};
+
+    const profileId = await this.resolveProfileIdentifier(identifier, req.userId);
+    if (!profileId) {
+      return res.error('Profile not found', HTTP_STATUS_CODES.NOT_FOUND);
+    }
+
+    await this.blockService.assertVersionBelongsToProfile(versionId, profileId);
+
+    const isOwner = Boolean(req.userId && req.userId === profileId);
+    const blocks = await this.blockService.listBlocksForVersion(versionId, {
+      sectionName: section_name,
+      blockType: block_type as BlockType | undefined,
+      publicOnly: !isOwner,
+    });
+
+    return res.success(blocks, 'Blocks retrieved successfully');
+  });
+
+  /**
+   * Get latest version for a profile (public or authenticated)
+   */
+  getLatestVersion = asyncHandler(async (req: Request, res: Response) => {
+    const { identifier } = req.validatedParams;
+
+    // Resolve identifier (UUID or username) to profile_id
+    const profileId = await this.resolveProfileIdentifier(identifier, req.userId);
+
+    if (!profileId) {
+      return res.error('Profile not found', HTTP_STATUS_CODES.NOT_FOUND);
+    }
+
+    const version = await this.blockService.getLatestVersion(profileId);
+
+    if (!version) {
+      return res.error('No versions found for this profile', HTTP_STATUS_CODES.NOT_FOUND);
+    }
+
+    const isOwner = Boolean(req.userId && req.userId === profileId);
+    const blocks = await this.blockService.listBlocksForVersion(version.id, {
+      publicOnly: !isOwner,
+    });
+
+    return res.success({ version, blocks }, 'Latest version retrieved');
+  });
+
+  /**
+   * Resolve profile identifier (UUID or username) to profile_id
+   */
+  private async resolveProfileIdentifier(identifier: string, userId?: string): Promise<string | null> {
+    if (identifier === 'me') {
+      return userId || null;
+    }
+    const profile = await this.profileRepository.findByIdentifier(identifier);
+    return profile?.id || null;
+  }
+}
+
+export const profileBlockController = new ProfileBlockController();
