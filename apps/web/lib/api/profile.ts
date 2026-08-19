@@ -159,6 +159,25 @@ export function createProfileApi(client: ApiClient) {
     },
 
     /**
+     * Request a presigned S3 PUT URL for uploading a profile avatar.
+     * After a successful PUT to uploadUrl, call updateProfile({ profile_picture_url: objectUrl }).
+     */
+    async requestAvatarUploadUrl(params: {
+      contentType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif';
+      fileSize: number;
+    }): Promise<{ uploadUrl: string; objectUrl: string }> {
+      const qs = new URLSearchParams({
+        contentType: params.contentType,
+        fileSize: String(params.fileSize),
+      });
+      const response = await client.get<ApiResponse<{ uploadUrl: string; objectUrl: string }>>(
+        `${BASE_PATH}/me/avatar/upload-url?${qs}`
+      );
+      if (!response.data) throw new Error('No upload URL returned');
+      return response.data;
+    },
+
+    /**
      * Get the latest version and blocks for a profile
      */
     async getLatestVersion(

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { validateUsername, isUsernameValidForChecking, USERNAME_MAX_LENGTH } from '@/lib/validation/username';
 import { THEMES, getTheme } from '@/lib/themes';
+import { AvatarUploader } from './AvatarUploader';
 
 // ============================================================================
 // Types
@@ -138,7 +139,7 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
       errs.bio = 'Bio must be less than 500 characters';
     }
 
-    const urlFields: (keyof FormData)[] = ['profile_picture_url', 'linkedin_url', 'github_url', 'portfolio_url'];
+    const urlFields: (keyof FormData)[] = ['linkedin_url', 'github_url', 'portfolio_url'];
     for (const field of urlFields) {
       const val = data[field];
       if (val && val.trim()) {
@@ -306,18 +307,15 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
           {errors.bio && <p className='text-xs text-destructive'>{errors.bio}</p>}
         </div>
 
-        {/* Profile Picture URL */}
+        {/* Profile Picture */}
         <div className='space-y-1.5'>
-          <Label htmlFor='profile_picture_url'>Profile Picture URL</Label>
-          <Input
-            id='profile_picture_url'
-            type='url'
-            value={formData.profile_picture_url}
-            onChange={(e) => handleChange('profile_picture_url', e.target.value)}
-            placeholder='https://example.com/photo.jpg'
-            aria-invalid={!!errors.profile_picture_url}
+          <Label>Profile Picture</Label>
+          <AvatarUploader
+            currentUrl={formData.profile_picture_url || undefined}
+            fallback={formData.username?.[0]?.toUpperCase()}
+            api={api}
+            onUploaded={(newUrl) => setFormData((prev) => ({ ...prev, profile_picture_url: newUrl }))}
           />
-          {errors.profile_picture_url && <p className='text-xs text-destructive'>{errors.profile_picture_url}</p>}
         </div>
 
         <div className='text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-2 pb-2 border-b'>

@@ -68,6 +68,20 @@ router.post(
 
 router.get('/me', profileController.getMyProfile);
 
+router.get(
+  '/me/avatar/upload-url',
+  validate({
+    query: z.object({
+      contentType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+      fileSize: z
+        .string()
+        .transform(Number)
+        .pipe(z.number().int().positive().max(5 * 1024 * 1024, 'File size must not exceed 5 MB')),
+    }),
+  }),
+  profileController.requestAvatarUploadUrl
+);
+
 router.put(
   '/me',
   validate({
