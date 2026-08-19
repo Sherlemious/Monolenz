@@ -161,7 +161,7 @@ async function checkCache(): Promise<{ status: string; responseTime: number }> {
 
 async function checkExternalDependencies(): Promise<Record<string, any>> {
   return {
-    supabase: { status: 'OK', responseTime: 0 },
+    neon: { status: 'OK', responseTime: 0 },
     // Add other external service checks
   };
 }

@@ -1,25 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { supabaseAuth } from '../config/supabase';
 import { HTTP_STATUS_CODES } from '@monolenz/types';
 import { Logger } from '../utils/logger';
+import { verifyAuthToken } from '../config/auth';
 
 const logger = new Logger('AuthMiddleware');
 
-// Authentication middleware
+function readBearer(req: Request): string | null {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  const token = authHeader.slice('Bearer '.length).trim();
+  return token || null;
+}
+
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
-        success: false,
-        message: 'Authentication required',
-        errors: [{ field: 'authorization', message: 'Bearer token required' }],
-      });
-    }
-
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = readBearer(req);
     if (!token) {
       return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
         success: false,
@@ -28,13 +24,8 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       });
     }
 
-    // Verify token with Supabase
-    const {
-      data: { user },
-      error,
-    } = await supabaseAuth.auth.getUser(token);
-
-    if (error || !user) {
+    const user = await verifyAuthToken(token);
+    if (!user) {
       return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
         success: false,
         message: 'Invalid or expired token',
@@ -42,20 +33,9 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       });
     }
 
-    // Check if user is active
-    if (!user.email_confirmed_at) {
-      return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
-        success: false,
-        message: 'Email not confirmed',
-        errors: [{ field: 'email', message: 'Please confirm your email address' }],
-      });
-    }
-
-    // Attach user info to request
     req.user = user;
     req.userId = user.id;
-    req.userRole = user.app_metadata?.role || 'user';
-
+    req.userRole = user.role;
     next();
   } catch (error) {
     logger.error('Authentication error', { error: error as Error });
@@ -67,35 +47,24 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-// Optional authentication (doesn't fail if no token)
 export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = readBearer(req);
+    if (!token) return next();
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return next(); // Continue without authentication
-    }
-
-    const token = authHeader.substring(7);
-    const {
-      data: { user },
-      error,
-    } = await supabaseAuth.auth.getUser(token);
-
-    if (!error && user && user.email_confirmed_at) {
+    const user = await verifyAuthToken(token);
+    if (user) {
       req.user = user;
       req.userId = user.id;
-      req.userRole = user.app_metadata?.role || 'user';
+      req.userRole = user.role;
     }
-
     next();
   } catch (error) {
     logger.error('Optional authentication error', { error: error as Error });
-    next(); // Continue without authentication on error
+    next();
   }
 };
 
-// Role-based authorization
 export const authorize = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !req.userRole) {
@@ -123,7 +92,6 @@ export const authorize = (allowedRoles: string[]) => {
   };
 };
 
-// Resource ownership authorization
 export const authorizeOwnership = (resourceIdParam: string = 'id') => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !req.userId) {
@@ -137,7 +105,6 @@ export const authorizeOwnership = (resourceIdParam: string = 'id') => {
     const resourceId = req.params[resourceIdParam];
     const userId = req.userId;
 
-    // Allow if user is admin or owns the resource
     if (req.userRole === 'admin' || resourceId === userId) {
       return next();
     }
@@ -150,7 +117,6 @@ export const authorizeOwnership = (resourceIdParam: string = 'id') => {
   };
 };
 
-// API key authentication (for service-to-service calls)
 export const authenticateApiKey = (req: Request, res: Response, next: NextFunction) => {
   const apiKey = req.headers['x-api-key'] as string;
   const expectedApiKey = process.env.API_KEY;
@@ -178,10 +144,8 @@ export const authenticateApiKey = (req: Request, res: Response, next: NextFuncti
   next();
 };
 
-// Activity logging middleware
 export const logActivity = (action: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    // Store activity info for logging after response
     res.locals.activity = {
       action,
       userId: req.userId,

@@ -31,6 +31,9 @@ export default [
         require: 'readonly',
         exports: 'readonly',
         URL: 'readonly',
+        fetch: 'readonly',
+        TextEncoder: 'readonly',
+        Uint8Array: 'readonly',
       },
     },
     plugins: {

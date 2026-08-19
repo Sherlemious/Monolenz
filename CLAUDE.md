@@ -27,7 +27,7 @@ pnpm lint             # eslint src/
 pnpm check-types      # tsc --noEmit
 pnpm db:generate      # prisma generate
 pnpm db:push          # prisma db push
-pnpm db:pull          # prisma db pull
+pnpm db:migrate       # prisma migrate deploy
 ```
 
 ### Web (`apps/web`)
@@ -71,7 +71,7 @@ packages/eslint-config, typescript-config, shared
 
 **Middleware stack (in order):** Helmet, CORS, compression, Morgan, body parser, rate limiter, `preprocessRequest` (adds `req.pagination`, `req.search`, `req.filters`), `formatResponse` (adds `res.success()`, `res.error()`, `res.paginated()`), routes, 404 handler, `handleErrors`.
 
-**Auth middleware** (`src/middleware/auth.ts`): `authenticate` (requires Bearer JWT verified via Supabase), `optionalAuth`, `authorize(roles)`, `authorizeOwnership(param)`.
+**Auth middleware** (`src/middleware/auth.ts`): `authenticate` (requires Bearer JWT signed with `AUTH_SECRET`), `optionalAuth`, `authorize(roles)`, `authorizeOwnership(param)`.
 
 **Route structure:**
 
@@ -88,7 +88,7 @@ GET  /health
 
 **Repository pattern:** `src/repositories/base.repository.ts` provides base CRUD. Block repositories follow a factory pattern in `src/repositories/blocks/`. Services in `src/services/` contain domain logic; controllers in `src/controllers/` handle HTTP only.
 
-**DB:** PostgreSQL via Prisma, multi-schema (`auth` + `public`). Versions are immutable — edits always create a new version via the batch update endpoint. `blocks` table deduplicates by `content_hash`.
+**DB:** Neon PostgreSQL via Prisma. Users, sessions tokens, profiles, and blocks all live in the same database. Versions are immutable — edits always create a new version via the batch update endpoint. `blocks` table deduplicates by `content_hash`.
 
 ### Web (`apps/web`)
 
@@ -105,7 +105,7 @@ const client = useApiClient();
 const profileApi = useMemo(() => createProfileApi(client), [client]);
 ```
 
-`useApiClient()` (`lib/hooks/useApiClient.ts`) calls `createBrowserApiClient()` which injects the Supabase session token automatically. For server components, use `lib/api/server.ts`.
+`useApiClient()` (`lib/hooks/useApiClient.ts`) calls `createBrowserApiClient()` which reads the JWT from the httpOnly session cookie via `/api/auth/session`. For server components, use `lib/api/server.ts`.
 
 **State management:** Zustand + immer in `lib/stores/profile-editor-store.ts`. The store tracks `DraftBlock[]` with statuses `unchanged | created | modified | deleted`. `getChangeset()` returns the diff for the batch update payload. Key selectors: `useSelectedBlock()`, `useVisibleBlocks()`, `useBlocksByCategory()`, `useHasUnsavedChanges()`.
 
@@ -134,6 +134,6 @@ When editing `packages/types`, run `pnpm dev` there (or `pnpm build`) before the
 
 - **No `del` method** — `ApiClient` uses `delete` (renamed from `del`).
 - **Versioning is immutable** — never mutate a version; always create a new one via `POST /api/v1/profiles/me/versions`.
-- **Supabase auth** — browser: `utils/supabase/client.ts`; server (RSC/route handlers): `utils/supabase/server.ts`; middleware: `utils/supabase/middleware.ts`.
+- **Auth** — email/password against Neon `users`; JWT cookie `ml_session`; API verifies with `AUTH_SECRET`.
 - **Styling** — Tailwind v4 + shadcn/ui components (`Button`, `Card`, `Input`, `Label`, `Badge` etc. from `@/components/ui/`).
 - **Path alias** — `@/` maps to `apps/web/` root.

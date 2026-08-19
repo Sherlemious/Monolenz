@@ -1,13 +1,11 @@
-import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client';
 import { createApiClientWithTokenProvider } from './common';
 export type { ApiClient } from './common';
 
 export function createBrowserApiClient(baseInit?: RequestInit) {
-  const supabase = createSupabaseBrowserClient();
   return createApiClientWithTokenProvider(async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    return session?.access_token;
+    const res = await fetch('/api/auth/session', { cache: 'no-store' });
+    if (!res.ok) return undefined;
+    const data = (await res.json()) as { token?: string };
+    return data.token;
   }, baseInit);
 }
