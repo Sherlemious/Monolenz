@@ -2,7 +2,7 @@
 const nextConfig = {
   // Enable standalone output for Docker/Cloud Run deployment
   // Disabled on Windows due to symlink permission issues - re-enable in CI/CD
-  output: process.env.CI ? 'standalone' : undefined,
+  output: process.env.VERCEL ? undefined : process.env.CI ? 'standalone' : undefined,
 
   // Optimize for production
   poweredByHeader: false,

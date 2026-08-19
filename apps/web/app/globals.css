@@ -296,6 +296,17 @@ body {
   }
 }
 
+@media print {
+  header,
+  footer {
+    box-shadow: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+}
+
 /* ── Grid pattern backdrop ── */
 .grid-pattern {
   width: 100vw;

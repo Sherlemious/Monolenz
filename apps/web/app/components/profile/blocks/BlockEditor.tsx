@@ -35,6 +35,7 @@ import {
   Check,
   ArrowLeft,
   ChevronRight,
+  EyeOff,
 } from 'lucide-react';
 
 // ============================================================================
@@ -662,6 +663,12 @@ function ItemCard({ item, meta, onClick, onDelete }: ItemCardProps) {
               {item.status === 'created' ? 'new' : 'edited'}
             </Badge>
           )}
+          {!item.isVisible && (
+            <Badge variant='secondary' className='text-[10px] px-1.5 py-0 h-4 shrink-0 gap-1'>
+              <EyeOff className='size-2.5' />
+              hidden
+            </Badge>
+          )}
           {hasErrors && (
             <Badge variant='destructive' className='text-[10px] px-1.5 py-0 h-4 shrink-0'>
               needs fix
@@ -707,6 +714,7 @@ interface ItemEditViewProps {
 function ItemEditView({ block, meta, onBack, onDelete }: ItemEditViewProps) {
   const summary = getItemSummary(block);
   const Icon = meta.icon;
+  const setBlockVisible = useProfileEditorStore((s) => s.setBlockVisible);
 
   return (
     <div className='p-6 max-w-2xl'>
@@ -745,6 +753,21 @@ function ItemEditView({ block, meta, onBack, onDelete }: ItemEditViewProps) {
           Delete
         </Button>
       </div>
+
+      <label className='flex items-center gap-3 mb-6 rounded-xl border bg-card px-4 py-3 cursor-pointer'>
+        <input
+          type='checkbox'
+          className='size-4 accent-primary'
+          checked={block.isVisible}
+          onChange={(e) => setBlockVisible(block.clientId, e.target.checked)}
+        />
+        <span className='text-sm'>
+          <span className='font-medium'>Show on public profile</span>
+          <span className='block text-xs text-muted-foreground'>
+            Hidden entries stay in your editor but not on /username
+          </span>
+        </span>
+      </label>
 
       {/* Form fields */}
       <BlockFormFields block={block} />

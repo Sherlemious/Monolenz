@@ -29,21 +29,21 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: 'Monolenz — Your Career\'s Source of Truth',
+  title: "Monolenz — Your Career's Source of Truth",
   description:
-    'Build one master profile, generate tailored resumes, share a live portfolio, and track applications — all perfectly synchronised.',
+    'Build one professional profile, share a live public page, hide what you want private, and print a resume as PDF.',
   icons: {
     icon: '/icon.svg',
     apple: '/logos/icon/apple-touch-icon.svg',
   },
   openGraph: {
     title: 'Monolenz',
-    description: 'Your career\'s source of truth.',
+    description: "Your career's source of truth.",
     images: [{ url: '/logos/social/og-image.svg' }],
     type: 'website',
   },
   themeColor: [
-    { media: '(prefers-color-scheme: dark)',  color: '#0f172a' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
     { media: '(prefers-color-scheme: light)', color: '#fafaf9' },
   ],
 };

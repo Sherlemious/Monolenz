@@ -138,6 +138,7 @@ export type TypedBlock = BlockEntity &
   TypedBlockData & {
     section_name?: string | null;
     sort_order?: number;
+    is_visible?: boolean | null;
   };
 
 // ============================================================================
@@ -191,6 +192,7 @@ export interface BatchUpdateCreation {
     | AwardData;
   section_name?: string | null;
   sort_order?: number | null;
+  is_visible?: boolean;
 }
 
 export interface BatchUpdateUpdate {
@@ -207,6 +209,7 @@ export interface BatchUpdateUpdate {
     | AwardData;
   section_name?: string | null;
   sort_order?: number | null;
+  is_visible?: boolean;
 }
 
 export interface BatchUpdatePayload {
@@ -233,6 +236,8 @@ export interface DraftBlock {
   originalData?: Record<string, unknown>;
   sectionName?: string | null;
   sortOrder: number;
+  isVisible: boolean;
+  originalIsVisible: boolean;
   status: DraftBlockStatus;
   errors?: Record<string, string>;
 }

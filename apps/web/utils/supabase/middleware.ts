@@ -52,12 +52,20 @@ export async function updateSession(request: NextRequest) {
     });
   }
 
-  // Only protect dashboard routes — everything else is public
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard');
+  // Protect dashboard; send signed-in users away from auth pages
+  const pathname = request.nextUrl.pathname;
+  const isProtectedRoute = pathname.startsWith('/dashboard');
+  const isAuthPage = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password';
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
+  if (user && isAuthPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 

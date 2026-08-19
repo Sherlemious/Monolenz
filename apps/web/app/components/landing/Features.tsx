@@ -1,41 +1,40 @@
 'use client';
 
 import React from 'react';
-import { Check, GitBranch, Layers, FileText, Globe, BarChart3, History } from 'lucide-react';
+import { Check, GitBranch, Layers, FileText, Globe, EyeOff, Palette } from 'lucide-react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const bullets = [
   {
-    title: 'Single Source of Truth',
+    title: 'Single source of truth',
     description:
-      'Build one comprehensive profile with 18+ content blocks: work, education, projects, publications, skills, and more.',
+      'One profile with eight content types: work, education, skills, projects, certifications, languages, volunteer work, and awards.',
     icon: Layers,
   },
   {
-    title: 'Write Once, Tailor Everywhere',
-    description:
-      'Generate role-specific resumes, live portfolios (monolenz.com/username), and keep applications in sync—without duplication.',
-    icon: FileText,
-  },
-  {
-    title: 'Version Control for Careers',
-    description: 'Full version history like git—compare, branch, and evolve your professional story with confidence.',
-    icon: History,
-  },
-  {
-    title: 'Application Tracking & Insights',
-    description: 'Track submissions, statuses, and performance metrics from one place. Know what works.',
-    icon: BarChart3,
-  },
-  {
-    title: 'Live Portfolio',
-    description: 'Share a living profile at monolenz.com/username that updates the moment your data does.',
+    title: 'Live portfolio URL',
+    description: 'Share a public page at /your-username. Updates go live when you save.',
     icon: Globe,
   },
   {
-    title: 'Future: Pro Tools',
+    title: 'Printable resume',
+    description: 'Open your public page and save a PDF from the browser. No separate resume file to keep in sync.',
+    icon: FileText,
+  },
+  {
+    title: 'Hide what you want private',
+    description: 'Keep entries in your editor and hide them from the public page until you are ready to show them.',
+    icon: EyeOff,
+  },
+  {
+    title: 'Themes',
+    description: 'Five built-in themes so your public page can match the tone you want.',
+    icon: Palette,
+  },
+  {
+    title: 'On the roadmap',
     description:
-      'Multiple portfolios, client testimonial verification, and more premium capabilities are on the roadmap.',
+      'ATS-tailored resumes, application tracking, and richer version history are planned — not shipped yet.',
     icon: GitBranch,
   },
 ];
@@ -50,7 +49,8 @@ const FeaturesSection: React.FC = () => {
           </div>
           <h2 className='text-3xl md:text-4xl font-bold tracking-tight'>Everything in one evolving profile</h2>
           <p className='text-muted-foreground max-w-2xl mx-auto mt-3'>
-            MonoLenz isn&apos;t just another CV maker—it&apos;s your central professional identity hub.
+            Monolenz is a professional identity hub: write your story once, publish it, and print it when you need a
+            resume.
           </p>
         </div>
 
@@ -70,13 +70,13 @@ const FeaturesSection: React.FC = () => {
 
         <div className='mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-fg-muted'>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-accent-ml' /> 18+ content blocks
+            <Check className='size-4 text-accent-ml' /> 8 content types
           </div>
           <div className='inline-flex items-center gap-2'>
             <Check className='size-4 text-success' /> Live portfolio URL
           </div>
           <div className='inline-flex items-center gap-2'>
-            <Check className='size-4 text-info' /> Infinite versions
+            <Check className='size-4 text-info' /> Print to PDF
           </div>
         </div>
       </div>

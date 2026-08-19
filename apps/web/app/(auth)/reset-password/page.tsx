@@ -3,30 +3,30 @@
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
-import { login, type AuthActionState } from '@/app/(auth)/actions';
+import { updatePassword, type AuthActionState } from '@/app/(auth)/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type='submit' disabled={pending} className='mt-2 w-full'>
-      {pending ? 'Signing in...' : label}
+      {pending ? 'Updating...' : 'Update password'}
     </Button>
   );
 }
 
 const initialState: AuthActionState = {};
 
-export default function LoginForm() {
-  const [state, formAction] = useActionState(login, initialState);
+export default function ResetPasswordPage() {
+  const [state, formAction] = useActionState(updatePassword, initialState);
 
   return (
     <Card className='w-full max-w-xs sm:max-w-sm md:max-w-md rounded-lg md:rounded-xl shadow-sm md:shadow-md py-0 gap-0'>
       <CardHeader className='text-center border-b px-6 sm:px-8 md:px-10 py-5 sm:py-6'>
-        <CardTitle className='text-lg sm:text-xl md:text-2xl tracking-tight leading-tight'>Sign in</CardTitle>
-        <CardDescription>Welcome back</CardDescription>
+        <CardTitle className='text-lg sm:text-xl md:text-2xl tracking-tight leading-tight'>New password</CardTitle>
+        <CardDescription>Choose a password for your account</CardDescription>
       </CardHeader>
       <CardContent className='px-6 sm:px-8 md:px-10 pt-5 sm:pt-6 pb-6 sm:pb-8'>
         {state?.error && (
@@ -40,26 +40,31 @@ export default function LoginForm() {
 
         <form action={formAction} className='grid gap-4 sm:gap-6'>
           <div className='grid gap-2'>
-            <Label htmlFor='email'>Email</Label>
-            <Input id='email' name='email' type='email' required className='h-10 sm:h-11 rounded-lg' />
+            <Label htmlFor='password'>Password</Label>
+            <Input
+              id='password'
+              name='password'
+              type='password'
+              minLength={8}
+              required
+              className='h-10 sm:h-11 rounded-lg'
+            />
           </div>
-
           <div className='grid gap-2'>
-            <div className='flex items-center justify-between'>
-              <Label htmlFor='password'>Password</Label>
-              <Link href='/forgot-password' className='text-xs text-muted-foreground underline'>
-                Forgot password?
-              </Link>
-            </div>
-            <Input id='password' name='password' type='password' required className='h-10 sm:h-11 rounded-lg' />
+            <Label htmlFor='confirmPassword'>Confirm password</Label>
+            <Input
+              id='confirmPassword'
+              name='confirmPassword'
+              type='password'
+              minLength={8}
+              required
+              className='h-10 sm:h-11 rounded-lg'
+            />
           </div>
-
-          <SubmitButton label='Sign in' />
-
+          <SubmitButton />
           <div className='mt-2 text-center text-xs text-muted-foreground'>
-            Don&apos;t have an account?{' '}
-            <Link href='/signup' className='text-foreground underline'>
-              Sign up
+            <Link href='/login' className='text-foreground underline'>
+              Back to sign in
             </Link>
           </div>
         </form>

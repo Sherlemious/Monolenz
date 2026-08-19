@@ -3,6 +3,8 @@
  * Centralized validation logic for username field
  */
 
+import { isReservedUsername } from '@monolenz/types/validation';
+
 export const USERNAME_MIN_LENGTH = 3;
 export const USERNAME_MAX_LENGTH = 50;
 export const USERNAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
@@ -22,6 +24,9 @@ export function validateUsername(username: string): string | null {
   if (!USERNAME_PATTERN.test(username)) {
     return 'Username can only contain letters, numbers, underscores, and hyphens';
   }
+  if (isReservedUsername(username)) {
+    return 'This username is reserved';
+  }
   return null;
 }
 
@@ -31,7 +36,7 @@ export function validateUsername(username: string): string | null {
  * @returns true if username meets minimum requirements for API check
  */
 export function isUsernameValidForChecking(username: string): boolean {
-  return username.length >= USERNAME_MIN_LENGTH && USERNAME_PATTERN.test(username);
+  return username.length >= USERNAME_MIN_LENGTH && USERNAME_PATTERN.test(username) && !isReservedUsername(username);
 }
 
 /**

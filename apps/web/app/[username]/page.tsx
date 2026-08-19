@@ -6,6 +6,11 @@ import type { Profile, VersionBlockDetail } from '@monolenz/types/entities';
 import { createServerApiClient } from '@/lib/api/server';
 import { createProfileApi } from '@/lib/api/profile';
 import { getTheme } from '@/lib/themes';
+import { ProfileToolbar } from './ProfileToolbar';
+
+function getSiteUrl(): string {
+  return (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
+}
 
 // ============================================================================
 // Metadata
@@ -25,9 +30,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Profile Not Found | Monolenz' };
   }
 
+  const title = `${profile.username} | Monolenz`;
+  const description = profile.bio ?? `${profile.username}'s professional profile on Monolenz`;
+  const siteUrl = getSiteUrl();
+  const url = siteUrl ? `${siteUrl}/${profile.username}` : undefined;
+
   return {
-    title: `${profile.username} | Monolenz`,
-    description: profile.bio ?? `${profile.username}'s professional profile on Monolenz`,
+    title,
+    description,
+    alternates: url ? { canonical: url } : undefined,
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
   };
 }
 
@@ -101,6 +123,7 @@ function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: Vers
                 <p className='text-sm text-muted-foreground mt-1.5 max-w-lg leading-relaxed'>{profile.bio}</p>
               )}
               <ProfileLinks profile={profile} />
+              <ProfileToolbar username={profile.username} />
             </div>
           </div>
         </div>

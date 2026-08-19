@@ -47,6 +47,7 @@ class ProfileBlockController {
           data: c.data,
           sectionName: c.section_name,
           sortOrder: c.sort_order,
+          isVisible: c.is_visible,
         })),
         updates: updates.map((u: any) => ({
           parentBlockId: u.parent_block_id,
@@ -54,6 +55,7 @@ class ProfileBlockController {
           data: u.data,
           sectionName: u.section_name,
           sortOrder: u.sort_order,
+          isVisible: u.is_visible,
         })),
         deletions,
       },
@@ -67,12 +69,21 @@ class ProfileBlockController {
    * List blocks for a specific version
    */
   listBlocksForVersion = asyncHandler(async (req: Request, res: Response) => {
-    const { versionId } = req.validatedParams;
+    const { versionId, identifier } = req.validatedParams;
     const { section_name, block_type } = req.validatedQuery || {};
 
+    const profileId = await this.resolveProfileIdentifier(identifier, req.userId);
+    if (!profileId) {
+      return res.error('Profile not found', HTTP_STATUS_CODES.NOT_FOUND);
+    }
+
+    await this.blockService.assertVersionBelongsToProfile(versionId, profileId);
+
+    const isOwner = Boolean(req.userId && req.userId === profileId);
     const blocks = await this.blockService.listBlocksForVersion(versionId, {
       sectionName: section_name,
       blockType: block_type as BlockType | undefined,
+      publicOnly: !isOwner,
     });
 
     return res.success(blocks, 'Blocks retrieved successfully');
@@ -85,7 +96,7 @@ class ProfileBlockController {
     const { identifier } = req.validatedParams;
 
     // Resolve identifier (UUID or username) to profile_id
-    const profileId = await this.resolveProfileIdentifier(identifier);
+    const profileId = await this.resolveProfileIdentifier(identifier, req.userId);
 
     if (!profileId) {
       return res.error('Profile not found', HTTP_STATUS_CODES.NOT_FOUND);
@@ -97,7 +108,10 @@ class ProfileBlockController {
       return res.error('No versions found for this profile', HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    const blocks = await this.blockService.listBlocksForVersion(version.id);
+    const isOwner = Boolean(req.userId && req.userId === profileId);
+    const blocks = await this.blockService.listBlocksForVersion(version.id, {
+      publicOnly: !isOwner,
+    });
 
     return res.success({ version, blocks }, 'Latest version retrieved');
   });
@@ -105,7 +119,10 @@ class ProfileBlockController {
   /**
    * Resolve profile identifier (UUID or username) to profile_id
    */
-  private async resolveProfileIdentifier(identifier: string): Promise<string | null> {
+  private async resolveProfileIdentifier(identifier: string, userId?: string): Promise<string | null> {
+    if (identifier === 'me') {
+      return userId || null;
+    }
     const profile = await this.profileRepository.findByIdentifier(identifier);
     return profile?.id || null;
   }

@@ -63,6 +63,7 @@ interface EditorActions {
   reorderBlocks: (fromIndex: number, toIndex: number) => void;
   reorderBlocksInCategory: (orderedClientIds: string[]) => void;
   setBlockSection: (clientId: string, sectionName: string | null) => void;
+  setBlockVisible: (clientId: string, isVisible: boolean) => void;
 
   // Selection
   selectBlock: (clientId: string | null) => void;
@@ -177,6 +178,8 @@ export const useProfileEditorStore = create<EditorStore>()(
           originalData: undefined,
           sectionName: null,
           sortOrder: maxSortOrder + 1,
+          isVisible: true,
+          originalIsVisible: true,
           status: 'created',
           errors: {},
         };
@@ -311,6 +314,21 @@ export const useProfileEditorStore = create<EditorStore>()(
       });
     },
 
+    setBlockVisible: (clientId, isVisible) => {
+      set((state) => {
+        const block = state.draftBlocks.find((b) => b.clientId === clientId);
+        if (!block) return;
+
+        block.isVisible = isVisible;
+        if (block.status !== 'created' && block.status !== 'deleted') {
+          const dataChanged = hasDataChanged(block.originalData, block.data);
+          const visChanged = block.isVisible !== block.originalIsVisible;
+          block.status = dataChanged || visChanged ? 'modified' : 'unchanged';
+        }
+        state.isDirty = calculateIsDirty(state.draftBlocks);
+      });
+    },
+
     // ========================================================================
     // Selection
     // ========================================================================
@@ -375,6 +393,7 @@ export const useProfileEditorStore = create<EditorStore>()(
               data: block.data as unknown as BatchUpdateCreation['data'],
               section_name: block.sectionName,
               sort_order: block.sortOrder,
+              is_visible: block.isVisible,
             });
             break;
 
@@ -386,6 +405,7 @@ export const useProfileEditorStore = create<EditorStore>()(
                 data: block.data as unknown as BatchUpdateUpdate['data'],
                 section_name: block.sectionName,
                 sort_order: block.sortOrder,
+                is_visible: block.isVisible,
               });
             }
             break;
@@ -419,6 +439,7 @@ export const useProfileEditorStore = create<EditorStore>()(
 // ============================================================================
 
 function convertToDraft(block: VersionBlockDetail): DraftBlock {
+  const isVisible = block.is_visible !== false;
   return {
     clientId: `server-${block.id}`,
     serverId: block.id,
@@ -427,6 +448,8 @@ function convertToDraft(block: VersionBlockDetail): DraftBlock {
     originalData: { ...(block.data as unknown as Record<string, unknown>) },
     sectionName: block.section_name,
     sortOrder: block.sort_order ?? 0,
+    isVisible,
+    originalIsVisible: isVisible,
     status: 'unchanged',
     errors: {},
   };

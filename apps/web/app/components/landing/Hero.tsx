@@ -1,41 +1,42 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, FileText, Globe, Briefcase, BarChart3, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, FileText, Globe, Palette, History, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const outputs = [
-  {
-    id: 'resume',
-    title: 'Dynamic Resumes',
-    icon: FileText,
-    accent: 'var(--accent-color)',
-    description: 'Tailored for each application',
-    stats: '95% ATS pass rate',
-  },
   {
     id: 'portfolio',
     title: 'Live Portfolio',
     icon: Globe,
     accent: 'var(--info)',
-    description: 'monolenz.com/you',
-    stats: 'Real-time updates',
+    description: '/your-username',
+    stats: 'Share a public URL',
   },
   {
-    id: 'applications',
-    title: 'Application Tracker',
-    icon: Briefcase,
+    id: 'resume',
+    title: 'Printable Resume',
+    icon: FileText,
+    accent: 'var(--accent-color)',
+    description: 'Save as PDF from the browser',
+    stats: 'One profile, one print view',
+  },
+  {
+    id: 'versions',
+    title: 'Immutable Saves',
+    icon: History,
     accent: 'var(--success)',
-    description: 'Never lose track',
-    stats: 'All in one place',
+    description: 'Edits create a new snapshot',
+    stats: 'Git-style content blocks',
   },
   {
-    id: 'analytics',
-    title: 'Insights',
-    icon: BarChart3,
+    id: 'themes',
+    title: 'Themes',
+    icon: Palette,
     accent: 'var(--warning)',
-    description: 'Performance metrics',
-    stats: 'Track success',
+    description: 'Pick a look for your page',
+    stats: 'Five built-in themes',
   },
 ];
 
@@ -43,8 +44,8 @@ const contentBlocks = [
   { name: 'Experience', filled: true },
   { name: 'Education', filled: true },
   { name: 'Skills', filled: true },
-  { name: 'Projects', filled: false },
-  { name: 'Publications', filled: false },
+  { name: 'Projects', filled: true },
+  { name: 'Certifications', filled: false },
   { name: 'Awards', filled: false },
 ];
 
@@ -126,8 +127,8 @@ const HeroSection = () => {
           </h1>
 
           <p className='mx-auto max-w-2xl text-center text-fg-muted text-lg leading-relaxed'>
-            Stop managing scattered documents. Build your master profile once, then generate tailored resumes,
-            portfolios, and track applications — all perfectly synchronised.
+            Build one professional profile with experience, education, skills, and more. Share it at a public URL, hide
+            what you don&apos;t want shown, and print a resume when you need a PDF.
           </p>
         </div>
 
@@ -197,7 +198,7 @@ const HeroSection = () => {
                     <h3 className='text-[10px] font-mono uppercase tracking-[0.12em] text-fg-subtle mb-1'>
                       Content Blocks
                     </h3>
-                    <span className='text-[11px] text-fg-muted font-mono'>18+ sections</span>
+                    <span className='text-[11px] text-fg-muted font-mono'>8 sections</span>
                   </div>
 
                   <div className='flex flex-col gap-1.5'>
@@ -293,24 +294,26 @@ const HeroSection = () => {
 
         {/* CTA */}
         <div className='flex items-center justify-center gap-4 mt-4 flex-wrap'>
-          <Button size='lg' className='gap-3 px-8'>
-            <span>Start Building</span>
-            <ArrowRight className='w-4 h-4' />
+          <Button size='lg' className='gap-3 px-8' asChild>
+            <Link href='/signup'>
+              <span>Start Building</span>
+              <ArrowRight className='w-4 h-4' />
+            </Link>
           </Button>
-          <Button variant='outline' size='lg' className='px-8'>
-            See Examples
+          <Button variant='outline' size='lg' className='px-8' asChild>
+            <Link href='/#features'>How it works</Link>
           </Button>
         </div>
 
         {/* Metrics */}
         <div className='flex items-center justify-center gap-12 mt-16 text-sm text-fg-muted flex-wrap'>
           <div className='text-center'>
-            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>18+</div>
-            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Content Blocks</div>
+            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>8</div>
+            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Content Types</div>
           </div>
           <div className='text-center'>
-            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>∞</div>
-            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Versions</div>
+            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>1</div>
+            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Public URL</div>
           </div>
           <div className='text-center'>
             <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>1</div>

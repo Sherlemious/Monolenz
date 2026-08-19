@@ -19,6 +19,7 @@ interface CreateBlockInput {
   data: Record<string, unknown>;
   sectionName?: string | null;
   sortOrder?: number;
+  isVisible?: boolean;
 }
 
 interface UpdateBlockInput {
@@ -27,6 +28,7 @@ interface UpdateBlockInput {
   data: Record<string, unknown>;
   sectionName?: string | null;
   sortOrder?: number;
+  isVisible?: boolean;
 }
 
 interface ApplyVersionUpdateInput {
@@ -41,6 +43,7 @@ interface ProcessedBlock {
   previousBlockId?: number | null;
   sectionName?: string | null;
   sortOrder?: number;
+  isVisible?: boolean;
 }
 
 interface BlockToAttach extends ProcessedBlock {
@@ -121,7 +124,11 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
 
       // 2. Get latest version and current block IDs
       const latestVersion = await this.versionsRepo.getLatestVersionForProfile(input.profileId, tx);
-      const currentBlockIds = latestVersion ? await this.versionsRepo.listVersionBlockIds(latestVersion.id, tx) : [];
+      const currentBlocks = latestVersion
+        ? await this.versionBlocksRepo.listVersionBlocks(latestVersion.id, undefined, tx)
+        : [];
+      const currentBlockIds = currentBlocks.map((b) => b.block_id as number);
+      const currentMeta = new Map(currentBlocks.map((b) => [b.block_id as number, b]));
 
       // 3. Validate update parent blocks exist in current version
       for (const update of input.updates) {
@@ -148,6 +155,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
       // 6. Compute blocks to attach (carry-forward + new/updated, excluding deleted)
       const blocksToAttach = this.computeBlocksToAttach(
         currentBlockIds,
+        currentMeta,
         processedCreations,
         processedUpdates,
         input.deletions,
@@ -164,7 +172,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
             previous_version_id: block.previousVersionId ?? null,
             section_name: block.sectionName ?? null,
             sort_order: block.sortOrder ?? 0,
-            is_visible: true,
+            is_visible: block.isVisible ?? true,
           },
           tx
         );
@@ -179,11 +187,15 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
    */
   async listBlocksForVersion(
     versionId: number,
-    options?: { sectionName?: string; blockType?: BlockType }
+    options?: { sectionName?: string; blockType?: BlockType; publicOnly?: boolean }
   ): Promise<TypedBlock[]> {
     return (this.repository as BlocksRepository).withTransaction(async (tx) => {
       // 1. Get version_blocks with base block info
-      const versionBlocks = await this.versionBlocksRepo.listVersionBlocks(versionId, options, tx);
+      const versionBlocks = await this.versionBlocksRepo.listVersionBlocks(
+        versionId,
+        { sectionName: options?.sectionName, publicOnly: options?.publicOnly },
+        tx
+      );
 
       // 2. Group by block_type for batch fetching
       const blocksByType = new Map<BlockType, number[]>();
@@ -212,7 +224,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
       }
 
       // 5. Combine base + typed data into TypedBlock[]
-      return versionBlocks.map((vb) => {
+      const combined = versionBlocks.map((vb) => {
         const blockType = vb.block_type as BlockType;
         const typedData = typedDataMap.get(vb.block_id);
 
@@ -224,9 +236,23 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
           data: typedData,
           section_name: vb.section_name,
           sort_order: vb.sort_order,
+          is_visible: vb.is_visible,
+          version_id: vb.version_id,
         } as TypedBlock;
       });
+
+      if (options?.blockType) {
+        return combined.filter((b) => b.block_type === options.blockType);
+      }
+      return combined;
     });
+  }
+
+  async assertVersionBelongsToProfile(versionId: number, profileId: string): Promise<void> {
+    const version = await this.versionsRepo.getVersionById(versionId);
+    if (!version || version.profile_id !== profileId) {
+      throw new ServiceError('Version not found', null, 404);
+    }
   }
 
   /**
@@ -280,6 +306,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
         blockId: baseBlock.id,
         sectionName: creation.sectionName,
         sortOrder: creation.sortOrder,
+        isVisible: creation.isVisible ?? true,
       });
     }
 
@@ -327,6 +354,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
         previousBlockId: update.parentBlockId,
         sectionName: update.sectionName,
         sortOrder: update.sortOrder,
+        isVisible: update.isVisible ?? true,
       });
     }
 
@@ -335,6 +363,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
 
   private computeBlocksToAttach(
     currentBlockIds: number[],
+    currentMeta: Map<number, { section_name?: string | null; sort_order?: number | null; is_visible?: boolean | null }>,
     processedCreations: ProcessedBlock[],
     processedUpdates: ProcessedBlock[],
     deletions: number[],
@@ -348,10 +377,13 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
     // 1. Carry forward blocks from current version that aren't being updated/deleted
     for (const blockId of currentBlockIds) {
       if (!deletionSet.has(blockId) && !updatedBlockMap.has(blockId)) {
-        // Carry forward unchanged block
+        const meta = currentMeta.get(blockId);
         blocksToAttach.push({
           blockId,
           previousVersionId: latestVersionId,
+          sectionName: meta?.section_name ?? null,
+          sortOrder: meta?.sort_order ?? 0,
+          isVisible: meta?.is_visible ?? true,
         });
       }
     }
@@ -362,6 +394,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
         blockId: creation.blockId,
         sectionName: creation.sectionName,
         sortOrder: creation.sortOrder,
+        isVisible: creation.isVisible ?? true,
         previousVersionId: latestVersionId,
       });
     }
@@ -373,6 +406,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
         previousBlockId: update.previousBlockId,
         sectionName: update.sectionName,
         sortOrder: update.sortOrder,
+        isVisible: update.isVisible ?? true,
         previousVersionId: latestVersionId,
       });
     }
