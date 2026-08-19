@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { profileController } from '../../../controllers/profile';
 import { authenticate, optionalAuth } from '../../../middleware/auth';
 import { validate } from '../../../middleware/validation';
-import { profileSchemas } from '@monolenz/types/validation';
+import { profileSchemas, usernameSchema } from '@monolenz/types/validation';
 import { z } from 'zod';
 import profileBlockRouter from './blocks.routes';
 import { listPlatforms } from '../../../controllers/profile/profile';
@@ -46,11 +46,7 @@ router.get(
   optionalAuth,
   validate({
     params: z.object({
-      username: z
-        .string()
-        .min(3, 'Username must be at least 3 characters')
-        .max(50, 'Username must be less than 50 characters')
-        .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens'),
+      username: usernameSchema,
     }),
   }),
   profileController.checkUsername

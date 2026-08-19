@@ -192,48 +192,56 @@ export const createBlockSchema = z.discriminatedUnion('block_type', [
     data: workExperienceSchema,
     section_name: z.string().max(255).optional(),
     sort_order: z.number().int().min(0).optional(),
+    is_visible: z.boolean().optional(),
   }),
   z.object({
     block_type: z.literal(BlockType.EDUCATION),
     data: educationSchema,
     section_name: z.string().max(255).optional(),
     sort_order: z.number().int().min(0).optional(),
+    is_visible: z.boolean().optional(),
   }),
   z.object({
     block_type: z.literal(BlockType.SKILL),
     data: skillSchema,
     section_name: z.string().max(255).optional(),
     sort_order: z.number().int().min(0).optional(),
+    is_visible: z.boolean().optional(),
   }),
   z.object({
     block_type: z.literal(BlockType.PROJECT),
     data: projectSchema,
     section_name: z.string().max(255).optional(),
     sort_order: z.number().int().min(0).optional(),
+    is_visible: z.boolean().optional(),
   }),
   z.object({
     block_type: z.literal(BlockType.CERTIFICATION),
     data: certificationSchema,
     section_name: z.string().max(255).optional(),
     sort_order: z.number().int().min(0).optional(),
+    is_visible: z.boolean().optional(),
   }),
   z.object({
     block_type: z.literal(BlockType.LANGUAGE),
     data: languageSchema,
     section_name: z.string().max(255).optional(),
     sort_order: z.number().int().min(0).optional(),
+    is_visible: z.boolean().optional(),
   }),
   z.object({
     block_type: z.literal(BlockType.VOLUNTEER),
     data: volunteerSchema,
     section_name: z.string().max(255).optional(),
     sort_order: z.number().int().min(0).optional(),
+    is_visible: z.boolean().optional(),
   }),
   z.object({
     block_type: z.literal(BlockType.AWARD),
     data: awardSchema,
     section_name: z.string().max(255).optional(),
     sort_order: z.number().int().min(0).optional(),
+    is_visible: z.boolean().optional(),
   }),
 ]);
 
@@ -250,6 +258,7 @@ export const batchVersionUpdateSchema = z.object({
         data: z.any(),
         section_name: z.string().max(255).optional(),
         sort_order: z.number().int().min(0).optional(),
+        is_visible: z.boolean().optional(),
       })
     )
     .default([]),

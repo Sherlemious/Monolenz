@@ -5,13 +5,7 @@ import { cn } from '@/lib/utils';
  * Monolenz logomark only — no wordmark.
  * Renders mark-on-light in light mode and mark-on-dark in dark mode via CSS classes.
  */
-export function MonolenzMark({
-  className,
-  size = 28,
-}: {
-  className?: string;
-  size?: number;
-}) {
+export function MonolenzMark({ className, size = 28 }: { className?: string; size?: number }) {
   return (
     <>
       <Image
@@ -39,21 +33,11 @@ export function MonolenzMark({
  * Mark uses theme-aware SVG images (light/dark). Wordmark uses HTML text with CSS.
  * height prop controls the mark size; wordmark font scales proportionally.
  */
-export function MonolenzLockup({
-  className,
-  height = 28,
-}: {
-  className?: string;
-  height?: number;
-}) {
+export function MonolenzLockup({ className, height = 28 }: { className?: string; height?: number }) {
   const fontSize = Math.round(height * 0.625);
 
   return (
-    <span
-      className={cn('inline-flex items-center gap-3 shrink-0', className)}
-      aria-label='Monolenz'
-      role='img'
-    >
+    <span className={cn('inline-flex items-center gap-3 shrink-0', className)} aria-label='Monolenz' role='img'>
       <Image
         src='/logos/mark/mark-on-light.svg'
         alt=''

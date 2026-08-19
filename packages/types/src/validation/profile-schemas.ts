@@ -7,13 +7,48 @@ import { z } from 'zod';
 export const PROFILE_THEME_IDS = ['default', 'midnight', 'ocean', 'forest', 'sunset'] as const;
 export type ProfileThemeId = (typeof PROFILE_THEME_IDS)[number];
 
+export const RESERVED_USERNAMES = [
+  'login',
+  'signup',
+  'dashboard',
+  'health',
+  'ping',
+  'api',
+  'auth',
+  'error',
+  'admin',
+  'settings',
+  'forgot-password',
+  'reset-password',
+  'pricing',
+  'features',
+  'about',
+  'me',
+  'public',
+  'search',
+  'username',
+  'platforms',
+  'app',
+  'static',
+  'favicon',
+  'robots',
+  'sitemap',
+] as const;
+
+export function isReservedUsername(username: string): boolean {
+  return (RESERVED_USERNAMES as readonly string[]).includes(username.toLowerCase());
+}
+
+export const usernameSchema = z
+  .string()
+  .min(3, 'Username must be at least 3 characters')
+  .max(50, 'Username must be less than 50 characters')
+  .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens')
+  .refine((val) => !isReservedUsername(val), 'This username is reserved');
+
 // Base profile data validation
 export const profileDataSchema = z.object({
-  username: z
-    .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(50, 'Username must be less than 50 characters')
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens'),
+  username: usernameSchema,
   bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
   profile_picture_url: z.string().url('Invalid profile picture URL').optional(),
   linkedin_url: z.string().url('Invalid LinkedIn URL').optional(),

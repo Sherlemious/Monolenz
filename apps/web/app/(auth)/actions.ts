@@ -1,5 +1,6 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
@@ -10,35 +11,23 @@ export type AuthActionState = {
   emailSentTo?: string;
 };
 
-export async function login(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
-  // Temporary debug: verify envs are present at runtime
-  // Note: values are not logged for security; only presence is checked
-  // Remove after debugging
-  try {
-    console.log('[auth/login] env check', {
-      urlSet: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
-      keySet: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-      nodeEnv: process.env.NODE_ENV,
-    });
-  } catch {
-    // Ignore logging errors
-  }
+async function getSiteUrl(): Promise<string> {
+  const h = await headers();
+  const origin = h.get('origin');
+  if (origin) return origin;
+  const host = h.get('x-forwarded-host') || h.get('host');
+  const proto = h.get('x-forwarded-proto') || 'http';
+  if (host) return `${proto}://${host}`;
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+}
 
+export async function login(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const supabase = await createClient();
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    try {
-      console.error('[auth/login] signInWithPassword error', {
-        code: (error as { code?: string })?.code,
-        message: error.message,
-        status: (error as { status?: number })?.status,
-      });
-    } catch {
-      // Ignore logging errors
-    }
     return { error: error.message };
   }
 
@@ -84,4 +73,33 @@ export async function resendVerification(_prev: AuthActionState, formData: FormD
   if (error) return { error: error.message, emailSentTo: email };
 
   return { success: 'Verification link resent.', emailSentTo: email };
+}
+
+export async function requestPasswordReset(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const supabase = await createClient();
+  const email = (formData.get('email') as string) || '';
+  if (!email) return { error: 'Email is required' };
+
+  const siteUrl = await getSiteUrl();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/auth/confirm?next=/reset-password`,
+  });
+  if (error) return { error: error.message };
+
+  return { success: 'Password reset link sent. Check your email.', emailSentTo: email };
+}
+
+export async function updatePassword(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const supabase = await createClient();
+  const password = (formData.get('password') as string) || '';
+  const confirm = (formData.get('confirmPassword') as string) || '';
+
+  if (password.length < 8) return { error: 'Password must be at least 8 characters' };
+  if (password !== confirm) return { error: 'Passwords do not match' };
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: error.message };
+
+  revalidatePath('/', 'layout');
+  redirect('/dashboard');
 }

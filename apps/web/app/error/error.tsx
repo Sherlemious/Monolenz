@@ -1,5 +1,7 @@
 'use client';
 
+import { ErrorState } from '@/app/components/ErrorState';
+
 export default function ErrorPage() {
-  return <p>Sorry, something went wrong</p>;
+  return <ErrorState showRetry description='An unexpected error occurred while loading this page.' />;
 }
