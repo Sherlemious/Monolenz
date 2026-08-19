@@ -52,6 +52,7 @@ pnpm dev
 ```
 
 - Web: [http://localhost:3000](http://localhost:3000)
+- Public demo: [https://monolenz.sherlemious.com](https://monolenz.sherlemious.com)
 - API: [http://localhost:4000](http://localhost:4000)
 
 Commands from the repo root:

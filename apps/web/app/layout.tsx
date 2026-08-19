@@ -29,6 +29,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://monolenz.sherlemious.com'),
   title: "Monolenz — Your Career's Source of Truth",
   description:
     'Build one professional profile, share a live public page, hide what you want private, and print a resume as PDF.',

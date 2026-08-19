@@ -9,7 +9,7 @@ import { getTheme } from '@/lib/themes';
 import { ProfileToolbar } from './ProfileToolbar';
 
 function getSiteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL || 'https://monolenz.sherlemious.com').replace(/\/$/, '');
 }
 
 // ============================================================================
