@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import { PrismaClient as GeneratedPrismaClient } from '../../../web/generated/prisma';
+import { PrismaClient as GeneratedPrismaClient } from '../../../web/generated/prisma/index.js';
 
 declare global {
   var __monolenz_prisma__: PrismaClient | undefined;
