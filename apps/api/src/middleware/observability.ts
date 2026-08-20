@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import newrelic from 'newrelic';
 import { Logger } from '../utils/logger';
 import { MetricsCollector } from '../utils/metrics';
 
@@ -8,21 +7,6 @@ const metrics = new MetricsCollector();
 
 export const observabilityMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const startTime = Date.now();
-
-  // Set New Relic transaction name
-  const transactionName = `${req.method} ${req.route?.path || req.path}`;
-  newrelic.setTransactionName(`Web: ${transactionName}`);
-
-  // Add custom attributes
-  newrelic.addCustomAttributes({
-    requestId: req.requestId,
-    userId: req.userId!,
-    userRole: req.userRole!,
-    method: req.method,
-    path: req.path,
-    userAgent: req.get('User-Agent')!,
-    ip: req.ip!,
-  });
 
   // Track request metrics
   metrics.incrementCounter('http.requests.total', 1, {

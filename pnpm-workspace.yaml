@@ -3,8 +3,6 @@ packages:
   - packages/*
 
 onlyBuiltDependencies:
-  - '@newrelic/fn-inspect'
-  - '@newrelic/native-metrics'
   - '@prisma/client'
   - '@prisma/engines'
   - '@tailwindcss/oxide'

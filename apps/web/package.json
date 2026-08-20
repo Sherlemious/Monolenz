@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "dev:turbo": "next dev --turbo --port 3100",
-    "build": "prisma generate && next build",
+    "build": "pnpm --filter api db:generate && next build",
     "start": "next start",
     "lint": "next lint",
     "check-types": "tsc --noEmit"

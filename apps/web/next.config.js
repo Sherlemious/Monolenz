@@ -67,7 +67,7 @@ const nextConfig = {
   transpilePackages: ['api'],
 
   // External packages that should not be bundled for server components
-  serverExternalPackages: ['jose', '@prisma/client', 'prisma', 'bcryptjs', 'winston', 'newrelic'],
+  serverExternalPackages: ['jose', '@prisma/client', 'prisma', 'bcryptjs', 'winston'],
 };
 
 export default nextConfig;
