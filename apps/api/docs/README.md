@@ -12,39 +12,24 @@ Interactive API documentation for testing endpoints with [Bruno](https://usebrun
 
 ## Authentication
 
-The collection includes a **Login** request that auto-saves the JWT token.
-
-### Setup (First Time Only)
-
-1. Open `auth/login.bru`
-2. Update the `apikey` header with your Supabase anon key  
-   (Find in: Supabase Dashboard → Settings → API → anon/public key)
-
-### Getting a Token
-
-1. Run `auth/Login (Get Token)` request
-2. ✅ Token is automatically saved to `testJWT` variable
-3. All authenticated requests will use this token
-
-> **Token expires in ~1 hour.** Re-run Login to refresh.
+The collection includes a **Login** request that auto-saves the JWT token from `POST /api/v1/auth/login`.
 
 ## Environment Variables
 
 | Variable       | Description                                 |
 | -------------- | ------------------------------------------- |
-| `link`         | Base API URL (`http://localhost:3001/api`)  |
-| `v1link`       | V1 API URL (`http://localhost:3001/api/v1`) |
-| `supabaseUrl`  | Supabase project URL                        |
+| `link`         | Base API URL (`http://localhost:4000/api`)  |
+| `v1link`       | V1 API URL (`http://localhost:4000/api/v1`) |
 | `testEmail`    | Test user email                             |
 | `testPassword` | Test user password                          |
 | `testJWT`      | Auth token (auto-populated by Login)        |
 
 ## API Overview
 
-| Base URL     | `http://localhost:8080/api/v1` |
-| ------------ | ------------------------------ |
-| Auth         | Supabase JWT Bearer Token      |
-| Content-Type | `application/json`             |
+| Base URL     | `http://localhost:4000/api/v1`      |
+| ------------ | ----------------------------------- |
+| Auth         | JWT Bearer token from `/auth/login` |
+| Content-Type | `application/json`                  |
 
 ### Response Format
 

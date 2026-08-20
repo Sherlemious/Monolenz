@@ -1,12 +1,10 @@
 import { PaginationParams } from '@monolenz/types/api';
-import type { User } from '@supabase/supabase-js';
+import type { AuthUser } from '../config/auth';
 
-// Extend Express Request interface
 declare global {
   namespace Express {
     interface Request {
-      // Auth-related
-      user?: User;
+      user?: AuthUser;
       userId?: string;
       userRole?: string;
 

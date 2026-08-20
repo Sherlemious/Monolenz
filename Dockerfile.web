@@ -8,6 +8,8 @@ FROM base AS deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages ./packages
 COPY apps/web/package.json ./apps/web/
+COPY apps/api/package.json ./apps/api/
+COPY apps/api/prisma ./apps/api/prisma
 RUN pnpm install --filter web... --frozen-lockfile
 
 # Build stage
@@ -15,13 +17,9 @@ FROM base AS builder
 WORKDIR /app
 
 # Accept build args for NEXT_PUBLIC vars (inlined into client bundle)
-ARG NEXT_PUBLIC_SUPABASE_URL
-ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_API_URL
 
 # Set env vars for Next.js build
-ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV CI=true
 

@@ -39,7 +39,7 @@ const getAllowedOrigins = (): string[] => {
     return ['https://stage.monolenz.com'];
   }
   if (process.env.NODE_ENV === 'production') {
-    return ['https://monolenz.com'];
+    return ['https://monolenz.sherlemious.com', 'https://monolenz.vercel.app'];
   }
   return ['http://localhost:3000'];
 };

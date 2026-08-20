@@ -1,105 +1,90 @@
 'use server';
 
-import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/utils/supabase/server';
+import { apiRequest, setSessionCookie } from '@/lib/auth/session';
 
 export type AuthActionState = {
   error?: string;
   success?: string;
   emailSentTo?: string;
+  resetUrl?: string;
 };
 
-async function getSiteUrl(): Promise<string> {
-  const h = await headers();
-  const origin = h.get('origin');
-  if (origin) return origin;
-  const host = h.get('x-forwarded-host') || h.get('host');
-  const proto = h.get('x-forwarded-proto') || 'http';
-  if (host) return `${proto}://${host}`;
-  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+type AuthPayload = {
+  success?: boolean;
+  message?: string;
+  errors?: Array<{ message?: string }>;
+  data?: {
+    token?: string;
+    resetUrl?: string;
+  };
+};
+
+function errorMessage(body: AuthPayload, fallback: string) {
+  return body.errors?.[0]?.message || body.message || fallback;
 }
 
 export async function login(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
-  const supabase = await createClient();
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = String(formData.get('email') || '');
+  const password = String(formData.get('password') || '');
+  const { ok, body } = await apiRequest<AuthPayload>('/api/v1/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+  if (!ok || !body.data?.token) return { error: errorMessage(body, 'Invalid email or password') };
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    return { error: error.message };
-  }
-
+  await setSessionCookie(body.data.token);
   revalidatePath('/', 'layout');
   redirect('/dashboard');
 }
 
 export async function signup(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
-  const supabase = await createClient();
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = String(formData.get('email') || '');
+  const password = String(formData.get('password') || '');
+  const { ok, body } = await apiRequest<AuthPayload>('/api/v1/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+  if (!ok || !body.data?.token) return { error: errorMessage(body, 'Could not create account') };
 
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) return { error: error.message };
-
-  if (!data.session) {
-    return { success: 'Verification link sent. Check your email to continue.', emailSentTo: email };
-  }
-
+  await setSessionCookie(body.data.token);
   revalidatePath('/', 'layout');
   redirect('/dashboard');
-}
-
-export async function verifyEmailOtp(formData: FormData): Promise<AuthActionState> {
-  const supabase = await createClient();
-  const email = (formData.get('email') as string) || '';
-  const token = (formData.get('token') as string) || '';
-  if (!email || !token) return { error: 'Email and code are required' };
-
-  const { error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
-  if (error) return { error: error.message };
-
-  revalidatePath('/', 'layout');
-  redirect('/dashboard');
-}
-
-export async function resendVerification(_prev: AuthActionState, formData: FormData): Promise<AuthActionState> {
-  const supabase = await createClient();
-  const email = (formData.get('email') as string) || '';
-  if (!email) return { error: 'Email is required to resend link' };
-
-  const { error } = await supabase.auth.resend({ type: 'signup', email });
-  if (error) return { error: error.message, emailSentTo: email };
-
-  return { success: 'Verification link resent.', emailSentTo: email };
 }
 
 export async function requestPasswordReset(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
-  const supabase = await createClient();
-  const email = (formData.get('email') as string) || '';
+  const email = String(formData.get('email') || '');
   if (!email) return { error: 'Email is required' };
 
-  const siteUrl = await getSiteUrl();
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl}/auth/confirm?next=/reset-password`,
+  const { ok, body } = await apiRequest<AuthPayload>('/api/v1/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
   });
-  if (error) return { error: error.message };
+  if (!ok) return { error: errorMessage(body, 'Could not start password reset') };
 
-  return { success: 'Password reset link sent. Check your email.', emailSentTo: email };
+  return {
+    success: 'If that email exists, a reset link was sent.',
+    emailSentTo: email,
+    resetUrl: body.data?.resetUrl,
+  };
 }
 
 export async function updatePassword(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
-  const supabase = await createClient();
-  const password = (formData.get('password') as string) || '';
-  const confirm = (formData.get('confirmPassword') as string) || '';
+  const password = String(formData.get('password') || '');
+  const confirm = String(formData.get('confirmPassword') || '');
+  const token = String(formData.get('token') || '');
 
   if (password.length < 8) return { error: 'Password must be at least 8 characters' };
   if (password !== confirm) return { error: 'Passwords do not match' };
+  if (!token) return { error: 'Reset token is missing. Request a new reset link.' };
 
-  const { error } = await supabase.auth.updateUser({ password });
-  if (error) return { error: error.message };
+  const { ok, body } = await apiRequest<AuthPayload>('/api/v1/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, password }),
+  });
+  if (!ok) return { error: errorMessage(body, 'Could not update password') };
 
   revalidatePath('/', 'layout');
-  redirect('/dashboard');
+  redirect('/login');
 }

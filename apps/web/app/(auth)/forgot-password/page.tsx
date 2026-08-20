@@ -41,10 +41,19 @@ export default function ForgotPasswordPage() {
           <div role='status' className='mb-3 rounded-md border px-3 py-2 text-sm text-foreground'>
             {state.emailSentTo ? (
               <>
-                Reset link sent to <span className='font-medium'>{state.emailSentTo}</span>. Check your inbox.
+                If an account exists for <span className='font-medium'>{state.emailSentTo}</span>, a reset link was
+                sent.
               </>
             ) : (
               state.success
+            )}
+            {state.resetUrl && (
+              <p className='mt-2 break-all text-xs'>
+                Dev reset link:{' '}
+                <Link href={state.resetUrl} className='underline'>
+                  {state.resetUrl}
+                </Link>
+              </p>
             )}
           </div>
         )}

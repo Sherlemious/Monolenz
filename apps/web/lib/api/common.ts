@@ -59,11 +59,19 @@ async function parseJsonSafe<T>(res: Response): Promise<T> {
   }
 }
 
+export function resolveApiBaseUrl() {
+  const explicit = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (explicit) return explicit.replace(/\/$/, '');
+  if (typeof window !== 'undefined') return '';
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
+}
+
 export function createApiClientWithTokenProvider(
   getAccessToken: () => Promise<string | undefined>,
   baseInit?: RequestInit
 ): ApiClient {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+  const baseUrl = resolveApiBaseUrl();
 
   async function request<T>(method: HttpMethod, path: string, init?: RequestInit): Promise<T> {
     const accessToken = await getAccessToken();

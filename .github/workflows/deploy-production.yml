@@ -103,8 +103,6 @@ jobs:
       - name: Build Web Docker image
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} \
-            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} \
             --build-arg NEXT_PUBLIC_API_URL=https://monolenz-api-prod-${{ secrets.GCP_SERVICE_SUFFIX }}.a.run.app \
             -t $REGISTRY/$PROJECT_ID/monolenz-web-prod:$GITHUB_SHA \
             -f apps/web/Dockerfile .
@@ -279,7 +277,7 @@ jobs:
             --max-instances 10 \
             --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
             --set-env-vars="NODE_ENV=production" \
-            --set-secrets="DATABASE_URL=DATABASE_URL_PROD:latest,SUPABASE_URL=SUPABASE_URL_PROD:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_PROD:latest,SUPABASE_ANON_KEY=SUPABASE_ANON_KEY:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
+            --set-secrets="DATABASE_URL=DATABASE_URL_PROD:latest,AUTH_SECRET=AUTH_SECRET_PROD:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
       - name: Deploy API to Cloud Run (update with no traffic)
         if: steps.check-api-service.outputs.exists == 'true'
@@ -298,7 +296,7 @@ jobs:
             --tag candidate-${GITHUB_SHA::8} \
             --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
             --set-env-vars="NODE_ENV=production" \
-            --set-secrets="DATABASE_URL=DATABASE_URL_PROD:latest,SUPABASE_URL=SUPABASE_URL_PROD:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_PROD:latest,SUPABASE_ANON_KEY=SUPABASE_ANON_KEY:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
+            --set-secrets="DATABASE_URL=DATABASE_URL_PROD:latest,AUTH_SECRET=AUTH_SECRET_PROD:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
       - name: Get candidate URL
         if: steps.check-api-service.outputs.exists == 'true'

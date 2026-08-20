@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { MonolenzLockup } from '@/components/brand/Logo';
 import { LayoutDashboard, User, Pencil, LogOut, Menu, ChevronsUpDown, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { createClient } from '@/utils/supabase/client';
 import { signOut } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -35,14 +34,13 @@ function useUserInfo(): UserInfo | null {
   const [user, setUser] = useState<UserInfo | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        const email = data.user.email ?? '';
-        const initials = email.charAt(0).toUpperCase();
-        setUser({ email, initials });
-      }
-    });
+    fetch('/api/auth/session', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { user?: { email?: string } } | null) => {
+        const email = data?.user?.email ?? '';
+        if (email) setUser({ email, initials: email.charAt(0).toUpperCase() });
+      })
+      .catch(() => undefined);
   }, []);
 
   return user;

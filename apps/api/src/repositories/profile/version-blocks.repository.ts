@@ -14,6 +14,7 @@ export interface AttachBlockToVersionInput {
   version_id: number;
   block_id: number;
   previous_block_id?: number | null;
+  previous_version_id?: number | null;
   is_visible?: boolean;
   section_name?: string | null;
   sort_order?: number | null;
@@ -38,6 +39,11 @@ export class VersionBlocksRepository {
         ...(input.previous_block_id && {
           blocks_version_blocks_previous_block_idToblocks: {
             connect: { id: input.previous_block_id },
+          },
+        }),
+        ...(input.previous_version_id && {
+          versions_version_blocks_previous_version_idToversions: {
+            connect: { id: input.previous_version_id },
           },
         }),
         is_visible: input.is_visible ?? true,

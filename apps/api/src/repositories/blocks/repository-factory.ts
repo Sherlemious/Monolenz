@@ -15,7 +15,7 @@ import { VolunteerRepository } from './volunteer.repository';
 import { AwardRepository } from './award.repository';
 
 export class TypedBlockRepositoryFactory {
-  private repositories: Map<BlockType, BaseTypedBlockRepository<any>>;
+  private repositories: Map<BlockType, BaseTypedBlockRepository<Record<string, unknown>>>;
 
   constructor(prisma: PrismaClient) {
     this.repositories = new Map([
@@ -27,14 +27,14 @@ export class TypedBlockRepositoryFactory {
       [BlockType.LANGUAGE, new LanguageRepository(prisma)],
       [BlockType.VOLUNTEER, new VolunteerRepository(prisma)],
       [BlockType.AWARD, new AwardRepository(prisma)],
-    ]);
+    ] as unknown as Array<[BlockType, BaseTypedBlockRepository<Record<string, unknown>>]>);
   }
 
-  getRepository<T>(blockType: BlockType): BaseTypedBlockRepository<T> {
+  getRepository<T extends Record<string, unknown>>(blockType: BlockType): BaseTypedBlockRepository<T> {
     const repo = this.repositories.get(blockType);
     if (!repo) {
       throw new Error(`Unknown block type: ${blockType}`);
     }
-    return repo;
+    return repo as BaseTypedBlockRepository<T>;
   }
 }

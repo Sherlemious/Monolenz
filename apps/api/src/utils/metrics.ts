@@ -1,36 +1,13 @@
-import newrelic from 'newrelic';
-
 export class MetricsCollector {
-  incrementCounter(name: string, value: number = 1, attributes?: Record<string, any>) {
-    newrelic.incrementMetric(name, value);
-    if (attributes) {
-      newrelic.addCustomAttributes(attributes);
-    }
-  }
+  incrementCounter(_name: string, _value: number = 1, _attributes?: Record<string, unknown>) {}
 
-  recordDuration(name: string, duration: number, attributes?: Record<string, any>) {
-    newrelic.recordMetric(name, duration);
-    if (attributes) {
-      newrelic.addCustomAttributes(attributes);
-    }
-  }
+  recordDuration(_name: string, _duration: number, _attributes?: Record<string, unknown>) {}
 
-  recordGauge(name: string, value: number, attributes?: Record<string, any>) {
-    newrelic.recordMetric(name, value);
-    if (attributes) {
-      newrelic.addCustomAttributes(attributes);
-    }
-  }
+  recordGauge(_name: string, _value: number, _attributes?: Record<string, unknown>) {}
 
-  addCustomEvent(eventType: string, attributes: Record<string, any>) {
-    newrelic.recordCustomEvent(eventType, attributes);
-  }
+  addCustomEvent(_eventType: string, _attributes: Record<string, unknown>) {}
 
-  setTransactionName(category: string, name: string) {
-    newrelic.setTransactionName(`${category} ${name}`);
-  }
+  setTransactionName(_category: string, _name: string) {}
 
-  addTransactionAttribute(key: string, value: string | number | boolean) {
-    newrelic.addCustomAttribute(key, value);
-  }
+  addTransactionAttribute(_key: string, _value: string | number | boolean) {}
 }
