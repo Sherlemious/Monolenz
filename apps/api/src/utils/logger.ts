@@ -1,13 +1,14 @@
 import winston from 'winston';
-import newrelic from 'newrelic';
 
 interface LogContext {
   requestId?: string;
   userId?: string;
   operation?: string;
   duration?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
+
+const isServerless = Boolean(process.env.VERCEL);
 
 export class Logger {
   private logger: winston.Logger;
@@ -37,8 +38,7 @@ export class Logger {
       ],
     });
 
-    // Add file transport in production
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && !isServerless) {
       this.logger.add(
         new winston.transports.File({
           filename: 'logs/error.log',
@@ -55,26 +55,14 @@ export class Logger {
 
   info(message: string, context?: LogContext) {
     this.logger.info(message, context);
-    if (context) {
-      newrelic.addCustomAttributes(context);
-    }
   }
 
   error(message: string, context?: LogContext & { error?: Error }) {
     this.logger.error(message, context);
-    if (context?.error) {
-      newrelic.noticeError(context.error, context);
-    }
-    if (context) {
-      newrelic.addCustomAttributes(context);
-    }
   }
 
   warn(message: string, context?: LogContext) {
     this.logger.warn(message, context);
-    if (context) {
-      newrelic.addCustomAttributes(context);
-    }
   }
 
   debug(message: string, context?: LogContext) {

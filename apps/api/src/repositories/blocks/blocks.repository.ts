@@ -42,7 +42,8 @@ export class BlocksRepository extends BaseRepository<BlockEntity> {
   }
 
   computeContentHash(blockType: BlockType, data: unknown): string {
-    const payload = { block_type: blockType, ...data };
+    const extra = data && typeof data === 'object' ? (data as Record<string, unknown>) : { value: data };
+    const payload = { block_type: blockType, ...extra };
     const stableString = this.stableStringify(payload);
     return createHash('sha256').update(stableString).digest('hex');
   }

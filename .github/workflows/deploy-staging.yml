@@ -112,8 +112,6 @@ jobs:
       - name: Build Web Docker image
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL_STAGING }} \
-            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY_STAGING }} \
             --build-arg NEXT_PUBLIC_API_URL=https://monolenz-api-staging-${{ secrets.GCP_SERVICE_SUFFIX }}.a.run.app \
             -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/monolenz-web-staging:${{ github.sha }} \
             -f Dockerfile.web .
@@ -288,7 +286,7 @@ jobs:
             --tag ${{ env.CANDIDATE_TAG }} \
             --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
             --set-env-vars="NODE_ENV=staging,ALLOWED_ORIGINS=https://stage.monolenz.com" \
-            --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,SUPABASE_URL=SUPABASE_URL_STAGING:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY_STAGING:latest,SUPABASE_ANON_KEY=SUPABASE_ANON_KEY:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
+            --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,AUTH_SECRET=AUTH_SECRET_STAGING:latest,NEW_RELIC_LICENSE_KEY=NEW_RELIC_LICENSE_KEY:latest"
 
       - name: Capture API container logs on failure
         if: failure() && steps.deploy-api.outcome == 'failure'

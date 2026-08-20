@@ -6,7 +6,7 @@ Monolenz is an open-source profile builder: create a structured professional pro
 
 ## What works today
 
-- Email signup, login, email verification, and password reset (Supabase Auth)
+- Email signup, login, and password reset (JWT sessions stored in Neon)
 - Username onboarding and profile info (bio, links, picture URL, themes)
 - Content editor for 8 types: work, education, skills, projects, certifications, languages, volunteer, awards
 - Immutable versioned saves (edits create a new snapshot; blocks are deduplicated by content hash)
@@ -19,10 +19,10 @@ ATS-tailored resume generation, application tracking, OAuth, billing, and a full
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Backend**: Express.js, TypeScript
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Supabase Auth
+- **Frontend**: Next.js 15, React 19, TypeScript (Vercel production also serves `/api/v1`)
+- **Backend**: Express.js, TypeScript (local development)
+- **Database**: Neon PostgreSQL with Prisma ORM
+- **Authentication**: Email/password + JWT (own `users` table)
 - **Storage**: AWS S3
 - **Styling**: Tailwind CSS v4, shadcn/ui
 - **Package Manager**: pnpm
@@ -88,7 +88,7 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-Fill in Supabase URL/keys, `DATABASE_URL`, and `NEXT_PUBLIC_API_URL` (default `http://localhost:4000`).
+Fill in a Neon `DATABASE_URL` and a shared `AUTH_SECRET` (32+ characters) in both `apps/api/.env` and `apps/web/.env.local`. Leave `NEXT_PUBLIC_API_URL` empty to use Next.js `/api/v1` against Neon, or set `http://localhost:4000` to use local Express. Optional: `RESEND_API_KEY` for password-reset emails.
 
 ```bash
 pnpm --filter api db:generate
@@ -136,34 +136,15 @@ Monolenz uses a **block-based versioning system** inspired by Git, where profess
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────┐                    ┌─────────────────┐
-│   Next.js App   │◄──────────────────►│   Supabase      │
-│                 │                    │                 │
-│   AUTH OWNER    │                    │     SINGLE      │
-│                 │                    │     SOURCE      │
-│ • Login/Logout  │                    │                 │
-│ • Registration  │                    │ • Auth Service  │
-│ • Token Mgmt    │                    │ • JWT Tokens    │
-│ • Route Guards  │                    │ • PostgreSQL    │
-│ • User State    │                    │ • RLS Policies  │
-│ • Direct DB     │◄──────────────────►│ • Realtime      │
-│   Access (opt)  │                    │ • Storage       │
-└─────────────────┘                    │ • Edge Funcs    │
-         │                             └─────────────────┘
-         │ API Calls                            ▲
-         │ Bearer Token                         │
-         ▼                                      │ DB Access
-┌─────────────────┐                             │  + Auth
-│  Express API    │◄────────────────────────────┘
-│                 │
-│    BUSINESS     │  • Connect to Supabase DB
-│     LOGIC       │  • Use service role key
-│                 │  • Leverage RLS policies
-│ • Token Verify  │  • Business logic only
-│ • Data CRUD     │  • No auth endpoints
-│ • Validation    │  • Focus on API layer
-│ • Rate Limits   │
-│ • Aggregation   │
-└─────────────────┘
+│   Next.js App   │     Prisma         │  Neon Postgres  │
+│ • Login/Signup  │───────────────────►│ • users         │
+│ • Session cookie│                    │ • profiles      │
+│ • /api/v1 routes│                    │ • versions      │
+│ • Route Guards  │                    │ • blocks        │
+└─────────────────┘                    └─────────────────┘
+
+Local optional: set NEXT_PUBLIC_API_URL=http://localhost:4000 to use Express
+instead of the Next.js /api/v1 route handlers.
 ```
 
 ## Versioning and Blocks (Profile Pages)

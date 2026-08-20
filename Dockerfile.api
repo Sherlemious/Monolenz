@@ -17,12 +17,7 @@ WORKDIR /app
 COPY --from=deps /app /app
 COPY . .
 
-# Create a dummy newrelic.cjs if it doesn't exist
-RUN [ -f /app/apps/api/newrelic.cjs ] || printf "module.exports = {};\n" > /app/apps/api/newrelic.cjs
-
-# Generate Prisma client first (before building)
 RUN cd apps/api && pnpm prisma generate
-
 RUN pnpm --filter "@monolenz/types" build
 
 # Build the API and shared packages
@@ -57,7 +52,6 @@ COPY --from=builder /app/packages/typescript-config/package.json /app/packages/t
 COPY --from=builder /app/apps/api/dist /app/apps/api/dist
 COPY --from=builder /app/apps/api/package.json /app/apps/api/package.json
 COPY --from=builder /app/apps/api/prisma /app/apps/api/prisma
-COPY --from=builder /app/apps/api/newrelic.cjs /app/apps/api/newrelic.cjs
 
 # Install production dependencies
 # This installs @prisma/client and auto-generates the Prisma client
