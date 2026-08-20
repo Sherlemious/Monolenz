@@ -1,23 +1,14 @@
 /** @type {import('next').NextConfig} */
 import path from 'node:path';
 
-const prismaTraceGlobs = [
-  './generated/prisma/**/*',
-  '../../node_modules/.pnpm/**/.prisma/client/**',
-  '../../node_modules/.pnpm/**/libquery_engine*',
-  '../../node_modules/.prisma/client/**',
-];
-
 const nextConfig = {
   // Enable standalone output for Docker/Cloud Run deployment
   // Disabled on Windows due to symlink permission issues - re-enable in CI/CD
   output: process.env.VERCEL ? undefined : process.env.CI ? 'standalone' : undefined,
   outputFileTracingRoot: path.join(process.cwd(), '../..'),
   outputFileTracingIncludes: {
-    '/*': prismaTraceGlobs,
-    '/api/**/*': prismaTraceGlobs,
-    '/api/v1/[...path]': prismaTraceGlobs,
-    '/api/v1/[...path]/route': prismaTraceGlobs,
+    '/api/v1/[...path]': ['./generated/prisma/**/*'],
+    '/api/v1/[...path]/route': ['./generated/prisma/**/*'],
   },
 
   // Optimize for production
