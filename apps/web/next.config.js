@@ -1,8 +1,19 @@
 /** @type {import('next').NextConfig} */
+import path from 'node:path';
+
 const nextConfig = {
   // Enable standalone output for Docker/Cloud Run deployment
   // Disabled on Windows due to symlink permission issues - re-enable in CI/CD
   output: process.env.VERCEL ? undefined : process.env.CI ? 'standalone' : undefined,
+  outputFileTracingRoot: path.join(process.cwd(), '../..'),
+  outputFileTracingIncludes: {
+    '/api/v1/[...path]': [
+      './node_modules/.prisma/client/**',
+      '../../node_modules/.prisma/client/**',
+      '../../node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/**',
+      '../../node_modules/.pnpm/@prisma+client@*/node_modules/@prisma/client/**',
+    ],
+  },
 
   // Optimize for production
   poweredByHeader: false,
