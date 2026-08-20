@@ -157,10 +157,7 @@ async function handleProfiles(request: Request, method: string, segments: string
     const username = usernameSchema.parse(requiredSegment(segments, 1));
     const user = await getRequestUser(request);
     const available = await profileService.checkUsernameAvailability(username, user?.id);
-    return jsonSuccess(
-      { username, available },
-      available ? 'Username is available' : 'Username is not available'
-    );
+    return jsonSuccess({ username, available }, available ? 'Username is available' : 'Username is not available');
   }
 
   if (method === 'GET' && segments.length === 3 && segments[2] === 'latest' && segments[1] === 'versions') {

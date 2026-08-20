@@ -1,42 +1,13 @@
-import { getNewRelic } from './newrelic-optional';
-
 export class MetricsCollector {
-  incrementCounter(name: string, value: number = 1, attributes?: Record<string, unknown>) {
-    const newrelic = getNewRelic();
-    if (!newrelic) return;
-    newrelic.incrementMetric(name, value);
-    if (attributes) {
-      newrelic.addCustomAttributes(attributes as Record<string, string | number | boolean>);
-    }
-  }
+  incrementCounter(_name: string, _value: number = 1, _attributes?: Record<string, unknown>) {}
 
-  recordDuration(name: string, duration: number, attributes?: Record<string, unknown>) {
-    const newrelic = getNewRelic();
-    if (!newrelic) return;
-    newrelic.recordMetric(name, duration);
-    if (attributes) {
-      newrelic.addCustomAttributes(attributes as Record<string, string | number | boolean>);
-    }
-  }
+  recordDuration(_name: string, _duration: number, _attributes?: Record<string, unknown>) {}
 
-  recordGauge(name: string, value: number, attributes?: Record<string, unknown>) {
-    const newrelic = getNewRelic();
-    if (!newrelic) return;
-    newrelic.recordMetric(name, value);
-    if (attributes) {
-      newrelic.addCustomAttributes(attributes as Record<string, string | number | boolean>);
-    }
-  }
+  recordGauge(_name: string, _value: number, _attributes?: Record<string, unknown>) {}
 
-  addCustomEvent(eventType: string, attributes: Record<string, unknown>) {
-    getNewRelic()?.recordCustomEvent(eventType, attributes as Record<string, string | number | boolean>);
-  }
+  addCustomEvent(_eventType: string, _attributes: Record<string, unknown>) {}
 
-  setTransactionName(category: string, name: string) {
-    getNewRelic()?.setTransactionName(`${category} ${name}`);
-  }
+  setTransactionName(_category: string, _name: string) {}
 
-  addTransactionAttribute(key: string, value: string | number | boolean) {
-    getNewRelic()?.addCustomAttribute(key, value);
-  }
+  addTransactionAttribute(_key: string, _value: string | number | boolean) {}
 }

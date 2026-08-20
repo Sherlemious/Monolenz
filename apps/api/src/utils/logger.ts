@@ -1,5 +1,4 @@
 import winston from 'winston';
-import { getNewRelic } from './newrelic-optional';
 
 interface LogContext {
   requestId?: string;
@@ -56,29 +55,14 @@ export class Logger {
 
   info(message: string, context?: LogContext) {
     this.logger.info(message, context);
-    const newrelic = getNewRelic();
-    if (context && newrelic) {
-      newrelic.addCustomAttributes(context as Record<string, string | number | boolean>);
-    }
   }
 
   error(message: string, context?: LogContext & { error?: Error }) {
     this.logger.error(message, context);
-    const newrelic = getNewRelic();
-    if (newrelic && context?.error) {
-      newrelic.noticeError(context.error, context as Record<string, string | number | boolean>);
-    }
-    if (newrelic && context) {
-      newrelic.addCustomAttributes(context as Record<string, string | number | boolean>);
-    }
   }
 
   warn(message: string, context?: LogContext) {
     this.logger.warn(message, context);
-    const newrelic = getNewRelic();
-    if (context && newrelic) {
-      newrelic.addCustomAttributes(context as Record<string, string | number | boolean>);
-    }
   }
 
   debug(message: string, context?: LogContext) {

@@ -15,10 +15,7 @@ function meta() {
 }
 
 export function jsonSuccess<T>(data: T, message = 'Success', status: number = HTTP_STATUS_CODES.OK) {
-  return NextResponse.json(
-    { success: true, message, data, meta: meta() },
-    { status }
-  );
+  return NextResponse.json({ success: true, message, data, meta: meta() }, { status });
 }
 
 export function jsonError(

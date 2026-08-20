@@ -15,7 +15,11 @@ if (!sourceUrl || !destUrl) {
 const source = new PrismaClient({ datasources: { db: { url: sourceUrl } } });
 const dest = new PrismaClient({ datasources: { db: { url: destUrl } } });
 
-async function copyTable<T extends Record<string, unknown>>(name: string, rows: T[], create: (row: T) => Promise<unknown>) {
+async function copyTable<T extends Record<string, unknown>>(
+  name: string,
+  rows: T[],
+  create: (row: T) => Promise<unknown>
+) {
   console.log(`${name}: ${rows.length}`);
   for (const row of rows) {
     await create(row);
@@ -24,12 +28,31 @@ async function copyTable<T extends Record<string, unknown>>(name: string, rows: 
 
 async function main() {
   const authUsers = await source.$queryRaw<
-    Array<{ id: string; email: string; encrypted_password: string | null; email_confirmed_at: Date | null; created_at: Date | null; updated_at: Date | null; role: string | null }>
+    Array<{
+      id: string;
+      email: string;
+      encrypted_password: string | null;
+      email_confirmed_at: Date | null;
+      created_at: Date | null;
+      updated_at: Date | null;
+      role: string | null;
+    }>
   >`
     SELECT id::text, email, encrypted_password, email_confirmed_at, created_at, updated_at,
            COALESCE(raw_app_meta_data->>'role', 'user') AS role
     FROM auth.users
-  `.catch(() => [] as Array<{ id: string; email: string; encrypted_password: string | null; email_confirmed_at: Date | null; created_at: Date | null; updated_at: Date | null; role: string | null }>);
+  `.catch(
+    () =>
+      [] as Array<{
+        id: string;
+        email: string;
+        encrypted_password: string | null;
+        email_confirmed_at: Date | null;
+        created_at: Date | null;
+        updated_at: Date | null;
+        role: string | null;
+      }>
+  );
 
   if (authUsers.length) {
     console.log(`auth.users -> users: ${authUsers.length}`);
@@ -59,7 +82,9 @@ async function main() {
     dest.profile_links.create({ data: row })
   );
   await copyTable('blocks', await source.blocks.findMany(), (row) => dest.blocks.create({ data: row }));
-  await copyTable('block_awards', await source.block_awards.findMany(), (row) => dest.block_awards.create({ data: row }));
+  await copyTable('block_awards', await source.block_awards.findMany(), (row) =>
+    dest.block_awards.create({ data: row })
+  );
   await copyTable('block_certifications', await source.block_certifications.findMany(), (row) =>
     dest.block_certifications.create({ data: row })
   );
@@ -69,15 +94,17 @@ async function main() {
   await copyTable('block_languages', await source.block_languages.findMany(), (row) =>
     dest.block_languages.create({ data: row })
   );
-  await copyTable('block_projects', await source.block_projects.findMany(), (row) => dest.block_projects.create({ data: row }));
-  await copyTable('block_skills', await source.block_skills.findMany(), (row) => dest.block_skills.create({ data: row }));
+  await copyTable('block_projects', await source.block_projects.findMany(), (row) =>
+    dest.block_projects.create({ data: row })
+  );
+  await copyTable('block_skills', await source.block_skills.findMany(), (row) =>
+    dest.block_skills.create({ data: row })
+  );
   await copyTable('block_volunteers', await source.block_volunteers.findMany(), (row) =>
     dest.block_volunteers.create({ data: row })
   );
-  await copyTable(
-    'block_work_experiences',
-    await source.block_work_experiences.findMany(),
-    (row) => dest.block_work_experiences.create({ data: row })
+  await copyTable('block_work_experiences', await source.block_work_experiences.findMany(), (row) =>
+    dest.block_work_experiences.create({ data: row })
   );
   await copyTable('versions', await source.versions.findMany(), (row) => dest.versions.create({ data: row }));
   await copyTable('version_blocks', await source.version_blocks.findMany(), (row) =>

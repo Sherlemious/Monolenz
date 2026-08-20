@@ -26,10 +26,10 @@ The collection includes a **Login** request that auto-saves the JWT token from `
 
 ## API Overview
 
-| Base URL     | `http://localhost:4000/api/v1` |
-| ------------ | ------------------------------ |
+| Base URL     | `http://localhost:4000/api/v1`      |
+| ------------ | ----------------------------------- |
 | Auth         | JWT Bearer token from `/auth/login` |
-| Content-Type | `application/json`             |
+| Content-Type | `application/json`                  |
 
 ### Response Format
 

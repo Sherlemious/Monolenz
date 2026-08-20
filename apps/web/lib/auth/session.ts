@@ -67,7 +67,10 @@ export function apiBaseUrl() {
   return resolveApiBaseUrl();
 }
 
-export async function apiRequest<T>(path: string, init?: RequestInit): Promise<{ ok: boolean; status: number; body: T }> {
+export async function apiRequest<T>(
+  path: string,
+  init?: RequestInit
+): Promise<{ ok: boolean; status: number; body: T }> {
   const token = await getSessionToken();
   const res = await fetch(`${apiBaseUrl()}${path}`, {
     ...init,

@@ -46,7 +46,14 @@ export default function SignupForm() {
 
           <div className='grid gap-2'>
             <Label htmlFor='password'>Password</Label>
-            <Input id='password' name='password' type='password' minLength={8} required className='h-10 sm:h-11 rounded-lg' />
+            <Input
+              id='password'
+              name='password'
+              type='password'
+              minLength={8}
+              required
+              className='h-10 sm:h-11 rounded-lg'
+            />
           </div>
 
           <SubmitButton label='Sign up' pendingLabel='Creating...' />
