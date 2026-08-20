@@ -7,12 +7,8 @@ const nextConfig = {
   output: process.env.VERCEL ? undefined : process.env.CI ? 'standalone' : undefined,
   outputFileTracingRoot: path.join(process.cwd(), '../..'),
   outputFileTracingIncludes: {
-    '/api/v1/[...path]': [
-      './node_modules/.prisma/client/**',
-      '../../node_modules/.prisma/client/**',
-      '../../node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/**',
-      '../../node_modules/.pnpm/@prisma+client@*/node_modules/@prisma/client/**',
-    ],
+    '/api/v1/[...path]': ['./generated/prisma/**/*'],
+    '/api/v1/[...path]/route': ['./generated/prisma/**/*'],
   },
 
   // Optimize for production
