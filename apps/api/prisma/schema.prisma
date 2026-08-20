@@ -3,6 +3,13 @@ generator client {
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
+// Next.js file tracing on Vercel only packs engines that live next to app source.
+generator web {
+  provider      = "prisma-client-js"
+  output        = "../../web/generated/prisma"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

@@ -1,4 +1,5 @@
 import { handleV1Request } from '@/lib/server-api/handle-v1';
+import '@/lib/generated-prisma';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

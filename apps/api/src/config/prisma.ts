@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
+import { PrismaClient as GeneratedPrismaClient } from '../../../web/generated/prisma';
 
 declare global {
   var __monolenz_prisma__: PrismaClient | undefined;
@@ -6,9 +7,9 @@ declare global {
 
 export const prisma: PrismaClient =
   global.__monolenz_prisma__ ||
-  new PrismaClient({
+  (new GeneratedPrismaClient({
     log: process.env.NODE_ENV === 'production' ? ['error'] : ['error', 'warn'],
-  });
+  }) as PrismaClient);
 
 if (process.env.NODE_ENV !== 'production') {
   global.__monolenz_prisma__ = prisma;
