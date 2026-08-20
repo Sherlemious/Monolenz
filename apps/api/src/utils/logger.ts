@@ -1,13 +1,15 @@
 import winston from 'winston';
-import newrelic from 'newrelic';
+import { getNewRelic } from './newrelic-optional';
 
 interface LogContext {
   requestId?: string;
   userId?: string;
   operation?: string;
   duration?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
+
+const isServerless = Boolean(process.env.VERCEL);
 
 export class Logger {
   private logger: winston.Logger;
@@ -37,8 +39,7 @@ export class Logger {
       ],
     });
 
-    // Add file transport in production
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && !isServerless) {
       this.logger.add(
         new winston.transports.File({
           filename: 'logs/error.log',
@@ -55,25 +56,28 @@ export class Logger {
 
   info(message: string, context?: LogContext) {
     this.logger.info(message, context);
-    if (context) {
-      newrelic.addCustomAttributes(context);
+    const newrelic = getNewRelic();
+    if (context && newrelic) {
+      newrelic.addCustomAttributes(context as Record<string, string | number | boolean>);
     }
   }
 
   error(message: string, context?: LogContext & { error?: Error }) {
     this.logger.error(message, context);
-    if (context?.error) {
-      newrelic.noticeError(context.error, context);
+    const newrelic = getNewRelic();
+    if (newrelic && context?.error) {
+      newrelic.noticeError(context.error, context as Record<string, string | number | boolean>);
     }
-    if (context) {
-      newrelic.addCustomAttributes(context);
+    if (newrelic && context) {
+      newrelic.addCustomAttributes(context as Record<string, string | number | boolean>);
     }
   }
 
   warn(message: string, context?: LogContext) {
     this.logger.warn(message, context);
-    if (context) {
-      newrelic.addCustomAttributes(context);
+    const newrelic = getNewRelic();
+    if (context && newrelic) {
+      newrelic.addCustomAttributes(context as Record<string, string | number | boolean>);
     }
   }
 

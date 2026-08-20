@@ -12,6 +12,10 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@monolenz/types": "workspace:*",
+    "@prisma/client": "6.12.0",
+    "api": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
@@ -38,11 +42,15 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.11",
+    "zod": "^3.22.4",
     "zustand": "^5.0.8"
+  },
+  "prisma": {
+    "schema": "../api/prisma/schema.prisma"
   },
   "devDependencies": {
     "@monolenz/eslint-config": "workspace:*",
-    "@monolenz/types": "workspace:*",
+    "prisma": "^6.12.0",
     "@monolenz/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",

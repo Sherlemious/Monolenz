@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { jwtVerify, type JWTPayload } from 'jose';
+import { resolveApiBaseUrl } from '@/lib/api/common';
 import { SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from './constants';
 
 export { SESSION_COOKIE, SESSION_MAX_AGE_SECONDS };
@@ -63,7 +64,7 @@ export async function clearSessionCookie() {
 }
 
 export function apiBaseUrl() {
-  return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
+  return resolveApiBaseUrl();
 }
 
 export async function apiRequest<T>(path: string, init?: RequestInit): Promise<{ ok: boolean; status: number; body: T }> {

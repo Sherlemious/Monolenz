@@ -19,8 +19,8 @@ ATS-tailored resume generation, application tracking, OAuth, billing, and a full
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Backend**: Express.js, TypeScript
+- **Frontend**: Next.js 15, React 19, TypeScript (Vercel production also serves `/api/v1`)
+- **Backend**: Express.js, TypeScript (local development)
 - **Database**: Neon PostgreSQL with Prisma ORM
 - **Authentication**: Email/password + JWT (own `users` table)
 - **Storage**: AWS S3
@@ -88,7 +88,7 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-Fill in a Neon `DATABASE_URL`, a shared `AUTH_SECRET` (32+ characters) in both `apps/api/.env` and `apps/web/.env.local`, and `NEXT_PUBLIC_API_URL` (default `http://localhost:4000`). Optional: `RESEND_API_KEY` for password-reset emails.
+Fill in a Neon `DATABASE_URL` and a shared `AUTH_SECRET` (32+ characters) in both `apps/api/.env` and `apps/web/.env.local`. Leave `NEXT_PUBLIC_API_URL` empty to use Next.js `/api/v1` against Neon, or set `http://localhost:4000` to use local Express. Optional: `RESEND_API_KEY` for password-reset emails.
 
 ```bash
 pnpm --filter api db:generate
@@ -136,21 +136,15 @@ Monolenz uses a **block-based versioning system** inspired by Git, where profess
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────┐                    ┌─────────────────┐
-│   Next.js App   │                    │  Express API    │
-│                 │   Bearer JWT       │                 │
-│ • Login/Signup  │───────────────────►│ • Verify JWT    │
-│ • Session cookie│                    │ • Profile CRUD  │
-│ • Route Guards  │                    │ • Validation    │
-└─────────────────┘                    └────────┬────────┘
-                                                │
-                                                ▼
-                                       ┌─────────────────┐
-                                       │  Neon Postgres  │
-                                       │ • users         │
-                                       │ • profiles      │
-                                       │ • versions      │
-                                       │ • blocks        │
-                                       └─────────────────┘
+│   Next.js App   │     Prisma         │  Neon Postgres  │
+│ • Login/Signup  │───────────────────►│ • users         │
+│ • Session cookie│                    │ • profiles      │
+│ • /api/v1 routes│                    │ • versions      │
+│ • Route Guards  │                    │ • blocks        │
+└─────────────────┘                    └─────────────────┘
+
+Local optional: set NEXT_PUBLIC_API_URL=http://localhost:4000 to use Express
+instead of the Next.js /api/v1 route handlers.
 ```
 
 ## Versioning and Blocks (Profile Pages)

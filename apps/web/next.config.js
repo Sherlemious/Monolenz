@@ -59,15 +59,15 @@ const nextConfig = {
     ];
   },
 
-  // Environment variables validation
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
   },
 
+  transpilePackages: ['api'],
+
   // External packages that should not be bundled for server components
-  serverExternalPackages: ['jose'],
+  serverExternalPackages: ['jose', '@prisma/client', 'prisma', 'bcryptjs', 'winston', 'newrelic'],
 };
 
 export default nextConfig;

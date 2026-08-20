@@ -6,10 +6,10 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { BaseService } from '../base.service';
 import { ServiceError } from '../base.service';
-import { BlockEntity, BlockType, TypedBlock, Version } from '@monolenz/types/entities/blocks';
+import { BlockEntity, BlockType, TypedBlock } from '@monolenz/types/entities/blocks';
 import { BLOCK_SCHEMAS } from '@monolenz/types/validation/block-schemas';
 import { BlocksRepository } from '../../repositories/blocks/blocks.repository';
-import { VersionsRepository } from '../../repositories/profile/versions.repository';
+import { VersionEntity, VersionsRepository } from '../../repositories/profile/versions.repository';
 import { VersionBlocksRepository } from '../../repositories/profile/version-blocks.repository';
 import { TypedBlockRepositoryFactory } from '../../repositories/blocks/repository-factory';
 import { ServiceContext } from '../base.service';
@@ -54,6 +54,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
   private typedBlockFactory: TypedBlockRepositoryFactory;
   private versionsRepo: VersionsRepository;
   private versionBlocksRepo: VersionBlocksRepository;
+  private prisma: PrismaClient;
 
   constructor(
     blocksRepo: BlocksRepository,
@@ -82,11 +83,11 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
   }
 
   protected async applyBusinessRules(
-    data: unknown,
+    data: Partial<BlockEntity>,
     _operation: 'create' | 'update',
-    _context?: ServiceContext
-  ): Promise<unknown> {
-    // Blocks are immutable - no business rules to apply
+    _context?: ServiceContext,
+    _existing?: BlockEntity
+  ): Promise<Partial<BlockEntity>> {
     return data;
   }
 
@@ -258,7 +259,7 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
   /**
    * Get latest version for profile
    */
-  async getLatestVersion(profileId: string): Promise<Version | null> {
+  async getLatestVersion(profileId: string): Promise<VersionEntity | null> {
     return this.versionsRepo.getLatestVersionForProfile(profileId);
   }
 

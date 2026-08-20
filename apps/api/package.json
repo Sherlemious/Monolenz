@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "main": "server.js",
+  "exports": {
+    "./core": "./src/core.ts"
+  },
   "scripts": {
     "build": "pnpm i && prisma generate && tsup",
     "build:without-db": "pnpm i && tsup",
