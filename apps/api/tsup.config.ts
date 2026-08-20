@@ -12,7 +12,7 @@ export default defineConfig({
   dts: false,
   platform: 'node',
   treeshake: true,
-  external: ['@prisma/client', 'dotenv', /generated\/prisma/],
+  external: ['@prisma/client', 'dotenv'],
   bundle: true,
   // Handle path mapping
   esbuildOptions(options) {
