@@ -48,3 +48,6 @@ github-actions-deploy-key.json
 *.log
 
 apps/api/docs/environments
+
+# local assets (domain receipt, inspo) - not tracked
+assets/
