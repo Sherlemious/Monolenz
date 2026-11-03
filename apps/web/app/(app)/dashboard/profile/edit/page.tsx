@@ -18,8 +18,14 @@ import { createProfileApi } from '@/lib/api/profile';
 import { createProfileBlocksApi } from '@/lib/api/profile-blocks';
 import { useHasUnsavedChanges } from '@/lib/stores/profile-editor-store';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const EDITOR_TABS: { id: 'info' | 'blocks' | 'links'; label: string }[] = [
+  { id: 'info', label: 'About' },
+  { id: 'blocks', label: 'Content' },
+  { id: 'links', label: 'Links' },
+];
 
 export default function ProfileEditPage() {
   const router = useRouter();
@@ -136,59 +142,44 @@ export default function ProfileEditPage() {
 
   return (
     <div className='flex flex-col h-full'>
-      {/* Tab bar + status */}
-      <div className='flex items-center justify-between px-4 md:px-6 border-b bg-card shrink-0'>
-        <div className='flex'>
-          <button
-            type='button'
-            className={cn(
-              'relative px-4 py-3 text-sm font-medium transition-colors',
-              activeTab === 'info' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-            )}
-            onClick={() => handleTabSwitch('info')}
-          >
-            Profile Info
-            {activeTab === 'info' && (
-              <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />
-            )}
-          </button>
-          <button
-            type='button'
-            className={cn(
-              'relative px-4 py-3 text-sm font-medium transition-colors',
-              activeTab === 'blocks' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-            )}
-            onClick={() => handleTabSwitch('blocks')}
-          >
-            Content
-            {activeTab === 'blocks' && (
-              <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />
-            )}
-          </button>
-          <button
-            type='button'
-            className={cn(
-              'relative px-4 py-3 text-sm font-medium transition-colors',
-              activeTab === 'links' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-            )}
-            onClick={() => handleTabSwitch('links')}
-          >
-            Links
-            {activeTab === 'links' && (
-              <span className='absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full' />
-            )}
-          </button>
+      {/* Header + section switcher */}
+      <div className='flex flex-wrap items-center justify-between gap-3 px-6 md:px-10 py-4 border-b shrink-0'>
+        <div className='flex items-center gap-5'>
+          <h1 className='text-[17px] font-semibold tracking-tight'>Editor</h1>
+          <div role='tablist' aria-label='Editor sections' className='inline-flex rounded-lg bg-secondary p-0.5'>
+            {EDITOR_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type='button'
+                role='tab'
+                aria-selected={activeTab === tab.id}
+                onClick={() => handleTabSwitch(tab.id)}
+                className={cn(
+                  'h-7 px-3 rounded-md text-[13px] font-medium transition-all',
+                  activeTab === tab.id
+                    ? 'bg-card text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.08)] ring-1 ring-border'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {hasUnsavedChanges && (
-          <Badge
-            variant='outline'
-            className='text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800'
-          >
-            <span className='size-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5' />
-            Unsaved changes
-          </Badge>
-        )}
+        <div className='flex items-center gap-3'>
+          {hasUnsavedChanges && (
+            <span className='flex items-center gap-1.5 text-[12px] text-muted-foreground'>
+              <span className='size-1.5 rounded-full bg-warning animate-pulse' aria-hidden />
+              Unsaved
+            </span>
+          )}
+          <Button variant='ghost' size='sm' asChild>
+            <a href={`/${profile.username}`} target='_blank' rel='noopener noreferrer'>
+              Preview <ArrowUpRight className='size-3.5' />
+            </a>
+          </Button>
+        </div>
       </div>
 
       {/* Content area */}

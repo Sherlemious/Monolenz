@@ -26,22 +26,24 @@ export default function ResetPasswordForm() {
   const token = searchParams.get('token') || '';
 
   return (
-    <Card className='w-full max-w-xs sm:max-w-sm md:max-w-md rounded-lg md:rounded-xl shadow-sm md:shadow-md py-0 gap-0'>
-      <CardHeader className='text-center border-b px-6 sm:px-8 md:px-10 py-5 sm:py-6'>
-        <CardTitle className='text-lg sm:text-xl md:text-2xl tracking-tight leading-tight'>New password</CardTitle>
+    <Card className='w-full max-w-sm bg-transparent border-0 shadow-none rounded-none py-0 gap-0'>
+      <CardHeader className='px-0 pt-0 pb-7 gap-1.5'>
+        <CardTitle className='font-serif text-[36px] font-normal leading-[1.05] tracking-[-0.01em]'>
+          New password
+        </CardTitle>
         <CardDescription>Choose a password for your account</CardDescription>
       </CardHeader>
-      <CardContent className='px-6 sm:px-8 md:px-10 pt-5 sm:pt-6 pb-6 sm:pb-8'>
+      <CardContent className='px-0 pb-0'>
         {state?.error && (
           <div
             role='alert'
-            className='mb-3 rounded-md border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive'
+            className='mb-4 rounded-md border border-danger-border bg-danger-soft px-3 py-2 text-[13px] text-destructive'
           >
             {state.error}
           </div>
         )}
 
-        <form action={formAction} className='grid gap-4 sm:gap-6'>
+        <form action={formAction} className='grid gap-4'>
           <input type='hidden' name='token' value={token} />
           {!token && (
             <div
@@ -53,14 +55,7 @@ export default function ResetPasswordForm() {
           )}
           <div className='grid gap-2'>
             <Label htmlFor='password'>Password</Label>
-            <Input
-              id='password'
-              name='password'
-              type='password'
-              minLength={8}
-              required
-              className='h-10 sm:h-11 rounded-lg'
-            />
+            <Input id='password' name='password' type='password' minLength={8} required className='h-10' />
           </div>
           <div className='grid gap-2'>
             <Label htmlFor='confirmPassword'>Confirm password</Label>
@@ -70,11 +65,11 @@ export default function ResetPasswordForm() {
               type='password'
               minLength={8}
               required
-              className='h-10 sm:h-11 rounded-lg'
+              className='h-10'
             />
           </div>
           <SubmitButton />
-          <div className='mt-2 text-center text-xs text-muted-foreground'>
+          <div className='mt-3 text-[13px] text-muted-foreground'>
             <Link href='/login' className='text-foreground underline'>
               Back to sign in
             </Link>

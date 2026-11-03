@@ -358,12 +358,12 @@ export function ProfileLinksEditor({ api, onDirtyChange }: ProfileLinksEditorPro
   }
 
   return (
-    <div className='p-6 md:p-8 max-w-2xl space-y-6'>
+    <div className='px-6 md:px-10 py-8 max-w-2xl space-y-6'>
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div>
-          <h2 className='text-base font-semibold'>Profile Links</h2>
-          <p className='text-sm text-muted-foreground mt-0.5'>Add links to your social profiles and websites.</p>
+          <h2 className='text-[19px] font-semibold tracking-tight'>Links</h2>
+          <p className='text-[13px] text-muted-foreground mt-0.5'>Add links to your social profiles and websites.</p>
         </div>
         <Button size='sm' onClick={handleSave} disabled={isSaving || !isDirty(drafts, original)}>
           {isSaving ? 'Saving...' : 'Save Links'}

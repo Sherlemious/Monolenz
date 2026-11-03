@@ -4,12 +4,24 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MonolenzLockup } from '@/components/brand/Logo';
-import { LayoutDashboard, User, Pencil, History, LogOut, Menu, ChevronsUpDown, Sun, Moon } from 'lucide-react';
+import {
+  LayoutDashboard,
+  User,
+  Pencil,
+  History,
+  LogOut,
+  Menu,
+  ChevronsUpDown,
+  Sun,
+  Moon,
+  ArrowUpRight,
+} from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { signOut } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { createProfileApi } from '@/lib/api/profile';
+import { createBrowserApiClient } from '@/lib/api/client';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -20,9 +32,9 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/dashboard/profile', label: 'My Profile', icon: User },
-  { href: '/dashboard/profile/edit', label: 'Edit Profile', icon: Pencil },
+  { href: '/dashboard', label: 'Home', icon: LayoutDashboard, exact: true },
+  { href: '/dashboard/profile', label: 'Profile', icon: User },
+  { href: '/dashboard/profile/edit', label: 'Editor', icon: Pencil },
   { href: '/dashboard/profile/history', label: 'History', icon: History },
 ];
 
@@ -47,6 +59,28 @@ function useUserInfo(): UserInfo | null {
   return user;
 }
 
+/** Username for the "public page" shortcut; null until a profile exists */
+function useUsername(): string | null {
+  const [username, setUsername] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    let cancelled = false;
+    createProfileApi(createBrowserApiClient())
+      .getMyProfile()
+      .then((p) => {
+        if (!cancelled) setUsername(p?.username ?? null);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+    // Re-check after navigation so a newly created profile shows up
+  }, [pathname]);
+
+  return username;
+}
+
 function isActive(pathname: string | null, href: string, exact?: boolean) {
   if (!pathname) return false;
   if (exact) return pathname === href;
@@ -56,6 +90,7 @@ function isActive(pathname: string | null, href: string, exact?: boolean) {
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const user = useUserInfo();
+  const username = useUsername();
   const { resolvedTheme, setTheme } = useTheme();
   // Highlight only the most specific matching item (e.g. History, not also My Profile)
   const activeHref = NAV_ITEMS.filter((item) => isActive(pathname, item.href, item.exact)).sort(
@@ -66,13 +101,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     <div className='flex flex-col h-full'>
       {/* Logo */}
       <div className='flex items-center px-5 h-14 shrink-0 text-sidebar-foreground'>
-        <MonolenzLockup height={22} />
+        <Link href='/dashboard' onClick={onNavigate} aria-label='Monolenz home'>
+          <MonolenzLockup height={20} />
+        </Link>
       </div>
 
-      <Separator />
-
       {/* Navigation */}
-      <nav className='flex-1 px-3 py-4 space-y-1'>
+      <nav className='flex-1 px-3 pt-2 space-y-0.5' aria-label='Main'>
         {NAV_ITEMS.map((item) => {
           const active = item.href === activeHref;
           return (
@@ -80,52 +115,59 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               key={item.href}
               href={item.href}
               onClick={onNavigate}
+              aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'relative flex items-center gap-2.5 h-8 px-2.5 rounded-md text-[13px] transition-colors',
                 active
-                  ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                  : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                  ? 'bg-sidebar-accent text-sidebar-foreground font-medium'
+                  : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/60'
               )}
             >
-              <item.icon className='size-4 shrink-0' />
+              {active && (
+                <span className='absolute -left-3 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-brand' aria-hidden />
+              )}
+              <item.icon className={cn('size-4 shrink-0', active ? 'text-sidebar-foreground' : 'opacity-80')} />
               {item.label}
             </Link>
           );
         })}
+
+        {username && (
+          <>
+            <div className='pt-5 pb-1.5 px-2.5 text-[11px] font-medium text-muted-foreground/80'>Public page</div>
+            <a
+              href={`/${username}`}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='group flex items-center gap-2.5 h-8 px-2.5 rounded-md text-[13px] text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/60 transition-colors'
+            >
+              <span className='size-2 rounded-full bg-brand shrink-0 mx-1' aria-hidden />
+              <span className='truncate'>/{username}</span>
+              <ArrowUpRight className='size-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity' />
+            </a>
+          </>
+        )}
       </nav>
 
-      <Separator />
-
-      {/* Dark mode toggle */}
-      <div className='px-3 py-2'>
-        <button
-          type='button'
-          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-          className='flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors'
-          title={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {resolvedTheme === 'dark' ? <Sun className='size-4 shrink-0' /> : <Moon className='size-4 shrink-0' />}
-          {resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}
-        </button>
-      </div>
-
-      <Separator />
-
       {/* User section */}
-      <div className='p-3'>
+      <div className='p-3 border-t border-sidebar-border'>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className='flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm hover:bg-sidebar-accent transition-colors text-left cursor-pointer'>
-              <Avatar className='size-8 shrink-0'>
-                <AvatarFallback className='bg-primary/10 text-primary text-xs font-semibold'>
+            <button className='flex items-center gap-2.5 w-full px-2 py-1.5 rounded-md text-sm hover:bg-sidebar-accent transition-colors text-left cursor-pointer'>
+              <Avatar className='size-7 shrink-0'>
+                <AvatarFallback className='bg-secondary text-foreground text-xs font-semibold ring-1 ring-border'>
                   {user?.initials ?? '?'}
                 </AvatarFallback>
               </Avatar>
-              <span className='flex-1 min-w-0 text-sm font-medium truncate'>{user?.email ?? 'Loading...'}</span>
-              <ChevronsUpDown className='size-4 text-sidebar-foreground/40 shrink-0' />
+              <span className='flex-1 min-w-0 text-[13px] truncate'>{user?.email ?? 'Loading...'}</span>
+              <ChevronsUpDown className='size-3.5 text-muted-foreground shrink-0' />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align='start' side='top' className='w-[var(--radix-dropdown-menu-trigger-width)]'>
+            <DropdownMenuItem onSelect={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
+              {resolvedTheme === 'dark' ? <Sun className='size-4' /> : <Moon className='size-4' />}
+              {resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}
+            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <form action={signOut} className='w-full'>
                 <button type='submit' className='flex items-center gap-2 w-full text-left cursor-pointer'>
@@ -153,7 +195,7 @@ export function AppSidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className='hidden md:flex w-60 border-r border-sidebar-border bg-sidebar shrink-0 flex-col'>
+      <aside className='hidden md:flex w-56 border-r border-sidebar-border bg-sidebar shrink-0 flex-col'>
         <SidebarContent />
       </aside>
 

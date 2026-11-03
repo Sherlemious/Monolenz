@@ -36,6 +36,7 @@ import {
   ArrowLeft,
   ChevronRight,
   EyeOff,
+  Eye,
 } from 'lucide-react';
 
 // ============================================================================
@@ -78,7 +79,7 @@ const CATEGORIES: CategoryMeta[] = [
     labelPlural: 'Work Experiences',
     icon: Briefcase,
     description: 'Jobs, internships, and professional roles',
-    color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+    color: 'bg-secondary text-foreground',
     borderColor: 'border-blue-500/30',
   },
   {
@@ -87,7 +88,7 @@ const CATEGORIES: CategoryMeta[] = [
     labelPlural: 'Education',
     icon: GraduationCap,
     description: 'Degrees, schools, and academic programs',
-    color: 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
+    color: 'bg-secondary text-foreground',
     borderColor: 'border-purple-500/30',
   },
   {
@@ -96,7 +97,7 @@ const CATEGORIES: CategoryMeta[] = [
     labelPlural: 'Skills',
     icon: Zap,
     description: 'Technical and professional abilities',
-    color: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+    color: 'bg-secondary text-foreground',
     borderColor: 'border-amber-500/30',
   },
   {
@@ -105,7 +106,7 @@ const CATEGORIES: CategoryMeta[] = [
     labelPlural: 'Projects',
     icon: Rocket,
     description: 'Personal and professional projects',
-    color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+    color: 'bg-secondary text-foreground',
     borderColor: 'border-emerald-500/30',
   },
   {
@@ -114,7 +115,7 @@ const CATEGORIES: CategoryMeta[] = [
     labelPlural: 'Certifications',
     icon: BadgeCheck,
     description: 'Professional certifications and licenses',
-    color: 'bg-orange-500/10 text-orange-700 dark:text-orange-400',
+    color: 'bg-secondary text-foreground',
     borderColor: 'border-orange-500/30',
   },
   {
@@ -123,7 +124,7 @@ const CATEGORIES: CategoryMeta[] = [
     labelPlural: 'Languages',
     icon: Globe,
     description: 'Spoken and written languages',
-    color: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400',
+    color: 'bg-secondary text-foreground',
     borderColor: 'border-cyan-500/30',
   },
   {
@@ -132,7 +133,7 @@ const CATEGORIES: CategoryMeta[] = [
     labelPlural: 'Volunteer Work',
     icon: Heart,
     description: 'Volunteering and community service',
-    color: 'bg-pink-500/10 text-pink-700 dark:text-pink-400',
+    color: 'bg-secondary text-foreground',
     borderColor: 'border-pink-500/30',
   },
   {
@@ -141,7 +142,7 @@ const CATEGORIES: CategoryMeta[] = [
     labelPlural: 'Awards',
     icon: Trophy,
     description: 'Honors, awards, and recognitions',
-    color: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+    color: 'bg-secondary text-foreground',
     borderColor: 'border-yellow-500/30',
   },
 ];
@@ -152,11 +153,19 @@ const CATEGORY_MAP = Object.fromEntries(CATEGORIES.map((c) => [c.type, c]));
 // Data Cleaning & Validation
 // ============================================================================
 
+const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+
 function cleanBlockData(data: Record<string, unknown>): Record<string, unknown> {
   const cleaned: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined) continue;
     if (typeof value === 'string' && value.trim() === '') continue;
+    // The API returns dates as full ISO timestamps (2022-03-01T00:00:00.000Z),
+    // but the block schemas only accept YYYY-MM-DD.
+    if (typeof value === 'string' && ISO_TIMESTAMP.test(value)) {
+      cleaned[key] = value.slice(0, 10);
+      continue;
+    }
     cleaned[key] = value;
   }
   return cleaned;
@@ -215,6 +224,7 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
     deleteBlock,
     restoreBlock,
     reorderBlocksInCategory,
+    resetToOriginal,
     selectBlock,
     setSaving,
     setSaveError,
@@ -435,47 +445,15 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
     );
   }
 
+  const showSaveBar = hasUnsavedChanges || isSaving || saveSuccess || Boolean(lastSaveError);
+
   return (
-    <div className='flex flex-col h-full'>
-      {/* Save bar */}
-      <div className='flex justify-between items-center px-5 py-3 border-b bg-card/50 shrink-0'>
-        <div className='flex items-center gap-3'>
-          {hasUnsavedChanges && (
-            <div className='flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-medium'>
-              <span className='size-1.5 rounded-full bg-amber-500 animate-pulse' />
-              Unsaved changes
-            </div>
-          )}
-          {lastSaveError && <p className='text-xs text-destructive'>{lastSaveError}</p>}
-        </div>
-
-        <Button
-          size='sm'
-          onClick={handleSave}
-          disabled={!hasUnsavedChanges || isSaving}
-          className={cn(saveSuccess && 'bg-green-600 hover:bg-green-600')}
-        >
-          {isSaving ? (
-            <>
-              <div className='animate-spin rounded-full size-3.5 border border-primary-foreground border-t-transparent' />
-              Saving...
-            </>
-          ) : saveSuccess ? (
-            <>
-              <Check className='size-3.5' />
-              Saved
-            </>
-          ) : (
-            'Save Changes'
-          )}
-        </Button>
-      </div>
-
+    <div className='relative flex flex-col h-full'>
       {/* Main layout: sidebar + content */}
       <div className='flex flex-1 overflow-hidden'>
         {/* Category sidebar */}
-        <nav className='w-56 border-r bg-muted/20 overflow-y-auto shrink-0'>
-          <div className='p-2 space-y-0.5'>
+        <nav className='w-52 border-r overflow-y-auto shrink-0' aria-label='Sections'>
+          <div className='p-3 space-y-0.5'>
             {CATEGORIES.map((cat) => {
               const count = categoryCounts[cat.type] ?? 0;
               const isActive = activeCategory === cat.type;
@@ -492,25 +470,17 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
                     setActiveCategory(cat.type);
                     selectBlock(null);
                   }}
+                  aria-current={isActive ? 'true' : undefined}
                   className={cn(
-                    'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-sm transition-colors',
+                    'w-full flex items-center gap-2.5 h-8 px-2.5 rounded-md text-left text-[13px] transition-colors',
                     isActive
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      ? 'bg-secondary text-foreground font-medium'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
                   )}
                 >
                   <Icon className='size-4 shrink-0' />
                   <span className='flex-1 truncate'>{cat.labelPlural}</span>
-                  {count > 0 && (
-                    <span
-                      className={cn(
-                        'text-[10px] font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center',
-                        isActive ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
-                      )}
-                    >
-                      {count}
-                    </span>
-                  )}
+                  {count > 0 && <span className='text-[12px] tabular-nums text-muted-foreground'>{count}</span>}
                   {hasErrors && <span className='size-1.5 rounded-full bg-destructive shrink-0' />}
                 </button>
               );
@@ -536,6 +506,72 @@ export function BlockEditor({ apiClient, profileIdentifier, initialVersionId }: 
               onDelete={(clientId) => handleDeleteWithUndo(clientId)}
               onReorder={(newOrder) => reorderBlocksInCategory(newOrder.map((b) => b.clientId))}
             />
+          )}
+        </div>
+      </div>
+
+      {/* Floating save bar — only when there is something to save */}
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-x-0 bottom-5 z-20 flex justify-center px-4 transition-all duration-200',
+          showSaveBar ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+        )}
+        aria-hidden={!showSaveBar}
+      >
+        <div
+          role='status'
+          className='pointer-events-auto flex items-center gap-3 rounded-full border bg-popover pl-4 pr-1.5 py-1.5 shadow-lg'
+        >
+          <span className='flex items-center gap-2 text-[13px]'>
+            {lastSaveError ? (
+              <>
+                <span className='size-2 rounded-full bg-destructive' aria-hidden />
+                <span className='text-destructive max-w-xs truncate'>{lastSaveError}</span>
+              </>
+            ) : saveSuccess ? (
+              <>
+                <Check className='size-3.5 text-success' />
+                Saved. Your public page is up to date.
+              </>
+            ) : (
+              <>
+                <span className='size-2 rounded-full bg-warning animate-pulse' aria-hidden />
+                Unsaved changes
+              </>
+            )}
+          </span>
+          {hasUnsavedChanges && !isSaving && (
+            <Button
+              variant='ghost'
+              size='sm'
+              className='rounded-full'
+              tabIndex={showSaveBar ? 0 : -1}
+              onClick={() => {
+                if (window.confirm('Discard all unsaved changes?')) resetToOriginal();
+              }}
+            >
+              Discard
+            </Button>
+          )}
+          {(hasUnsavedChanges || isSaving) && (
+            <Button
+              size='sm'
+              className='rounded-full'
+              onClick={handleSave}
+              disabled={isSaving}
+              tabIndex={showSaveBar ? 0 : -1}
+            >
+              {isSaving ? (
+                <>
+                  <div className='animate-spin rounded-full size-3.5 border border-primary-foreground border-t-transparent' />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Save changes <kbd className='hidden sm:inline text-[11px] opacity-60 font-sans'>⌘S</kbd>
+                </>
+              )}
+            </Button>
           )}
         </div>
       </div>
@@ -569,19 +605,14 @@ function CategoryListView({ meta, items, onAdd, onSelect, onDelete, onReorder }:
   }, [localItems, onReorder]);
 
   return (
-    <div className='p-6 max-w-3xl'>
+    <div className='px-6 md:px-10 py-8 pb-24 max-w-3xl'>
       {/* Category header */}
       <div className='flex items-start justify-between mb-6'>
-        <div className='flex items-center gap-3'>
-          <div className={cn('size-10 rounded-xl flex items-center justify-center', meta.color)}>
-            <Icon className='size-5' />
-          </div>
-          <div>
-            <h3 className='text-lg font-semibold'>{meta.labelPlural}</h3>
-            <p className='text-sm text-muted-foreground'>{meta.description}</p>
-          </div>
+        <div>
+          <h3 className='text-[19px] font-semibold tracking-tight'>{meta.labelPlural}</h3>
+          <p className='text-[13px] text-muted-foreground mt-0.5'>{meta.description}</p>
         </div>
-        <Button size='sm' onClick={onAdd}>
+        <Button size='sm' variant='outline' onClick={onAdd}>
           <Plus className='size-3.5' />
           Add {meta.label}
         </Button>
@@ -589,9 +620,9 @@ function CategoryListView({ meta, items, onAdd, onSelect, onDelete, onReorder }:
 
       {/* Items */}
       {localItems.length === 0 ? (
-        <div className='flex flex-col items-center justify-center py-16 text-center'>
-          <div className={cn('size-16 rounded-2xl flex items-center justify-center mb-4', meta.color)}>
-            <Icon className='size-7' />
+        <div className='flex flex-col items-center justify-center py-14 text-center rounded-xl border border-dashed'>
+          <div className='size-11 rounded-full bg-secondary flex items-center justify-center mb-4'>
+            <Icon className='size-5 text-muted-foreground' />
           </div>
           <p className='font-medium text-sm mb-1'>No {meta.labelPlural.toLowerCase()} yet</p>
           <p className='text-xs text-muted-foreground mb-4 max-w-xs'>
@@ -631,58 +662,57 @@ interface ItemCardProps {
   onDelete: () => void;
 }
 
-function ItemCard({ item, meta, onClick, onDelete }: ItemCardProps) {
+function ItemCard({ item, onClick, onDelete }: ItemCardProps) {
   const hasErrors = item.errors && Object.keys(item.errors).length > 0;
   const summary = getItemSummary(item);
   const subtitle = getItemSubtitle(item);
 
   return (
-    <button
-      type='button'
+    <div
+      role='button'
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       className={cn(
-        'w-full text-left flex items-center gap-4 p-4 rounded-xl border bg-card transition-all group',
-        'hover:shadow-sm hover:border-border/80',
-        hasErrors && 'border-destructive/40 bg-destructive/5'
+        'w-full text-left flex items-center gap-3 px-3 py-3.5 rounded-lg border bg-card transition-all group cursor-pointer',
+        'hover:border-border-strong focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/30',
+        hasErrors && 'border-danger-border bg-danger-soft'
       )}
     >
       {/* Drag handle */}
-      <GripVertical className='size-4 text-muted-foreground/0 group-hover:text-muted-foreground/50 shrink-0 cursor-grab transition-colors' />
-
-      {/* Color accent */}
-      <div className={cn('w-1 self-stretch rounded-full shrink-0', meta.borderColor, 'bg-current opacity-30')} />
+      <GripVertical className='size-4 text-muted-foreground/30 group-hover:text-muted-foreground/70 shrink-0 cursor-grab transition-colors' />
 
       <div className='flex-1 min-w-0'>
         <div className='flex items-center gap-2'>
-          <p className='font-medium text-sm truncate'>{summary}</p>
+          <p className='font-medium text-[14px] truncate'>{summary}</p>
           {item.status !== 'unchanged' && (
-            <Badge
-              variant={item.status === 'created' ? 'default' : 'secondary'}
-              className='text-[10px] px-1.5 py-0 h-4 shrink-0'
-            >
-              {item.status === 'created' ? 'new' : 'edited'}
+            <Badge variant={item.status === 'created' ? 'accent' : 'warning'} className='h-[18px] px-1.5 text-[10.5px]'>
+              {item.status === 'created' ? 'New' : 'Edited'}
             </Badge>
           )}
           {!item.isVisible && (
-            <Badge variant='secondary' className='text-[10px] px-1.5 py-0 h-4 shrink-0 gap-1'>
+            <Badge variant='secondary' className='h-[18px] px-1.5 text-[10.5px] gap-1'>
               <EyeOff className='size-2.5' />
-              hidden
+              Hidden
             </Badge>
           )}
           {hasErrors && (
-            <Badge variant='destructive' className='text-[10px] px-1.5 py-0 h-4 shrink-0'>
-              needs fix
+            <Badge variant='destructive' className='h-[18px] px-1.5 text-[10.5px]'>
+              Needs a fix
             </Badge>
           )}
         </div>
-        {subtitle && <p className='text-xs text-muted-foreground mt-0.5 truncate'>{subtitle}</p>}
+        {subtitle && <p className='text-[13px] text-muted-foreground mt-0.5 truncate'>{subtitle}</p>}
       </div>
 
       {/* Actions */}
       <div className='flex items-center gap-1 shrink-0'>
-        <span className='text-muted-foreground/0 group-hover:text-muted-foreground text-xs transition-colors mr-1'>
-          Edit
-        </span>
         <button
           type='button'
           onClick={(e) => {
@@ -691,12 +721,13 @@ function ItemCard({ item, meta, onClick, onDelete }: ItemCardProps) {
           }}
           className='p-1.5 text-muted-foreground/0 group-hover:text-muted-foreground hover:!text-destructive rounded-md transition-all'
           title='Delete'
+          aria-label={`Delete ${summary}`}
         >
           <Trash2 className='size-3.5' />
         </button>
         <ChevronRight className='size-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors' />
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -713,11 +744,10 @@ interface ItemEditViewProps {
 
 function ItemEditView({ block, meta, onBack, onDelete }: ItemEditViewProps) {
   const summary = getItemSummary(block);
-  const Icon = meta.icon;
   const setBlockVisible = useProfileEditorStore((s) => s.setBlockVisible);
 
   return (
-    <div className='p-6 max-w-2xl'>
+    <div className='px-6 md:px-10 py-8 pb-28 max-w-2xl'>
       {/* Breadcrumb */}
       <div className='flex items-center gap-2 mb-6'>
         <button
@@ -733,19 +763,14 @@ function ItemEditView({ block, meta, onBack, onDelete }: ItemEditViewProps) {
       </div>
 
       {/* Form header */}
-      <div className='flex items-center justify-between mb-8'>
-        <div className='flex items-center gap-3'>
-          <div className={cn('size-10 rounded-xl flex items-center justify-center', meta.color)}>
-            <Icon className='size-5' />
-          </div>
-          <div>
-            <h3 className='text-lg font-semibold'>
-              {block.status === 'created' ? `New ${meta.label}` : `Edit ${meta.label}`}
-            </h3>
-            <p className='text-xs text-muted-foreground mt-0.5'>
-              {block.status === 'created' ? 'Fill in the details below' : 'Update the details below'}
-            </p>
-          </div>
+      <div className='flex items-start justify-between gap-4 mb-6'>
+        <div className='min-w-0'>
+          <p className='text-[12px] font-medium text-muted-foreground'>
+            {block.status === 'created' ? `New ${meta.label.toLowerCase()}` : meta.label}
+          </p>
+          <h3 className='text-[22px] font-semibold tracking-tight truncate'>
+            {block.status === 'created' && summary === meta.label ? `Untitled ${meta.label.toLowerCase()}` : summary}
+          </h3>
         </div>
 
         <Button variant='ghost' size='sm' onClick={onDelete} className='text-muted-foreground hover:text-destructive'>
@@ -754,19 +779,27 @@ function ItemEditView({ block, meta, onBack, onDelete }: ItemEditViewProps) {
         </Button>
       </div>
 
-      <label className='flex items-center gap-3 mb-6 rounded-xl border bg-card px-4 py-3 cursor-pointer'>
+      <label className='flex items-center justify-between gap-4 mb-8 rounded-lg border bg-card px-4 py-3 cursor-pointer'>
+        <span className='text-sm'>
+          <span className='font-medium flex items-center gap-1.5'>
+            {block.isVisible ? <Eye className='size-3.5' /> : <EyeOff className='size-3.5' />}
+            {block.isVisible ? 'Shown on your public page' : 'Hidden from your public page'}
+          </span>
+          <span className='block text-[12px] text-muted-foreground mt-0.5'>
+            Hidden entries stay here in the editor, but visitors won&apos;t see them.
+          </span>
+        </span>
         <input
           type='checkbox'
-          className='size-4 accent-primary'
+          role='switch'
+          className='peer sr-only'
           checked={block.isVisible}
           onChange={(e) => setBlockVisible(block.clientId, e.target.checked)}
         />
-        <span className='text-sm'>
-          <span className='font-medium'>Show on public profile</span>
-          <span className='block text-xs text-muted-foreground'>
-            Hidden entries stay in your editor but not on /username
-          </span>
-        </span>
+        <span
+          aria-hidden
+          className='relative h-5 w-9 shrink-0 rounded-full bg-border-strong transition-colors peer-checked:bg-foreground peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/30 after:absolute after:left-0.5 after:top-0.5 after:size-4 after:rounded-full after:bg-background after:shadow-sm after:transition-transform peer-checked:after:translate-x-4'
+        />
       </label>
 
       {/* Form fields */}
