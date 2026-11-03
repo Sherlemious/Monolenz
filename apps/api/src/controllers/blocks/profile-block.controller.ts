@@ -66,6 +66,30 @@ class ProfileBlockController {
   });
 
   /**
+   * List the authenticated user's versions
+   */
+  listMyVersions = asyncHandler(async (req: Request, res: Response) => {
+    const { page, limit } = req.validatedQuery || { page: 1, limit: 20 };
+    const result = await this.blockService.listVersions(req.userId!, { page, limit });
+    return res.success(result, 'Versions retrieved successfully');
+  });
+
+  /**
+   * Restore an earlier version (creates a new version)
+   */
+  restoreVersion = asyncHandler(async (req: Request, res: Response) => {
+    const { versionId } = req.validatedParams;
+    const context: ServiceContext = {
+      userId: req.userId,
+      requestId: req.requestId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    };
+    const result = await this.blockService.restoreVersion(req.userId!, versionId, context);
+    return res.success(result, 'Version restored successfully');
+  });
+
+  /**
    * List blocks for a specific version
    */
   listBlocksForVersion = asyncHandler(async (req: Request, res: Response) => {

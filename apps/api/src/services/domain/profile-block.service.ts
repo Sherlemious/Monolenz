@@ -9,7 +9,11 @@ import { ServiceError } from '../base.service';
 import { BlockEntity, BlockType, TypedBlock } from '@monolenz/types/entities/blocks';
 import { BLOCK_SCHEMAS } from '@monolenz/types/validation/block-schemas';
 import { BlocksRepository } from '../../repositories/blocks/blocks.repository';
-import { VersionEntity, VersionsRepository } from '../../repositories/profile/versions.repository';
+import {
+  VersionEntity,
+  VersionSummaryEntity,
+  VersionsRepository,
+} from '../../repositories/profile/versions.repository';
 import { VersionBlocksRepository } from '../../repositories/profile/version-blocks.repository';
 import { TypedBlockRepositoryFactory } from '../../repositories/blocks/repository-factory';
 import { ServiceContext } from '../base.service';
@@ -254,6 +258,82 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
     if (!version || version.profile_id !== profileId) {
       throw new ServiceError('Version not found', null, 404);
     }
+  }
+
+  /**
+   * List a profile's versions, newest first, with block counts
+   */
+  async listVersions(
+    profileId: string,
+    options: { page: number; limit: number }
+  ): Promise<{
+    versions: (VersionSummaryEntity & { is_current: boolean })[];
+    total: number;
+    latestVersionId: number | null;
+  }> {
+    const offset = (options.page - 1) * options.limit;
+    const [versions, total, latest] = await Promise.all([
+      this.versionsRepo.listVersionsForProfile(profileId, { limit: options.limit, offset }),
+      this.versionsRepo.countVersionsForProfile(profileId),
+      this.versionsRepo.getLatestVersionForProfile(profileId),
+    ]);
+    const latestVersionId = latest?.id ?? null;
+    return {
+      versions: versions.map((v) => ({ ...v, is_current: v.id === latestVersionId })),
+      total,
+      latestVersionId,
+    };
+  }
+
+  /**
+   * Restore an earlier version by creating a NEW version that carries the
+   * same blocks (and their visibility/ordering). History is never rewritten.
+   */
+  async restoreVersion(profileId: string, versionId: number, context?: ServiceContext): Promise<{ versionId: number }> {
+    if (context?.userId !== profileId) {
+      throw new ServiceError('Unauthorized', null, 403);
+    }
+
+    return (this.repository as BlocksRepository).withTransaction(async (tx) => {
+      const source = await this.versionsRepo.getVersionById(versionId, tx);
+      if (!source || source.profile_id !== profileId) {
+        throw new ServiceError('Version not found', null, 404);
+      }
+
+      const latestVersion = await this.versionsRepo.getLatestVersionForProfile(profileId, tx);
+      if (latestVersion?.id === versionId) {
+        throw new ServiceError('This version is already the current version', null, 400);
+      }
+
+      const sourceBlocks = await this.versionBlocksRepo.listVersionBlocks(versionId, undefined, tx);
+
+      const newVersion = await this.versionsRepo.createVersion(
+        {
+          profile_id: profileId,
+          parent_version_id: latestVersion?.id ?? null,
+          name: `Restored from version #${versionId}`,
+          description: null,
+        },
+        tx
+      );
+
+      for (const block of sourceBlocks) {
+        await this.versionBlocksRepo.attachBlockToVersion(
+          {
+            version_id: newVersion.id,
+            block_id: block.block_id,
+            previous_block_id: null,
+            previous_version_id: latestVersion?.id ?? null,
+            section_name: block.section_name ?? null,
+            sort_order: block.sort_order ?? 0,
+            is_visible: block.is_visible ?? true,
+          },
+          tx
+        );
+      }
+
+      return { versionId: newVersion.id };
+    });
   }
 
   /**

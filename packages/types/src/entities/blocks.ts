@@ -155,6 +155,18 @@ export interface Version {
   created_at?: string | null;
 }
 
+/** A version as listed in the history view */
+export interface VersionSummary extends Version {
+  block_count: number;
+  is_current: boolean;
+}
+
+export interface VersionHistoryResponse {
+  versions: VersionSummary[];
+  total: number;
+  latestVersionId: number | null;
+}
+
 export interface VersionBlock {
   version_id: number;
   block_id: number;
