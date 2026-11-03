@@ -17,6 +17,13 @@ import { Input, Label } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { isUsernameValidForChecking, validateUsername } from '@/lib/validation/username';
+import {
+  BLOCK_TYPE_META,
+  getBlockDates,
+  getBlockSubtitle,
+  getBlockTitle,
+  groupBlocksByCategory,
+} from '@/app/components/profile/block-display';
 
 // ============================================================================
 // Main Page
@@ -484,12 +491,17 @@ function ProfileOverview({ profile, blocks }: { profile: Profile; blocks: Versio
               </div>
             </div>
 
-            <Button asChild className='shrink-0'>
-              <Link href='/dashboard/profile/edit'>
-                <EditIcon className='size-4' />
-                Edit Profile
-              </Link>
-            </Button>
+            <div className='flex gap-2 shrink-0'>
+              <Button asChild variant='outline'>
+                <Link href='/dashboard/profile/history'>History</Link>
+              </Button>
+              <Button asChild>
+                <Link href='/dashboard/profile/edit'>
+                  <EditIcon className='size-4' />
+                  Edit Profile
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -577,26 +589,8 @@ function ProfileLinks({ profile }: { profile: Profile }) {
 // Blocks Grid
 // ============================================================================
 
-const BLOCK_TYPE_META: Record<string, { label: string; accent: string }> = {
-  work_experience: { label: 'Experience', accent: 'border-l-blue-400' },
-  education: { label: 'Education', accent: 'border-l-purple-400' },
-  skill: { label: 'Skills', accent: 'border-l-amber-400' },
-  project: { label: 'Projects', accent: 'border-l-emerald-400' },
-  certification: { label: 'Certifications', accent: 'border-l-orange-400' },
-  language: { label: 'Languages', accent: 'border-l-cyan-400' },
-  volunteer: { label: 'Volunteer', accent: 'border-l-pink-400' },
-  award: { label: 'Awards', accent: 'border-l-yellow-400' },
-};
-
 function BlocksGrid({ blocks }: { blocks: VersionBlockDetail[] }) {
-  const byCategory = new Map<string, VersionBlockDetail[]>();
-
-  for (const block of blocks) {
-    const meta = BLOCK_TYPE_META[block.block_type as string];
-    const category = meta?.label ?? 'Other';
-    if (!byCategory.has(category)) byCategory.set(category, []);
-    byCategory.get(category)!.push(block);
-  }
+  const byCategory = groupBlocksByCategory(blocks);
 
   return (
     <div className='space-y-10'>
@@ -652,66 +646,6 @@ function BlockPreview({ block }: { block: VersionBlockDetail }) {
       {dates && <p className='text-xs text-muted-foreground mt-3'>{dates}</p>}
     </article>
   );
-}
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-function getBlockTitle(block: VersionBlockDetail): string {
-  const data = block.data as unknown as Record<string, unknown>;
-  return String(
-    data.title ||
-      data.name ||
-      data.company_name ||
-      data.institution_name ||
-      data.organization_name ||
-      data.language ||
-      data.position_title ||
-      data.degree_name ||
-      formatBlockType(block.block_type)
-  );
-}
-
-function getBlockSubtitle(block: VersionBlockDetail): string | null {
-  const data = block.data as unknown as Record<string, unknown>;
-  return (data.position_title ||
-    data.degree_name ||
-    data.issuing_organization ||
-    data.role ||
-    data.proficiency ||
-    data.proficiency_level ||
-    data.category ||
-    null) as string | null;
-}
-
-function getBlockDates(block: VersionBlockDetail): string | null {
-  const data = block.data as unknown as Record<string, unknown>;
-  const start = data.start_date || data.issue_date || data.date_received;
-  const end = data.end_date || data.expiration_date;
-  const current = data.is_current || data.is_ongoing;
-
-  if (!start) return null;
-  const startStr = formatDate(start as string);
-  if (current) return `${startStr} → Present`;
-  if (end) return `${startStr} → ${formatDate(end as string)}`;
-  return startStr;
-}
-
-function formatDate(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  } catch {
-    return dateStr;
-  }
-}
-
-function formatBlockType(blockType: string): string {
-  return blockType
-    .split(/[-_]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
 }
 
 // ============================================================================

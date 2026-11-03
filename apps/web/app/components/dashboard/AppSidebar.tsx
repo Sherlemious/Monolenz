@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MonolenzLockup } from '@/components/brand/Logo';
-import { LayoutDashboard, User, Pencil, LogOut, Menu, ChevronsUpDown, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, User, Pencil, History, LogOut, Menu, ChevronsUpDown, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { signOut } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/dashboard/profile', label: 'My Profile', icon: User },
   { href: '/dashboard/profile/edit', label: 'Edit Profile', icon: Pencil },
+  { href: '/dashboard/profile/history', label: 'History', icon: History },
 ];
 
 interface UserInfo {
@@ -56,6 +57,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const user = useUserInfo();
   const { resolvedTheme, setTheme } = useTheme();
+  // Highlight only the most specific matching item (e.g. History, not also My Profile)
+  const activeHref = NAV_ITEMS.filter((item) => isActive(pathname, item.href, item.exact)).sort(
+    (a, b) => b.href.length - a.href.length
+  )[0]?.href;
 
   return (
     <div className='flex flex-col h-full'>
@@ -69,7 +74,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Navigation */}
       <nav className='flex-1 px-3 py-4 space-y-1'>
         {NAV_ITEMS.map((item) => {
-          const active = isActive(pathname, item.href, item.exact);
+          const active = item.href === activeHref;
           return (
             <Link
               key={item.href}

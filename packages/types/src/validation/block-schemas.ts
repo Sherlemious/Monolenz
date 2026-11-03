@@ -247,6 +247,14 @@ export const createBlockSchema = z.discriminatedUnion('block_type', [
 
 export type CreateBlockInput = z.infer<typeof createBlockSchema>;
 
+// Version history list query (page/limit come in as strings)
+export const listVersionsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export type ListVersionsQuery = z.infer<typeof listVersionsQuerySchema>;
+
 // Batch version update schema
 export const batchVersionUpdateSchema = z.object({
   creations: z.array(createBlockSchema).default([]),

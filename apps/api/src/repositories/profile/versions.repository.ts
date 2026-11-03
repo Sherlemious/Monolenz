@@ -9,6 +9,10 @@ export interface VersionEntity {
   created_at?: Date | null;
 }
 
+export interface VersionSummaryEntity extends VersionEntity {
+  block_count: number;
+}
+
 export interface CreateVersionInput {
   profile_id: string;
   parent_version_id?: number | null;
@@ -45,6 +49,32 @@ export class VersionsRepository {
   async getVersionById(versionId: number, tx?: Prisma.TransactionClient): Promise<VersionEntity | null> {
     const p = (tx || this.prisma) as any;
     return p.versions.findUnique({ where: { id: versionId } });
+  }
+
+  async listVersionsForProfile(
+    profileId: string,
+    options: { limit: number; offset: number },
+    tx?: Prisma.TransactionClient
+  ): Promise<VersionSummaryEntity[]> {
+    const p = (tx || this.prisma) as any;
+    const rows = await p.versions.findMany({
+      where: { profile_id: profileId },
+      orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
+      take: options.limit,
+      skip: options.offset,
+      include: {
+        _count: { select: { version_blocks_version_blocks_version_idToversions: true } },
+      },
+    });
+    return rows.map(({ _count, ...version }: any) => ({
+      ...version,
+      block_count: _count?.version_blocks_version_blocks_version_idToversions ?? 0,
+    }));
+  }
+
+  async countVersionsForProfile(profileId: string, tx?: Prisma.TransactionClient): Promise<number> {
+    const p = (tx || this.prisma) as any;
+    return p.versions.count({ where: { profile_id: profileId } });
   }
 
   async listVersionBlockIds(versionId: number, tx?: Prisma.TransactionClient): Promise<number[]> {

@@ -3,7 +3,13 @@
  * Handles all block-related API calls
  */
 
-import type { BlockType, VersionBlockDetail, BatchUpdatePayload, BatchUpdateResponse } from '@monolenz/types/entities';
+import type {
+  BlockType,
+  VersionBlockDetail,
+  BatchUpdatePayload,
+  BatchUpdateResponse,
+  VersionHistoryResponse,
+} from '@monolenz/types/entities';
 import type { ApiResponse } from '@monolenz/types/api';
 import type { ApiClient } from './common';
 export type { ApiClient };
@@ -14,6 +20,7 @@ export type { ApiClient };
 
 type VersionBlocksResponse = ApiResponse<VersionBlockDetail[]>;
 type BatchUpdateApiResponse = ApiResponse<BatchUpdateResponse>;
+type VersionHistoryApiResponse = ApiResponse<VersionHistoryResponse>;
 
 // ============================================================================
 // Profile Blocks API
@@ -63,6 +70,30 @@ export function createProfileBlocksApi(client: ApiClient) {
       const url = `${BASE_PATH}/${identifier}/versions/${versionId}/blocks${query ? `?${query}` : ''}`;
       const response = await client.get<VersionBlocksResponse>(url);
       return response.data ?? [];
+    },
+
+    // ========================================================================
+    // Version History (requires auth)
+    // ========================================================================
+
+    /**
+     * List the current user's versions, newest first
+     */
+    async listMyVersions(page = 1, limit = 20): Promise<VersionHistoryResponse> {
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      const response = await client.get<VersionHistoryApiResponse>(`${BASE_PATH}/me/versions?${params}`);
+      return response.data ?? { versions: [], total: 0, latestVersionId: null };
+    },
+
+    /**
+     * Restore an earlier version. Creates a new version; history is kept.
+     */
+    async restoreVersion(versionId: number): Promise<BatchUpdateResponse> {
+      const response = await client.post<BatchUpdateApiResponse>(`${BASE_PATH}/me/versions/${versionId}/restore`, {});
+      if (!response.data) {
+        throw new Error('Failed to restore version: no data returned');
+      }
+      return response.data;
     },
 
     // ========================================================================
