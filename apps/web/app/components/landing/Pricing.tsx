@@ -1,17 +1,15 @@
-'use client';
-
-import React from 'react';
 import Link from 'next/link';
-import { Check, Lock } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SectionHeading } from './SectionHeading';
 
 const featuresFree = [
-  'Master profile with 8 content types',
-  'Public portfolio at /username',
-  'Hide entries from the public page',
-  'Themes for your public profile',
-  'Print / save as PDF from the browser',
+  'One profile with all 8 sections',
+  'Public page at your own username',
+  'Hide entries from your public page',
+  'Five public page themes',
+  'Print or save as PDF',
+  'Full version history of your saves',
 ];
 
 const featuresPro = [
@@ -22,73 +20,66 @@ const featuresPro = [
   'Custom domain',
 ];
 
-const PricingSection: React.FC = () => {
+export default function PricingSection() {
   return (
-    <section id='pricing'>
-      <div className='max-w-[1200px] mx-auto px-4 py-20 md:py-24'>
-        <div className='text-center mb-12'>
-          <div className='inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-[12px] font-mono uppercase tracking-[0.1em] mb-4 border'>
-            <span>Pricing</span>
+    <section id='pricing' className='scroll-mt-20 border-t border-border'>
+      <div className='mx-auto max-w-[1200px] px-4 sm:px-6 py-20 md:py-28'>
+        <SectionHeading
+          align='center'
+          eyebrow='Pricing'
+          title='Free while we build.'
+          description='Everything available today costs nothing. Pro features are on the roadmap and not billed yet.'
+        />
+
+        <div className='mx-auto mt-14 grid max-w-4xl gap-4 md:grid-cols-2'>
+          <div className='relative flex flex-col rounded-xl border border-accent-border bg-surface p-7 shadow-[var(--shadow-2)]'>
+            <div className='flex items-center justify-between'>
+              <h3 className='text-lg font-semibold'>Free</h3>
+              <span className='rounded-full bg-accent-ml px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--accent-ink)]'>
+                Available now
+              </span>
+            </div>
+            <div className='mt-5 flex items-baseline gap-1'>
+              <span className='text-5xl font-semibold tracking-[-0.04em]'>$0</span>
+              <span className='text-sm text-fg-muted'>/ forever</span>
+            </div>
+            <ul className='mt-7 space-y-3 text-sm'>
+              {featuresFree.map((f) => (
+                <li key={f} className='flex items-start gap-2.5'>
+                  <Check className='mt-0.5 size-4 shrink-0 text-accent-ml' />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Button size='lg' className='mt-8 w-full' asChild>
+              <Link href='/signup'>Create your profile</Link>
+            </Button>
           </div>
-          <h2 className='text-3xl md:text-4xl font-bold tracking-tight'>Start free. Pro is on the roadmap.</h2>
-          <p className='text-muted-foreground max-w-2xl mx-auto mt-3'>
-            The product you can use today is free. Advanced workflows are planned, not billed yet.
-          </p>
-        </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
-          <Card>
-            <CardHeader>
-              <CardTitle className='text-xl'>Free</CardTitle>
-              <CardDescription>Everything you need to publish a professional profile.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className='text-4xl font-bold mb-4'>$0</div>
-              <ul className='space-y-2 text-sm'>
-                {featuresFree.map((f) => (
-                  <li key={f} className='flex items-center gap-2'>
-                    <Check className='size-4 text-[var(--chart-1)]' />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button className='w-full' asChild>
-                <Link href='/signup'>Get started</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card className='relative'>
-            <CardHeader>
-              <div className='inline-flex items-center gap-2 text-xs font-medium text-muted-foreground'>
-                <Lock className='size-3.5' /> Coming later
-              </div>
-              <CardTitle className='text-xl'>Pro</CardTitle>
-              <CardDescription>Planned tools for job search workflows.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className='text-4xl font-bold mb-4'>$—</div>
-              <ul className='space-y-2 text-sm'>
-                {featuresPro.map((f) => (
-                  <li key={f} className='flex items-center gap-2'>
-                    <Check className='size-4 text-[var(--chart-2)]' />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button variant='outline' className='w-full' disabled>
-                Not available yet
-              </Button>
-            </CardFooter>
-          </Card>
+          <div className='relative flex flex-col rounded-xl border border-dashed border-border bg-transparent p-7'>
+            <div className='flex items-center justify-between'>
+              <h3 className='text-lg font-semibold'>Pro</h3>
+              <span className='rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-fg-muted'>
+                On the roadmap
+              </span>
+            </div>
+            <div className='mt-5 flex items-baseline gap-1'>
+              <span className='text-5xl font-semibold tracking-[-0.04em] text-fg-subtle'>—</span>
+            </div>
+            <ul className='mt-7 space-y-3 text-sm text-fg-muted'>
+              {featuresPro.map((f) => (
+                <li key={f} className='flex items-start gap-2.5'>
+                  <Check className='mt-0.5 size-4 shrink-0 text-fg-subtle' />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Button size='lg' variant='outline' className='mt-auto w-full' disabled>
+              Not available yet
+            </Button>
+          </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default PricingSection;
+}
