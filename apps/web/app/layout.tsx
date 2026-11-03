@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono, Instrument_Serif } from 'next/font/google';
 import './globals.css';
 import { PostHogProvider } from '@/app/providers/PostHogProvider';
@@ -43,6 +43,9 @@ export const metadata: Metadata = {
     images: [{ url: '/logos/social/og-image.svg' }],
     type: 'website',
   },
+};
+
+export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
     { media: '(prefers-color-scheme: light)', color: '#fafaf9' },

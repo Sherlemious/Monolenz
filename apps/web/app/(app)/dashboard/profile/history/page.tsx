@@ -25,13 +25,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import {
-  BLOCK_TYPE_META,
-  getBlockDates,
-  getBlockSubtitle,
-  getBlockTitle,
-  groupBlocksByCategory,
-} from '@/app/components/profile/block-display';
+import { CheckCircle2, History, RotateCcw } from 'lucide-react';
+import { formatRelative, getBlockTitle } from '@/app/components/profile/block-display';
+import { ProfileSections } from '@/app/components/profile/ProfileDocument';
 
 const PAGE_SIZE = 20;
 
@@ -143,7 +139,7 @@ export default function VersionHistoryPage() {
       setConfirmOpen(false);
       setSelectedId(result.versionId);
       await loadInitial();
-      setNotice(`Restored version #${restoredFrom}. Your public profile now shows these entries.`);
+      setNotice(`Restored #${restoredFrom}. Your public page now shows these entries.`);
     } catch (err) {
       setRestoreError(err instanceof Error ? err.message : 'Failed to restore version');
     } finally {
@@ -204,50 +200,76 @@ export default function VersionHistoryPage() {
     <div className='flex flex-col h-full'>
       <PageHeader
         title='History'
-        description={`${total} saved ${total === 1 ? 'version' : 'versions'}. Preview any of them or restore an earlier one.`}
+        description={`Every save is kept. ${total} ${total === 1 ? 'version' : 'versions'} so far. Restoring one never deletes the others.`}
       />
 
       {notice && (
-        <div className='mx-6 md:mx-8 mt-4 px-3 py-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400 text-sm flex items-center justify-between gap-3'>
-          <span>{notice}</span>
-          <button type='button' className='text-xs underline' onClick={() => setNotice(null)}>
+        <div
+          role='status'
+          className='mx-6 md:mx-10 mb-4 px-3.5 py-2.5 rounded-lg border border-success-border bg-success-soft text-foreground text-[13px] flex items-center justify-between gap-3'
+        >
+          <span className='flex items-center gap-2'>
+            <CheckCircle2 className='size-4 text-success shrink-0' />
+            {notice}
+          </span>
+          <button
+            type='button'
+            className='text-xs text-muted-foreground hover:text-foreground'
+            onClick={() => setNotice(null)}
+          >
             Dismiss
           </button>
         </div>
       )}
 
-      <div className='flex-1 min-h-0 flex flex-col md:flex-row'>
-        {/* Version list */}
-        <aside className='md:w-80 shrink-0 border-b md:border-b-0 md:border-r overflow-y-auto max-h-64 md:max-h-none'>
-          <ol className='p-3 space-y-1'>
-            {versions.map((version) => (
-              <li key={version.id}>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setSelectedId(version.id);
-                    setNotice(null);
-                  }}
-                  className={cn(
-                    'w-full text-left px-3 py-2.5 rounded-lg transition-colors',
-                    version.id === selectedId ? 'bg-primary/10 text-foreground' : 'hover:bg-accent text-foreground'
-                  )}
-                >
-                  <div className='flex items-center justify-between gap-2'>
-                    <span className='text-sm font-medium truncate'>{version.name || `Version #${version.id}`}</span>
-                    {version.is_current && (
-                      <Badge variant='secondary' className='text-[10px] shrink-0'>
-                        Current
-                      </Badge>
+      <div className='flex-1 min-h-0 flex flex-col md:flex-row border-t'>
+        {/* Version timeline */}
+        <aside className='md:w-72 shrink-0 border-b md:border-b-0 md:border-r overflow-y-auto max-h-64 md:max-h-none'>
+          <ol className='relative py-3'>
+            <span className='absolute left-[31px] top-6 bottom-6 w-px bg-border' aria-hidden />
+            {versions.map((version) => {
+              const selected = version.id === selectedId;
+              return (
+                <li key={version.id} className='relative px-3'>
+                  <button
+                    type='button'
+                    aria-current={selected ? 'true' : undefined}
+                    onClick={() => {
+                      setSelectedId(version.id);
+                      setNotice(null);
+                    }}
+                    className={cn(
+                      'w-full flex items-start gap-3 text-left px-2.5 py-2.5 rounded-lg transition-colors',
+                      selected ? 'bg-secondary' : 'hover:bg-secondary/60'
                     )}
-                  </div>
-                  <div className='text-xs text-muted-foreground mt-0.5'>
-                    {formatTimestamp(version.created_at)} · {version.block_count}{' '}
-                    {version.block_count === 1 ? 'entry' : 'entries'}
-                  </div>
-                </button>
-              </li>
-            ))}
+                  >
+                    <span
+                      className={cn(
+                        'relative z-10 mt-[3px] size-[13px] rounded-full border-2 shrink-0 transition-colors',
+                        version.is_current
+                          ? 'border-brand bg-brand'
+                          : selected
+                            ? 'border-foreground bg-card'
+                            : 'border-border-strong bg-card'
+                      )}
+                      aria-hidden
+                    />
+                    <span className='min-w-0 flex-1'>
+                      <span className='flex items-center justify-between gap-2'>
+                        <span className={cn('text-[13px] truncate', selected ? 'font-semibold' : 'font-medium')}>
+                          {version.name || 'Saved changes'}
+                        </span>
+                        {version.is_current && <Badge variant='accent'>Live</Badge>}
+                      </span>
+                      <span className='block text-[12px] text-muted-foreground mt-0.5'>
+                        {formatRelative(version.created_at)} · {version.block_count}{' '}
+                        {version.block_count === 1 ? 'entry' : 'entries'}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
           </ol>
           {versions.length < total && (
             <div className='px-3 pb-4'>
@@ -259,20 +281,26 @@ export default function VersionHistoryPage() {
         </aside>
 
         {/* Preview */}
-        <section className='flex-1 min-w-0 overflow-y-auto'>
+        <section className='flex-1 min-w-0 overflow-y-auto bg-bg-sunken/40'>
           {selectedVersion && (
-            <div className='max-w-4xl mx-auto px-6 lg:px-8 py-6'>
-              <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6'>
+            <div className='max-w-4xl mx-auto px-6 lg:px-10 py-8'>
+              <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5'>
                 <div>
-                  <h2 className='text-lg font-semibold'>{selectedVersion.name || `Version #${selectedVersion.id}`}</h2>
-                  <p className='text-sm text-muted-foreground mt-0.5'>
-                    Saved {formatTimestamp(selectedVersion.created_at)}
+                  <h2 className='text-[17px] font-semibold tracking-tight'>
+                    {selectedVersion.name || 'Saved changes'}
+                    <span className='ml-2 font-mono text-[12px] font-normal text-muted-foreground'>
+                      #{selectedVersion.id}
+                    </span>
+                  </h2>
+                  <p className='text-[13px] text-muted-foreground mt-0.5'>
+                    {formatTimestamp(selectedVersion.created_at)}
                   </p>
                 </div>
                 {selectedVersion.is_current ? (
-                  <Badge variant='outline' className='self-start'>
-                    This is what your profile shows now
-                  </Badge>
+                  <p className='text-[13px] text-muted-foreground flex items-center gap-2'>
+                    <span className='size-2 rounded-full bg-brand' aria-hidden />
+                    Live on your public page
+                  </p>
                 ) : (
                   <Button
                     onClick={() => {
@@ -281,6 +309,7 @@ export default function VersionHistoryPage() {
                     }}
                     disabled={isLoadingPreview || Boolean(previewError)}
                   >
+                    <RotateCcw className='size-3.5' />
                     Restore this version
                   </Button>
                 )}
@@ -288,15 +317,19 @@ export default function VersionHistoryPage() {
 
               {!selectedVersion.is_current && !isLoadingPreview && !previewError && <ChangeSummary changes={changes} />}
 
-              {isLoadingPreview ? (
-                <p className='text-sm text-muted-foreground py-10 text-center'>Loading entries...</p>
-              ) : previewError ? (
-                <p className='text-sm text-destructive py-10 text-center'>{previewError}</p>
-              ) : selectedBlocks.length === 0 ? (
-                <p className='text-sm text-muted-foreground py-10 text-center'>This version has no entries.</p>
-              ) : (
-                <EntriesByCategory blocks={selectedBlocks} />
-              )}
+              <div className='rounded-xl border bg-card px-6 sm:px-10 py-8'>
+                {isLoadingPreview ? (
+                  <div className='space-y-3 py-4' aria-label='Loading entries'>
+                    <div className='h-3 w-24 rounded bg-secondary animate-pulse' />
+                    <div className='h-4 w-2/3 rounded bg-secondary animate-pulse' />
+                    <div className='h-4 w-1/2 rounded bg-secondary animate-pulse' />
+                  </div>
+                ) : previewError ? (
+                  <p className='text-sm text-destructive py-10 text-center'>{previewError}</p>
+                ) : (
+                  <ProfileSections blocks={selectedBlocks} showHidden emptyMessage='This version has no entries.' />
+                )}
+              </div>
             </div>
           )}
         </section>
@@ -305,15 +338,15 @@ export default function VersionHistoryPage() {
       <Dialog open={confirmOpen} onOpenChange={(open) => !isRestoring && setConfirmOpen(open)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Restore version #{selectedId}?</DialogTitle>
+            <DialogTitle>Restore this version?</DialogTitle>
             <DialogDescription>
-              Your profile will show this version&apos;s entries. A new version is saved, so your current content stays
-              in history and you can switch back at any time.
+              Your public page will show these entries. This is saved as a new version, so what you have now stays in
+              history and you can switch back any time.
             </DialogDescription>
           </DialogHeader>
           <ChangeSummary changes={changes} compact />
           {restoreError && (
-            <div className='px-3 py-2.5 rounded-lg border border-destructive/30 bg-destructive/5 text-destructive text-sm'>
+            <div className='px-3 py-2.5 rounded-lg border border-danger-border bg-danger-soft text-destructive text-sm'>
               {restoreError}
             </div>
           )}
@@ -365,12 +398,12 @@ function ChangeSummary({ changes, compact }: { changes: VersionChanges; compact?
   const nothing = broughtBack.length === 0 && removed.length === 0 && visibilityChanged.length === 0;
 
   return (
-    <div className={cn('rounded-xl border bg-muted/30 p-4 text-sm', !compact && 'mb-6')}>
-      <p className='font-medium mb-2'>Compared with your current profile</p>
+    <div className={cn('rounded-xl border bg-card p-4 text-[13px]', !compact && 'mb-4')}>
+      <p className='text-[12px] font-medium text-muted-foreground mb-2'>Compared with what is live now</p>
       {nothing ? (
-        <p className='text-muted-foreground'>Same entries as your current profile (order may differ).</p>
+        <p className='text-muted-foreground'>Same entries as your live profile (order may differ).</p>
       ) : (
-        <ul className='space-y-2'>
+        <ul className='space-y-1.5'>
           {broughtBack.length > 0 && (
             <ChangeLine tone='add' label='Brought back' blocks={broughtBack} compact={compact} />
           )}
@@ -398,72 +431,28 @@ function ChangeLine({
   const shown = compact ? blocks.slice(0, 3) : blocks.slice(0, 6);
   const rest = blocks.length - shown.length;
   return (
-    <li>
+    <li className='flex gap-2'>
       <span
         className={cn(
-          'font-medium',
-          tone === 'add' && 'text-emerald-700 dark:text-emerald-400',
-          tone === 'remove' && 'text-destructive',
-          tone === 'neutral' && 'text-foreground'
+          'mt-[3px] flex size-4 shrink-0 items-center justify-center rounded-full text-[11px] font-bold leading-none',
+          tone === 'add' && 'bg-success-soft text-success',
+          tone === 'remove' && 'bg-danger-soft text-danger',
+          tone === 'neutral' && 'bg-secondary text-muted-foreground'
         )}
+        aria-hidden
       >
-        {label} ({blocks.length}):
-      </span>{' '}
-      <span className='text-muted-foreground'>
-        {shown.map((b) => getBlockTitle(b)).join(', ')}
-        {rest > 0 && `, and ${rest} more`}
+        {tone === 'add' ? '+' : tone === 'remove' ? '\u2212' : '~'}
+      </span>
+      <span>
+        <span className='font-medium text-foreground'>
+          {label} ({blocks.length}):
+        </span>{' '}
+        <span className='text-muted-foreground'>
+          {shown.map((b) => getBlockTitle(b)).join(', ')}
+          {rest > 0 && `, and ${rest} more`}
+        </span>
       </span>
     </li>
-  );
-}
-
-// ============================================================================
-// Entries preview
-// ============================================================================
-
-function EntriesByCategory({ blocks }: { blocks: VersionBlockDetail[] }) {
-  const byCategory = groupBlocksByCategory(blocks);
-  return (
-    <div className='space-y-8'>
-      {Array.from(byCategory.entries()).map(([category, categoryBlocks]) => (
-        <section key={category}>
-          <div className='flex items-center gap-2 mb-3 pb-2 border-b'>
-            <h3 className='text-xs font-semibold uppercase tracking-wider'>{category}</h3>
-            <Badge variant='secondary' className='text-[10px]'>
-              {categoryBlocks.length}
-            </Badge>
-          </div>
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
-            {categoryBlocks.map((block) => {
-              const subtitle = getBlockSubtitle(block);
-              const dates = getBlockDates(block);
-              return (
-                <article
-                  key={block.id}
-                  className={cn(
-                    'bg-card border rounded-xl p-4 border-l-[3px]',
-                    BLOCK_TYPE_META[block.block_type as string]?.accent ?? 'border-l-muted'
-                  )}
-                >
-                  <div className='flex items-start justify-between gap-3'>
-                    <div className='min-w-0'>
-                      <h4 className='font-semibold text-sm truncate'>{getBlockTitle(block)}</h4>
-                      {subtitle && <p className='text-sm text-muted-foreground mt-0.5 truncate'>{subtitle}</p>}
-                    </div>
-                    {block.is_visible === false && (
-                      <Badge variant='outline' className='text-[10px] shrink-0'>
-                        Hidden
-                      </Badge>
-                    )}
-                  </div>
-                  {dates && <p className='text-xs text-muted-foreground mt-2'>{dates}</p>}
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      ))}
-    </div>
   );
 }
 
@@ -484,7 +473,8 @@ function EmptyState({
 }) {
   return (
     <div className='flex flex-col items-center justify-center h-full text-center gap-3 p-8'>
-      <h2 className='text-lg font-semibold'>{title}</h2>
+      <History className='size-6 text-muted-foreground mb-1' />
+      <h2 className='font-serif text-3xl'>{title}</h2>
       <p className='text-muted-foreground text-sm max-w-sm'>{description}</p>
       <Button asChild className='mt-2'>
         <Link href={href}>{cta}</Link>

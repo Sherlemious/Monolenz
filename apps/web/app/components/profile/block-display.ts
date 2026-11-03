@@ -77,3 +77,18 @@ export function formatBlockType(blockType: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+/** "just now", "5 minutes ago", "yesterday", then a short date */
+export function formatRelative(value?: string | Date | null): string {
+  if (!value) return 'unknown';
+  const date = new Date(value);
+  const t = date.getTime();
+  if (Number.isNaN(t)) return 'unknown';
+  const diff = (Date.now() - t) / 1000;
+  if (diff < 45) return 'just now';
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  if (diff < 3600) return rtf.format(-Math.round(diff / 60), 'minute');
+  if (diff < 86400) return rtf.format(-Math.round(diff / 3600), 'hour');
+  if (diff < 86400 * 7) return rtf.format(-Math.round(diff / 86400), 'day');
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
