@@ -1,360 +1,221 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, FileText, Globe, Palette, History, Plus } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Globe, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-const outputs = [
-  {
-    id: 'portfolio',
-    title: 'Live Portfolio',
-    icon: Globe,
-    accent: 'var(--info)',
-    description: '/your-username',
-    stats: 'Share a public URL',
-  },
-  {
-    id: 'resume',
-    title: 'Printable Resume',
-    icon: FileText,
-    accent: 'var(--accent-color)',
-    description: 'Save as PDF from the browser',
-    stats: 'One profile, one print view',
-  },
-  {
-    id: 'versions',
-    title: 'Immutable Saves',
-    icon: History,
-    accent: 'var(--success)',
-    description: 'Edits create a new snapshot',
-    stats: 'Git-style content blocks',
-  },
-  {
-    id: 'themes',
-    title: 'Themes',
-    icon: Palette,
-    accent: 'var(--warning)',
-    description: 'Pick a look for your page',
-    stats: 'Five built-in themes',
-  },
+type Entry = { id: string; role: string; org: string; dates: string };
+
+const categories = [
+  'Experience',
+  'Education',
+  'Skills',
+  'Projects',
+  'Certifications',
+  'Languages',
+  'Volunteer',
+  'Awards',
 ];
 
-const contentBlocks = [
-  { name: 'Experience', filled: true },
-  { name: 'Education', filled: true },
-  { name: 'Skills', filled: true },
-  { name: 'Projects', filled: true },
-  { name: 'Certifications', filled: false },
-  { name: 'Awards', filled: false },
+const entries: Entry[] = [
+  { id: 'a', role: 'Senior Product Engineer', org: 'Northwind Labs', dates: '2023 — Now' },
+  { id: 'b', role: 'Frontend Engineer', org: 'Paperplane', dates: '2020 — 2023' },
+  { id: 'c', role: 'Freelance Developer', org: 'Self-employed', dates: '2018 — 2020' },
 ];
 
-const HeroSection = () => {
-  const [activeOutput, setActiveOutput] = useState<string | null>(null);
-  const [linePositions, setLinePositions] = useState<
-    Array<{ startX: number; startY: number; endX: number; endY: number }>
-  >([]);
-  const [linesReady, setLinesReady] = useState(false);
-
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const masterRef = useRef<HTMLDivElement | null>(null);
-  const outputRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  /* Parallax — direct DOM mutation, no state → no re-renders */
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!masterRef.current || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = (e.clientX - rect.left - rect.width / 2) / 50;
-      const y = (e.clientY - rect.top - rect.height / 2) / 50;
-      masterRef.current.style.transform = `perspective(1000px) rotateY(${x * 0.5}deg) rotateX(${-y * 0.5}deg)`;
-    };
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  /* Connection lines — calculated once after mount, faded in */
-  const calculateLinePositions = () => {
-    if (!containerRef.current || !masterRef.current) return;
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const masterRect = masterRef.current.getBoundingClientRect();
-
-    const newPositions = outputRefs.current.map((ref) => {
-      if (!ref) return { startX: 0, startY: 0, endX: 0, endY: 0 };
-      const r = ref.getBoundingClientRect();
-      return {
-        startX: masterRect.right - containerRect.left,
-        startY: masterRect.top + masterRect.height / 2 - containerRect.top,
-        endX: r.left - containerRect.left,
-        endY: r.top + r.height / 2 - containerRect.top,
-      };
-    });
-
-    setLinePositions(newPositions);
-    setLinesReady(true);
-  };
-
-  useEffect(() => {
-    const timer = setTimeout(calculateLinePositions, 120);
-    window.addEventListener('resize', calculateLinePositions);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', calculateLinePositions);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+function ProductPreview() {
+  const [hidden, setHidden] = useState<Record<string, boolean>>({ c: true });
+  const visible = entries.filter((e) => !hidden[e.id]);
 
   return (
-    <div className='relative min-h-[100svh] bg-transparent text-foreground w-full'>
-      {/* Floating shapes — isolated overflow-hidden so they don't clip content */}
-      <div className='absolute inset-0 overflow-hidden pointer-events-none' aria-hidden='true'>
-        <div className='shape-circle' />
-        <div className='shape-square' />
-      </div>
+    <div className='relative mx-auto w-full max-w-[1040px]'>
+      {/* glow */}
+      <div
+        aria-hidden
+        className='pointer-events-none absolute -inset-x-10 -top-10 bottom-0 -z-10 rounded-[40px] opacity-70 blur-3xl'
+        style={{
+          background:
+            'radial-gradient(60% 50% at 50% 30%, color-mix(in oklab, var(--accent-color) 22%, transparent), transparent 70%)',
+        }}
+      />
 
-      <div className='relative z-10 max-w-[1200px] mx-auto w-full py-20 md:py-24 px-4'>
-        {/* Heading */}
-        <div className='text-center mb-20'>
-          <div className='inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-[11px] font-mono uppercase tracking-[0.1em] mb-8 border'>
-            <span className='w-1.5 h-1.5 rounded-full bg-accent-ml' />
-            <span>Your Career&apos;s Source of Truth</span>
+      <div className='overflow-hidden rounded-xl border border-border bg-surface shadow-[var(--shadow-3)]'>
+        {/* window chrome */}
+        <div className='flex items-center gap-3 border-b border-border bg-bg-sunken/60 px-4 py-2.5'>
+          <div className='flex gap-1.5' aria-hidden>
+            <span className='size-2.5 rounded-full bg-border-strong' />
+            <span className='size-2.5 rounded-full bg-border-strong' />
+            <span className='size-2.5 rounded-full bg-border-strong' />
           </div>
-
-          <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] mb-6'>
-            <span className='text-foreground'>One Profile.</span>
-            <br />
-            <span className='text-fg-muted'>Infinite Possibilities.</span>
-          </h1>
-
-          <p className='mx-auto max-w-2xl text-center text-fg-muted text-lg leading-relaxed'>
-            Build one professional profile with experience, education, skills, and more. Share it at a public URL, hide
-            what you don&apos;t want shown, and print a resume when you need a PDF.
-          </p>
+          <div className='mx-auto flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-1 font-mono text-[11px] text-fg-muted'>
+            <Globe className='size-3' />
+            monolenz.sherlemious.com/<span className='text-foreground'>alex</span>
+          </div>
+          <span className='hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-success'>
+            <span className='size-1.5 rounded-full bg-success animate-pulse' /> Live
+          </span>
         </div>
 
-        {/* Visualisation */}
-        <div
-          ref={containerRef}
-          className='relative max-w-[1000px] mx-auto mb-20 flex flex-col md:flex-row items-center md:items-stretch justify-between gap-8 md:gap-0 px-5'
-        >
-          {/* SVG connection lines (desktop only) */}
-          <svg
-            className='absolute inset-0 w-full h-full pointer-events-none z-10 hidden md:block'
-            style={{ opacity: linesReady ? 1 : 0, transition: 'opacity 400ms ease' }}
-          >
-            {linePositions.map((pos, index) => {
-              const output = outputs[index];
-              if (!output) return null;
-              const active = activeOutput === output.id;
-              return (
-                <g key={output.id}>
-                  <line
-                    x1={pos.startX}
-                    y1={pos.startY}
-                    x2={pos.endX}
-                    y2={pos.endY}
-                    stroke={active ? output.accent : 'var(--border-color)'}
-                    strokeWidth={active ? 2 : 1.5}
-                    strokeDasharray={active ? '0' : '6,6'}
-                    opacity={active ? 1 : 0.5}
-                    style={{ transition: 'stroke 300ms, stroke-width 300ms, opacity 300ms' }}
-                  />
-                  <circle
-                    cx={pos.startX}
-                    cy={pos.startY}
-                    r={active ? 4 : 2.5}
-                    fill={active ? output.accent : 'var(--border-color)'}
-                    style={{ transition: 'all 300ms' }}
-                  />
-                  <circle
-                    cx={pos.endX}
-                    cy={pos.endY}
-                    r={active ? 4 : 2.5}
-                    fill={active ? output.accent : 'var(--border-color)'}
-                    style={{ transition: 'all 300ms' }}
-                  />
-                </g>
-              );
-            })}
-          </svg>
+        <div className='grid md:grid-cols-[180px_1fr_1fr]'>
+          {/* sidebar */}
+          <aside className='hidden md:block border-r border-border bg-bg-sunken/40 p-3'>
+            <div className='px-2 pb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-subtle'>Profile</div>
+            <ul className='space-y-0.5'>
+              {categories.map((c, i) => (
+                <li
+                  key={c}
+                  className={cn(
+                    'flex items-center justify-between rounded-md px-2 py-1.5 text-[12px]',
+                    i === 0 ? 'bg-secondary text-foreground font-medium' : 'text-fg-muted'
+                  )}
+                >
+                  {c}
+                  {i === 0 && <span className='font-mono text-[10px] text-fg-subtle'>{entries.length}</span>}
+                </li>
+              ))}
+            </ul>
+          </aside>
 
-          {/* Master profile card */}
-          <div className='w-full md:w-auto flex flex-col items-center md:items-start justify-center shrink-0'>
-            <div ref={masterRef} style={{ transition: 'transform 0.1s ease-out' }} className='relative z-20'>
-              <div className='bg-surface border border-border rounded-lg shadow-[var(--shadow-2)] p-5 w-[280px]'>
-                <div className='flex items-center justify-between mb-4'>
-                  <div className='flex items-center gap-1.5'>
-                    <span className='w-2 h-2 rounded-full bg-danger opacity-70' />
-                    <span className='w-2 h-2 rounded-full bg-warning opacity-70' />
-                    <span className='w-2 h-2 rounded-full bg-success opacity-70' />
-                  </div>
-                  <span className='text-[10px] font-mono uppercase tracking-[0.12em] text-fg-subtle'>
-                    Master Profile
-                  </span>
-                </div>
-
-                <div className='mb-3'>
-                  <div className='text-center mb-3'>
-                    <h3 className='text-[10px] font-mono uppercase tracking-[0.12em] text-fg-subtle mb-1'>
-                      Content Blocks
-                    </h3>
-                    <span className='text-[11px] text-fg-muted font-mono'>8 sections</span>
-                  </div>
-
-                  <div className='flex flex-col gap-1.5'>
-                    {contentBlocks.map((block) => (
-                      <div
-                        key={block.name}
-                        className={`group/block w-full h-6 rounded-xs flex items-center justify-between px-2.5 transition-colors duration-[120ms] ${
-                          block.filled
-                            ? 'bg-secondary hover:bg-secondary/80'
-                            : 'border border-dashed border-border hover:border-border-strong'
-                        }`}
-                      >
-                        <span className='text-[11px] font-medium text-foreground'>{block.name}</span>
-                        {!block.filled && (
-                          <Plus className='w-2.5 h-2.5 text-fg-subtle group-hover/block:text-fg-muted transition-colors' />
-                        )}
+          {/* editor */}
+          <div className='border-b md:border-b-0 md:border-r border-border p-4 sm:p-5'>
+            <div className='mb-3 flex items-center justify-between'>
+              <span className='text-[13px] font-semibold'>Experience</span>
+              <span className='font-mono text-[10px] uppercase tracking-[0.12em] text-fg-subtle'>Editor</span>
+            </div>
+            <ul className='space-y-2'>
+              {entries.map((e) => {
+                const isHidden = !!hidden[e.id];
+                return (
+                  <li
+                    key={e.id}
+                    className={cn(
+                      'flex items-start justify-between gap-3 rounded-lg border p-3 transition-colors',
+                      isHidden ? 'border-dashed border-border bg-transparent' : 'border-border bg-surface-2/60'
+                    )}
+                  >
+                    <div className={cn('min-w-0 transition-opacity', isHidden && 'opacity-50')}>
+                      <div className='truncate text-[13px] font-medium'>{e.role}</div>
+                      <div className='truncate text-[12px] text-fg-muted'>
+                        {e.org} · {e.dates}
                       </div>
-                    ))}
-                  </div>
-
-                  <div className='flex items-center justify-center pt-2.5'>
-                    <div className='flex gap-1'>
-                      <span className='w-1 h-1 rounded-full bg-border-strong' />
-                      <span className='w-1 h-1 rounded-full bg-border-strong' />
-                      <span className='w-1 h-1 rounded-full bg-border-strong' />
                     </div>
-                  </div>
+                    <button
+                      type='button'
+                      onClick={() => setHidden((h) => ({ ...h, [e.id]: !h[e.id] }))}
+                      aria-pressed={!isHidden}
+                      aria-label={isHidden ? `Show ${e.role} on public page` : `Hide ${e.role} from public page`}
+                      className={cn(
+                        'inline-flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors',
+                        isHidden
+                          ? 'border-border text-fg-subtle hover:text-foreground'
+                          : 'border-accent-border bg-accent-soft text-foreground'
+                      )}
+                    >
+                      {isHidden ? <EyeOff className='size-3' /> : <Eye className='size-3' />}
+                      {isHidden ? 'Hidden' : 'Public'}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className='mt-3 text-[11px] text-fg-subtle'>Try it — toggle an entry and watch the page update.</p>
+          </div>
+
+          {/* public page preview */}
+          <div className='bg-bg p-4 sm:p-5'>
+            <div className='mb-3 flex items-center justify-between'>
+              <span className='font-mono text-[10px] uppercase tracking-[0.12em] text-fg-subtle'>Public page</span>
+              <span className='inline-flex items-center gap-1 text-[11px] text-fg-muted'>
+                <Printer className='size-3' /> Print-ready
+              </span>
+            </div>
+            <div className='rounded-lg border border-border bg-surface p-4'>
+              <div className='flex items-center gap-3'>
+                <div className='flex size-10 items-center justify-center rounded-full bg-accent-ml font-semibold text-[var(--accent-ink)]'>
+                  A
                 </div>
+                <div>
+                  <div className='font-serif text-xl leading-none'>Alex Rivera</div>
+                  <div className='mt-1 text-[12px] text-fg-muted'>Product engineer · Lisbon</div>
+                </div>
+              </div>
+              <div className='mt-4 border-t border-border pt-3'>
+                <div className='mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-subtle'>Experience</div>
+                <ul className='space-y-2.5'>
+                  {visible.map((e) => (
+                    <li key={e.id} className='animate-in fade-in slide-in-from-top-1 duration-300'>
+                      <div className='flex items-baseline justify-between gap-2'>
+                        <span className='truncate text-[12.5px] font-medium'>{e.role}</span>
+                        <span className='shrink-0 font-mono text-[10px] text-fg-subtle'>{e.dates}</span>
+                      </div>
+                      <div className='text-[11.5px] text-fg-muted'>{e.org}</div>
+                    </li>
+                  ))}
+                  {visible.length === 0 && <li className='text-[12px] text-fg-subtle'>Nothing public yet.</li>}
+                </ul>
+              </div>
+              <div className='mt-4 flex flex-wrap gap-1.5'>
+                {['TypeScript', 'React', 'Postgres', 'Design systems'].map((s) => (
+                  <span key={s} className='rounded-full border border-border px-2 py-0.5 text-[10.5px] text-fg-muted'>
+                    {s}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
-
-          {/* Output cards */}
-          <div className='relative z-20 shrink-0 w-full md:w-auto md:ml-auto flex flex-col gap-3 items-center md:items-end justify-center'>
-            {outputs.map((output, index) => (
-              <div
-                key={output.id}
-                ref={(el) => {
-                  outputRefs.current[index] = el;
-                }}
-                className='group/card cursor-pointer w-full md:w-auto'
-                onMouseEnter={() => setActiveOutput(output.id)}
-                onMouseLeave={() => setActiveOutput(null)}
-              >
-                <div
-                  className={`relative bg-surface border rounded-lg p-4 w-full md:w-[220px] transition-all duration-200 overflow-hidden ${
-                    activeOutput === output.id
-                      ? 'border-border-strong shadow-[var(--shadow-2)] -translate-y-0.5'
-                      : 'border-border shadow-[var(--shadow-1)]'
-                  }`}
-                >
-                  {/* Active top accent line */}
-                  <div
-                    className='absolute top-0 left-0 w-full h-[2px] rounded-t-lg transition-opacity duration-200'
-                    style={{
-                      background: output.accent,
-                      opacity: activeOutput === output.id ? 1 : 0,
-                    }}
-                  />
-
-                  {/* Icon */}
-                  <div
-                    className='inline-flex p-2 rounded-md mb-3 transition-all duration-200'
-                    style={
-                      activeOutput === output.id
-                        ? {
-                            backgroundColor: `color-mix(in oklab, ${output.accent} 18%, transparent)`,
-                            color: output.accent,
-                          }
-                        : {}
-                    }
-                  >
-                    <output.icon
-                      className='w-5 h-5 transition-colors duration-200'
-                      style={activeOutput === output.id ? {} : { color: 'var(--fg-muted)' }}
-                    />
-                  </div>
-
-                  <h4 className='font-semibold text-[13px] text-foreground mb-1 tracking-[-0.005em]'>{output.title}</h4>
-                  <p className='text-xs text-fg-muted mb-2'>{output.description}</p>
-                  <p className='text-[10px] font-mono text-fg-subtle'>{output.stats}</p>
-
-                  {/* Arrow — CSS hover only, no React state → no flash */}
-                  <ArrowRight
-                    className='absolute bottom-3 right-3 w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0 transition-[opacity,transform] duration-200'
-                    style={{ color: output.accent }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className='flex items-center justify-center gap-4 mt-4 flex-wrap'>
-          <Button size='lg' className='gap-3 px-8' asChild>
-            <Link href='/signup'>
-              <span>Start Building</span>
-              <ArrowRight className='w-4 h-4' />
-            </Link>
-          </Button>
-          <Button variant='outline' size='lg' className='px-8' asChild>
-            <Link href='/#features'>How it works</Link>
-          </Button>
-        </div>
-
-        {/* Metrics */}
-        <div className='flex items-center justify-center gap-12 mt-16 text-sm text-fg-muted flex-wrap'>
-          <div className='text-center'>
-            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>8</div>
-            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Content Types</div>
-          </div>
-          <div className='text-center'>
-            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>1</div>
-            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Public URL</div>
-          </div>
-          <div className='text-center'>
-            <div className='text-3xl font-bold text-foreground mb-1 tracking-tight'>1</div>
-            <div className='text-xs font-mono uppercase tracking-[0.08em]'>Source of Truth</div>
-          </div>
         </div>
       </div>
-
-      <style>{`
-        .shape-circle {
-          position: absolute;
-          top: 22%;
-          left: 18%;
-          width: 120px;
-          height: 120px;
-          border: 1px solid var(--border-color);
-          border-radius: 9999px;
-          animation: float-slow 20s ease-in-out infinite;
-          opacity: 0.35;
-        }
-        .shape-square {
-          position: absolute;
-          bottom: 22%;
-          right: 18%;
-          width: 88px;
-          height: 88px;
-          border: 1px solid var(--border-color);
-          transform: rotate(45deg);
-          animation: float-slower 25s ease-in-out infinite;
-          opacity: 0.35;
-        }
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes float-slower {
-          0%, 100% { transform: translateY(0px) rotate(45deg); }
-          50% { transform: translateY(-15px) rotate(225deg); }
-        }
-      `}</style>
     </div>
+  );
+}
+
+const HeroSection = () => {
+  return (
+    <section className='relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28'>
+      <div className='relative mx-auto max-w-[1200px] px-4 sm:px-6'>
+        <div className='mx-auto max-w-3xl text-center'>
+          <Link
+            href='/signup'
+            className='group inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 py-1 pl-1 pr-3 text-[12px] text-fg-muted backdrop-blur hover:border-border-strong transition-colors'
+          >
+            <span className='rounded-full bg-accent-ml px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--accent-ink)]'>
+              Free
+            </span>
+            Claim your username today
+            <ArrowRight className='size-3 transition-transform group-hover:translate-x-0.5' />
+          </Link>
+
+          <h1 className='mt-8 text-[2.75rem] leading-[1.02] sm:text-6xl md:text-7xl font-semibold tracking-[-0.045em] text-balance'>
+            Write your career <span className='font-serif font-normal italic tracking-[-0.02em]'>once.</span>
+            <br />
+            <span className='text-fg-muted'>Share it everywhere.</span>
+          </h1>
+
+          <p className='mx-auto mt-6 max-w-xl text-base sm:text-lg leading-relaxed text-fg-muted text-pretty'>
+            Monolenz is a single home for your professional story. Keep everything in one profile, publish a live page
+            at your own URL, and print a clean resume whenever someone asks for a PDF.
+          </p>
+
+          <div className='mt-9 flex flex-col sm:flex-row items-center justify-center gap-3'>
+            <Button size='lg' className='w-full sm:w-auto px-6' asChild>
+              <Link href='/signup'>
+                Start building — it&apos;s free
+                <ArrowRight className='size-4' />
+              </Link>
+            </Button>
+            <Button size='lg' variant='outline' className='w-full sm:w-auto px-6' asChild>
+              <Link href='/#how-it-works'>See how it works</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className='mt-16 md:mt-20'>
+          <ProductPreview />
+        </div>
+      </div>
+    </section>
   );
 };
 
