@@ -1,11 +1,19 @@
 import { HTTP_STATUS_CODES } from '@monolenz/types/api';
 import { profileSchemas, usernameSchema } from '@monolenz/types/validation';
 import { batchVersionUpdateSchema, listBlocksQuerySchema } from '@monolenz/types/validation/block-schemas';
+import {
+  resumeCreateSchema,
+  resumeIdParamsSchema,
+  resumeTailorApplySchema,
+  resumeTailorSchema,
+  resumeUpdateSchema,
+} from '@monolenz/types/validation/resume-schemas';
 import { z } from 'zod';
 import { authService, profileLinkService } from 'api/core';
-import { jsonError, jsonFromError, jsonSuccess } from './http';
+import { jsonError, jsonFromError, jsonSuccess, pdfResponse } from './http';
 import { getRequestUser, requireUser, serviceContext } from './auth';
-import { getProfileServices } from './services';
+import { getProfileServices, getResumeService } from './services';
+import { assertRateLimit } from './rate-limit';
 
 const linkInputSchema = z.string().trim().min(1, 'URL is required').max(500, 'URL is too long');
 const syncLinksSchema = z.array(
@@ -70,6 +78,9 @@ export async function handleV1Request(request: Request, path: string[]) {
     }
     if (segments[0] === 'profiles') {
       return await handleProfiles(request, method, segments.slice(1));
+    }
+    if (segments[0] === 'resumes') {
+      return await handleResumes(request, method, segments.slice(1));
     }
 
     return jsonError('Not found', HTTP_STATUS_CODES.NOT_FOUND);
@@ -267,8 +278,65 @@ async function handleProfiles(request: Request, method: string, segments: string
       includeLinks,
       publicOnly: !user.id,
     });
-    if (!profile) return jsonError('Profile not found', HTTP_STATUS_CODES.NOT_FOUND);
     return jsonSuccess(profile, 'Profile retrieved successfully');
+  }
+
+  return jsonError('Not found', HTTP_STATUS_CODES.NOT_FOUND);
+}
+
+async function handleResumes(request: Request, method: string, segments: string[]) {
+  const user = await requireAuth(request);
+  const context = serviceContext(user, request);
+  const resumeService = getResumeService();
+
+  if (method === 'GET' && segments.length === 0) {
+    const resumes = await resumeService.listMine(context);
+    return jsonSuccess(resumes, 'Resumes retrieved successfully');
+  }
+
+  if (method === 'POST' && segments.length === 0) {
+    const body = resumeCreateSchema.parse(await readJson(request));
+    const resume = await resumeService.createMine(body, context);
+    return jsonSuccess(resume, 'Resume created successfully', HTTP_STATUS_CODES.CREATED);
+  }
+
+  if (segments.length >= 1) {
+    const { id } = resumeIdParamsSchema.parse({ id: requiredSegment(segments, 0) });
+
+    if (method === 'POST' && segments.length === 2 && segments[1] === 'tailor') {
+      assertRateLimit(`tailor:${user.id}`, 15, 15 * 60 * 1000);
+      const body = resumeTailorSchema.parse(await readJson(request));
+      const proposal = await resumeService.proposeTailor(id, body, context);
+      return jsonSuccess(proposal, 'Tailor proposal generated');
+    }
+
+    if (method === 'POST' && segments.length === 3 && segments[1] === 'tailor' && segments[2] === 'apply') {
+      assertRateLimit(`tailor:${user.id}`, 15, 15 * 60 * 1000);
+      const body = resumeTailorApplySchema.parse(await readJson(request));
+      const resume = await resumeService.applyTailor(id, body, context);
+      return jsonSuccess(resume, 'Tailored resume created', HTTP_STATUS_CODES.CREATED);
+    }
+
+    if (method === 'GET' && segments.length === 2 && segments[1] === 'pdf') {
+      const { buffer, filename } = await resumeService.renderPdf(id, context);
+      return pdfResponse(buffer, filename);
+    }
+
+    if (method === 'GET' && segments.length === 1) {
+      const resume = await resumeService.getMine(id, context);
+      return jsonSuccess(resume, 'Resume retrieved successfully');
+    }
+
+    if (method === 'PUT' && segments.length === 1) {
+      const body = resumeUpdateSchema.parse(await readJson(request));
+      const resume = await resumeService.updateMine(id, body, context);
+      return jsonSuccess(resume, 'Resume updated successfully');
+    }
+
+    if (method === 'DELETE' && segments.length === 1) {
+      await resumeService.deleteMine(id, context);
+      return jsonSuccess(null, 'Resume deleted successfully');
+    }
   }
 
   return jsonError('Not found', HTTP_STATUS_CODES.NOT_FOUND);

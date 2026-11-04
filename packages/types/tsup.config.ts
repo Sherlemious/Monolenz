@@ -8,7 +8,10 @@ export default defineConfig({
     'entities/blocks': 'src/entities/blocks.ts',
     'validation/index': 'src/validation/index.ts',
     'validation/block-schemas': 'src/validation/block-schemas.ts',
+    'validation/resume-schemas': 'src/validation/resume-schemas.ts',
+    'entities/resume': 'src/entities/resume.ts',
     'enums/index': 'src/enums/index.ts',
+
   },
   format: ['esm'],
   dts: true,

@@ -9,6 +9,8 @@ export * from './profile-link-schemas';
 export * from './auth-schemas';
 export * from './profile-block-schemas';
 export * from './block-schemas';
+export * from './resume-schemas';
+
 
 // Type helpers for extracting types from schemas
 export type ProfileCreateData = z.infer<typeof profileSchemas.create>;
@@ -17,3 +19,4 @@ export type ProfileResponse = z.infer<typeof profileSchemas.response>;
 export type ProfileLinkCreateData = z.infer<typeof profileLinkSchemas.create>;
 export type ProfileLinkResponse = z.infer<typeof profileLinkSchemas.response>;
 export { profileBlockSchemas };
+export { resumeSchemas } from './resume-schemas';

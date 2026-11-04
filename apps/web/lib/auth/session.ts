@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { jwtVerify, type JWTPayload } from 'jose';
 import { resolveApiBaseUrl } from '@/lib/api/common';
+import { serverFetch } from '@/lib/server-api/dispatch';
 import { SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from './constants';
 
 export { SESSION_COOKIE, SESSION_MAX_AGE_SECONDS };
@@ -72,7 +73,7 @@ export async function apiRequest<T>(
   init?: RequestInit
 ): Promise<{ ok: boolean; status: number; body: T }> {
   const token = await getSessionToken();
-  const res = await fetch(`${apiBaseUrl()}${path}`, {
+  const res = await serverFetch(`${apiBaseUrl()}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',

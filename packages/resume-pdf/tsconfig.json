@@ -1,0 +1,10 @@
+{
+  "extends": "@monolenz/typescript-config/react-library.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "noEmit": true,
+    "types": ["react"]
+  },
+  "include": ["src"]
+}

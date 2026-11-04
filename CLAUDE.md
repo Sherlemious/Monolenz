@@ -88,7 +88,7 @@ GET  /health
 
 **Repository pattern:** `src/repositories/base.repository.ts` provides base CRUD. Block repositories follow a factory pattern in `src/repositories/blocks/`. Services in `src/services/` contain domain logic; controllers in `src/controllers/` handle HTTP only.
 
-**DB:** Neon PostgreSQL via Prisma. Users, sessions tokens, profiles, and blocks all live in the same database. Versions are immutable — edits always create a new version via the batch update endpoint. `blocks` table deduplicates by `content_hash`.
+**DB:** Neon PostgreSQL (project `restless-tooth-10203696`) via Prisma with `@prisma/adapter-pg`. `config/prisma.ts` exports `prisma` as a proxy onto a request-scoped client (`runWithPrisma`) — on Cloudflare Workers a client must not outlive its request. Migrations use `DATABASE_URL_UNPOOLED`. Users, sessions tokens, profiles, and blocks all live in the same database. Versions are immutable — edits always create a new version via the batch update endpoint. `blocks` table deduplicates by `content_hash`.
 
 ### Web (`apps/web`)
 
@@ -129,6 +129,10 @@ When editing `packages/types`, run `pnpm dev` there (or `pnpm build`) before the
 
 - API: `ApiError` (`lib/api/common.ts`) carries `status`, `statusText`, `method`, `path`. Use `err.is404()` / `err.isClientError()` / `err.isServerError()` for conditional handling.
 - Backend: `handleErrors` middleware in `apps/api/src/middleware/request-response.ts` normalises Zod errors, Prisma P2002 (unique) / P2025 (not found), and auth errors into consistent `ApiResponse` shape.
+
+### Deployment
+
+Cloudflare Workers only (no Vercel, no GCP/Docker). `apps/web` builds with `@opennextjs/cloudflare` (`pnpm --filter web deploy`, config in `apps/web/wrangler.jsonc`); DB via the `HYPERDRIVE` binding. All `/api/v1` traffic, including server-side calls from pages/actions, goes through `lib/server-api/dispatch.ts` (`serverFetch` runs them in-process — never self-fetch over HTTP). OpenNext bundles every `.env*` file, so runtime secrets go in `wrangler secret put`; `build:worker` enforces this.
 
 ## Key Conventions
 

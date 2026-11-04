@@ -2,7 +2,7 @@
 
 **Write once. Publish everywhere.** One source of truth for your professional identity.
 
-Monolenz is an open-source profile builder: create a structured professional profile, share it at `/{username}`, hide entries you are not ready to show, and print a resume from the browser.
+Monolenz is an open-source profile builder: create a structured professional profile, share it at `/{username}`, hide entries you are not ready to show, and export named resume PDFs.
 
 ## What works today
 
@@ -11,15 +11,16 @@ Monolenz is an open-source profile builder: create a structured professional pro
 - Content editor for 8 types: work, education, skills, projects, certifications, languages, volunteer, awards
 - Immutable versioned saves (edits create a new snapshot; blocks are deduplicated by content hash)
 - Public page at `/{username}` with copy-link and Print / Save as PDF
+- Named resume variants with Professional and Jake templates, plus server-side PDF export
 - Per-entry public/hidden visibility
 
 ## Roadmap (not shipped)
 
-ATS-tailored resume generation, application tracking, OAuth, billing, and a full version-history UI.
+ATS-tailored AI, application tracking, OAuth, billing, and a full version-history UI.
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript (Vercel production also serves `/api/v1`)
+- **Frontend**: Next.js 15, React 19, TypeScript on Cloudflare Workers via OpenNext (the Worker also serves `/api/v1`)
 - **Backend**: Express.js, TypeScript (local development)
 - **Database**: Neon PostgreSQL with Prisma ORM
 - **Authentication**: Email/password + JWT (own `users` table)
@@ -88,11 +89,12 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-Fill in a Neon `DATABASE_URL` and a shared `AUTH_SECRET` (32+ characters) in both `apps/api/.env` and `apps/web/.env.local`. Leave `NEXT_PUBLIC_API_URL` empty to use Next.js `/api/v1` against Neon, or set `http://localhost:4000` to use local Express. Optional: `RESEND_API_KEY` for password-reset emails.
+The database is Neon project `restless-tooth-10203696` (see `.neon` / `neon.ts`). `neon env pull` writes `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, used by Prisma Migrate) to `.env.local`; copy them into `apps/api/.env` and `apps/web/.env.local`, along with a shared `AUTH_SECRET` (32+ characters). Leave `NEXT_PUBLIC_API_URL` empty to use Next.js `/api/v1` against Neon, or set `http://localhost:4000` to use local Express. Optional: `RESEND_API_KEY` for password-reset emails.
 
 ```bash
 pnpm --filter api db:generate
-pnpm --filter api db:push
+pnpm --filter api db:migrate   # prisma migrate deploy (direct URL)
+pnpm --filter api db:seed      # link platforms
 pnpm --filter @monolenz/types build
 pnpm dev
 ```
@@ -100,6 +102,16 @@ pnpm dev
 - Web: [http://localhost:3000](http://localhost:3000)
 - Public demo: [https://monolenz.sherlemious.com](https://monolenz.sherlemious.com)
 - API: [http://localhost:4000](http://localhost:4000)
+
+## Deployment (Cloudflare Workers)
+
+`apps/web` is built with [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare) and deployed as the `monolenz` Worker (`apps/web/wrangler.jsonc`). Postgres is reached through the `HYPERDRIVE` binding (Cloudflare Hyperdrive in front of Neon) with `pg` + `@prisma/adapter-pg`, and a Prisma client is created per request.
+
+- **CI:** `.github/workflows/deploy-cloudflare.yml` — `main` runs migrations then deploys; `stage` uploads a preview version. Needs repo secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, and vars `NEXT_PUBLIC_*`.
+- **Runtime secrets** live on the Worker: `pnpm --filter web exec wrangler secret put AUTH_SECRET` (also `RESEND_API_KEY`, `AUTH_FROM_EMAIL`, `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`).
+- **Never put secrets in `.env*` files for a Worker build** — OpenNext embeds every `.env*` file in the bundle. `pnpm build:worker` refuses to run while it finds any; deploy from CI or move local env files aside.
+- **Windows:** the build needs symlinks — use `apps/web/scripts/docker-build.sh` (Docker; usage in its header), WSL, or CI.
+- Local Worker run: `cp apps/web/.dev.vars.example apps/web/.dev.vars`, set `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`, then `pnpm --filter web preview`.
 
 Commands from the repo root:
 

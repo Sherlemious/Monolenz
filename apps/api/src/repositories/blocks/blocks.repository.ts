@@ -28,6 +28,12 @@ export class BlocksRepository extends BaseRepository<BlockEntity> {
     return prisma.blocks.findUnique({ where: { content_hash: contentHash } });
   }
 
+  async findManyByIds(ids: number[], tx?: Prisma.TransactionClient): Promise<BlockEntity[]> {
+    if (ids.length === 0) return [];
+    const prisma = (tx || this.prisma) as any;
+    return prisma.blocks.findMany({ where: { id: { in: ids } } });
+  }
+
   async createBaseBlock(
     data: { block_type: BlockType; content_hash: string },
     tx?: Prisma.TransactionClient

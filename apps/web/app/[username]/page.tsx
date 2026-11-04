@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Profile Not Found | Monolenz' };
   }
 
-  const title = `${profile.username} | Monolenz`;
-  const description = profile.bio ?? `${profile.username}'s professional profile on Monolenz`;
+  const title = `${profile.display_name?.trim() || profile.username} | Monolenz`;
+  const description = profile.bio ?? `${profile.display_name?.trim() || profile.username}'s professional profile on Monolenz`;
   const siteUrl = getSiteUrl();
   const url = siteUrl ? `${siteUrl}/${profile.username}` : undefined;
 
@@ -106,7 +106,7 @@ function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: Vers
             {profile.profile_picture_url ? (
               <Image
                 src={profile.profile_picture_url}
-                alt={profile.username}
+                alt={profile.display_name?.trim() || profile.username}
                 width={80}
                 height={80}
                 className='size-20 rounded-2xl object-cover border-2 border-border shadow-sm shrink-0'
@@ -118,7 +118,13 @@ function PublicProfileView({ profile, blocks }: { profile: Profile; blocks: Vers
             )}
 
             <div className='min-w-0'>
-              <h1 className='text-2xl font-bold tracking-tight'>@{profile.username}</h1>
+              <h1 className='text-2xl font-bold tracking-tight'>
+                {profile.display_name?.trim() || `@${profile.username}`}
+              </h1>
+              {profile.display_name?.trim() ? (
+                <p className='text-sm text-muted-foreground mt-0.5'>@{profile.username}</p>
+              ) : null}
+              {profile.location ? <p className='text-sm text-muted-foreground mt-1'>{profile.location}</p> : null}
               {profile.bio && (
                 <p className='text-sm text-muted-foreground mt-1.5 max-w-lg leading-relaxed'>{profile.bio}</p>
               )}

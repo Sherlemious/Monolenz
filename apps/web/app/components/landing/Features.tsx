@@ -17,8 +17,8 @@ const bullets = [
     icon: Globe,
   },
   {
-    title: 'Printable resume',
-    description: 'Open your public page and save a PDF from the browser. No separate resume file to keep in sync.',
+    title: 'Export-ready resumes',
+    description: 'Compose named variants from your profile, pick a template, and download a PDF.',
     icon: FileText,
   },
   {
@@ -34,7 +34,7 @@ const bullets = [
   {
     title: 'On the roadmap',
     description:
-      'ATS-tailored resumes, application tracking, and richer version history are planned — not shipped yet.',
+      'Application tracking, AI tailoring, and richer version history are planned — not shipped yet.',
     icon: GitBranch,
   },
 ];

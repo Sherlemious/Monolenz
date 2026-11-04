@@ -249,6 +249,64 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
     });
   }
 
+  /**
+   * Hydrate typed blocks for an ordered list of block ids (resume compositions).
+   */
+  async listBlocksByIds(
+    items: { blockId: number; sectionName?: string | null; sortOrder?: number }[],
+    versionId?: number | null
+  ): Promise<TypedBlock[]> {
+    if (items.length === 0) return [];
+
+    return (this.repository as BlocksRepository).withTransaction(async (tx) => {
+      const uniqueIds = [...new Set(items.map((item) => item.blockId))];
+      const baseBlocks = await (this.repository as BlocksRepository).findManyByIds(uniqueIds, tx);
+      const baseById = new Map(baseBlocks.map((block) => [block.id, block]));
+      const missing = uniqueIds.filter((id) => !baseById.has(id));
+      if (missing.length > 0) {
+        throw new ServiceError(`Unknown block ids: ${missing.join(', ')}`, null, 422);
+      }
+
+      const blocksByType = new Map<BlockType, number[]>();
+      for (const block of baseBlocks) {
+        const blockType = block.block_type as BlockType;
+        const ids = blocksByType.get(blockType) || [];
+        ids.push(block.id);
+        blocksByType.set(blockType, ids);
+      }
+
+      const typedDataResults = await Promise.all(
+        Array.from(blocksByType.entries()).map(async ([blockType, blockIds]) => {
+          const repo = this.typedBlockFactory.getRepository(blockType);
+          const typedBlocks = await repo.findManyByBlockIds(blockIds, tx);
+          return { typedBlocks };
+        })
+      );
+
+      const typedDataMap = new Map<number, unknown>();
+      for (const result of typedDataResults) {
+        for (const typedBlock of result.typedBlocks) {
+          typedDataMap.set((typedBlock as { block_id: number }).block_id, typedBlock);
+        }
+      }
+
+      return items.map((item, index) => {
+        const base = baseById.get(item.blockId)!;
+        return {
+          id: base.id,
+          block_type: base.block_type as BlockType,
+          content_hash: base.content_hash,
+          created_at: base.created_at,
+          data: typedDataMap.get(item.blockId),
+          section_name: item.sectionName ?? null,
+          sort_order: item.sortOrder ?? index,
+          is_visible: true,
+          version_id: versionId ?? 0,
+        } as TypedBlock;
+      });
+    });
+  }
+
   async assertVersionBelongsToProfile(versionId: number, profileId: string): Promise<void> {
     const version = await this.versionsRepo.getVersionById(versionId);
     if (!version || version.profile_id !== profileId) {
@@ -263,6 +321,44 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
     return this.versionsRepo.getLatestVersionForProfile(profileId);
   }
 
+  /**
+   * Upsert a typed block by content hash without attaching it to a profile version.
+   */
+  async ensureTypedBlock(
+    blockType: BlockType,
+    data: Record<string, unknown>,
+    tx?: Prisma.TransactionClient
+  ): Promise<{ blockId: number }> {
+    const run = async (client: Prisma.TransactionClient) => {
+      const schema = BLOCK_SCHEMAS[blockType];
+      if (!schema) {
+        throw new ServiceError(`Unknown block type: ${blockType}`, null, 400);
+      }
+
+      const validatedData = schema.parse(data);
+      const hash = (this.repository as BlocksRepository).computeContentHash(blockType, validatedData);
+      let baseBlock = await (this.repository as BlocksRepository).findBlockByHash(hash, client);
+
+      if (!baseBlock) {
+        baseBlock = await (this.repository as BlocksRepository).createBaseBlock(
+          {
+            block_type: blockType,
+            content_hash: hash,
+          },
+          client
+        );
+
+        const typedRepo = this.typedBlockFactory.getRepository(blockType);
+        await typedRepo.create(baseBlock.id, validatedData as Record<string, unknown>, client);
+      }
+
+      return { blockId: baseBlock.id };
+    };
+
+    if (tx) return run(tx);
+    return (this.repository as BlocksRepository).withTransaction(run);
+  }
+
   // ========================================================================
   // Private Helper Methods
   // ========================================================================
@@ -274,37 +370,9 @@ export class ProfileBlockService extends BaseService<BlockEntity> {
     const results: ProcessedBlock[] = [];
 
     for (const creation of creations) {
-      // Validate data against schema
-      const schema = BLOCK_SCHEMAS[creation.blockType];
-      if (!schema) {
-        throw new ServiceError(`Unknown block type: ${creation.blockType}`, null, 400);
-      }
-
-      const validatedData = schema.parse(creation.data);
-
-      // Compute content hash (includes block_type)
-      const hash = (this.repository as BlocksRepository).computeContentHash(creation.blockType, validatedData);
-
-      // Check for existing block (deduplication)
-      let baseBlock = await (this.repository as BlocksRepository).findBlockByHash(hash, tx);
-
-      if (!baseBlock) {
-        // Create base block
-        baseBlock = await (this.repository as BlocksRepository).createBaseBlock(
-          {
-            block_type: creation.blockType,
-            content_hash: hash,
-          },
-          tx
-        );
-
-        // Create typed block data
-        const typedRepo = this.typedBlockFactory.getRepository(creation.blockType);
-        await typedRepo.create(baseBlock.id, validatedData, tx);
-      }
-
+      const { blockId } = await this.ensureTypedBlock(creation.blockType, creation.data, tx);
       results.push({
-        blockId: baseBlock.id,
+        blockId,
         sectionName: creation.sectionName,
         sortOrder: creation.sortOrder,
         isVisible: creation.isVisible ?? true,

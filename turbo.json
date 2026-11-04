@@ -20,7 +20,7 @@
       "dependsOn": ["^build", "^check-types"]
     },
     "dev": {
-      "dependsOn": ["@monolenz/types#build"],
+      "dependsOn": ["@monolenz/types#build", "@monolenz/resume-pdf#build"],
       "cache": false,
       "persistent": true
     }

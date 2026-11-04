@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { User, Edit, Link2, Globe, ArrowRight, ExternalLink, Printer } from 'lucide-react';
+import { User, Edit, Link2, Globe, ArrowRight, ExternalLink, Printer, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/app/components/dashboard/PageHeader';
 import { useApiClient } from '@/lib/hooks/useApiClient';
@@ -64,6 +64,20 @@ export default function DashboardPage() {
               <div className='flex-1 min-w-0'>
                 <h3 className='text-sm font-semibold text-foreground mb-0.5'>Edit Profile</h3>
                 <p className='text-xs text-muted-foreground'>Add or modify your content</p>
+              </div>
+              <ArrowRight className='w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all' />
+            </Link>
+
+            <Link
+              href='/dashboard/resumes'
+              className='group flex items-center gap-4 p-5 bg-card border border-border rounded-xl transition-all hover:border-ring hover:shadow-sm'
+            >
+              <div className='w-10 h-10 rounded-lg bg-secondary text-primary flex items-center justify-center shrink-0'>
+                <FileText className='w-5 h-5' />
+              </div>
+              <div className='flex-1 min-w-0'>
+                <h3 className='text-sm font-semibold text-foreground mb-0.5'>Resumes</h3>
+                <p className='text-xs text-muted-foreground'>Compose variants and export PDF</p>
               </div>
               <ArrowRight className='w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all' />
             </Link>
@@ -164,9 +178,9 @@ export default function DashboardPage() {
                 3
               </div>
               <div>
-                <h3 className='text-sm font-semibold text-foreground mb-0.5'>Share or print</h3>
+                <h3 className='text-sm font-semibold text-foreground mb-0.5'>Share or export</h3>
                 <p className='text-xs text-muted-foreground'>
-                  Copy your public link, or open the page and use Print / Save as PDF.
+                  Copy your public link, or compose a resume and download a PDF.
                 </p>
               </div>
             </div>

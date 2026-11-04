@@ -121,6 +121,13 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     icon: '@',
   },
   {
+    key: 'display_name',
+    title: 'What should we call you?',
+    description: 'This name appears on your public page and resume PDFs.',
+    placeholder: 'e.g. John Doe',
+    icon: 'Aa',
+  },
+  {
     key: 'bio',
     title: 'Write a short bio',
     description: 'Introduce yourself in a sentence or two.',
@@ -245,12 +252,13 @@ function OnboardingWizard({ api, onCreated }: OnboardingWizardProps) {
         if (trimmed) payload[key] = trimmed;
       }
 
-      const { username, bio, linkedin_url, github_url, portfolio_url } = payload;
+      const { username, display_name, bio, linkedin_url, github_url, portfolio_url } = payload;
       if (!username) {
         throw new Error('Username is required');
       }
       const newProfile = await api.createProfile({
         username,
+        ...(display_name && { display_name }),
         ...(bio && { bio }),
         ...(linkedin_url && { linkedin_url }),
         ...(github_url && { github_url }),
@@ -466,17 +474,22 @@ function ProfileOverview({ profile, blocks }: { profile: Profile; blocks: Versio
               {profile.profile_picture_url ? (
                 <img
                   src={profile.profile_picture_url}
-                  alt={profile.username}
+                  alt={profile.display_name?.trim() || profile.username}
                   className='size-20 rounded-2xl object-cover border-2 border-border shadow-sm shrink-0'
                 />
               ) : (
                 <div className='size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold shrink-0'>
-                  {profile.username.charAt(0).toUpperCase()}
+                  {(profile.display_name?.trim() || profile.username).charAt(0).toUpperCase()}
                 </div>
               )}
 
               <div>
-                <h1 className='text-2xl font-bold tracking-tight'>{profile.username}</h1>
+                <h1 className='text-2xl font-bold tracking-tight'>
+                  {profile.display_name?.trim() || profile.username}
+                </h1>
+                {profile.display_name?.trim() ? (
+                  <p className='text-sm text-muted-foreground'>@{profile.username}</p>
+                ) : null}
                 {profile.bio && (
                   <p className='text-sm text-muted-foreground mt-1.5 max-w-lg leading-relaxed'>{profile.bio}</p>
                 )}

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MonolenzLockup } from '@/components/brand/Logo';
-import { LayoutDashboard, User, Pencil, LogOut, Menu, ChevronsUpDown, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, User, Pencil, FileText, LogOut, Menu, ChevronsUpDown, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { signOut } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/dashboard/profile', label: 'My Profile', icon: User },
   { href: '/dashboard/profile/edit', label: 'Edit Profile', icon: Pencil },
+  { href: '/dashboard/resumes', label: 'Resumes', icon: FileText },
 ];
 
 interface UserInfo {

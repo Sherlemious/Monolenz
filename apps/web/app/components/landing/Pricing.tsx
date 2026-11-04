@@ -11,12 +11,12 @@ const featuresFree = [
   'Public portfolio at /username',
   'Hide entries from the public page',
   'Themes for your public profile',
-  'Print / save as PDF from the browser',
+  'Named resume variants and PDF export',
 ];
 
 const featuresPro = [
   'Everything in Free',
-  'ATS-tailored resume templates',
+  'AI resume tailoring',
   'Application tracking',
   'Multiple public pages',
   'Custom domain',

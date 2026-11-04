@@ -213,12 +213,14 @@ export class ProfileService extends BaseService<ProfileEntity> {
     const publicProfile: ProfileEntity = {
       id: profile.id,
       username: profile.username,
+      display_name: profile.display_name,
+      location: profile.location,
       bio: profile.bio,
       profile_picture_url: profile.profile_picture_url,
       portfolio_url: profile.portfolio_url,
+      theme: profile.theme,
       created_at: profile.created_at,
       updated_at: profile.updated_at,
-      // Filter out private URLs for public access
       linkedin_url: undefined,
       github_url: undefined,
     };

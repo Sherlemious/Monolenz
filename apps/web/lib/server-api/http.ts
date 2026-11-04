@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { HTTP_STATUS_CODES } from '@monolenz/types/api';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 import { AuthError, ServiceError } from 'api/core';
 
@@ -12,6 +12,18 @@ function meta() {
     requestId: crypto.randomUUID(),
     version: '1.0.0',
   };
+}
+
+export function pdfResponse(buffer: Buffer | Uint8Array, filename: string) {
+  const asciiName = filename.replace(/[^\x20-\x7E]/g, '_');
+  return new NextResponse(Uint8Array.from(buffer), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${asciiName}"`,
+      'Cache-Control': 'no-store',
+    },
+  });
 }
 
 export function jsonSuccess<T>(data: T, message = 'Success', status: number = HTTP_STATUS_CODES.OK) {
@@ -44,7 +56,7 @@ export function jsonFromError(error: unknown) {
     return jsonError('Validation failed', HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY, errors);
   }
 
-  if (error instanceof PrismaClientKnownRequestError) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === 'P2002') {
       return jsonError('Duplicate entry', HTTP_STATUS_CODES.CONFLICT, ['Resource already exists']);
     }

@@ -27,6 +27,9 @@ interface ProfileInfoFormProps {
 
 interface FormData {
   username: string;
+  display_name: string;
+  phone: string;
+  location: string;
   bio: string;
   profile_picture_url: string;
   linkedin_url: string;
@@ -36,6 +39,9 @@ interface FormData {
 
 interface FormErrors {
   username?: string;
+  display_name?: string;
+  phone?: string;
+  location?: string;
   bio?: string;
   profile_picture_url?: string;
   linkedin_url?: string;
@@ -50,6 +56,9 @@ interface FormErrors {
 export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: ProfileInfoFormProps) {
   const [formData, setFormData] = useState<FormData>({
     username: profile.username ?? '',
+    display_name: profile.display_name ?? '',
+    phone: profile.phone ?? '',
+    location: profile.location ?? '',
     bio: profile.bio ?? '',
     profile_picture_url: profile.profile_picture_url ?? '',
     linkedin_url: profile.linkedin_url ?? '',
@@ -113,6 +122,9 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
   useEffect(() => {
     const isFormDirty =
       formData.username !== (profile.username ?? '') ||
+      formData.display_name !== (profile.display_name ?? '') ||
+      formData.phone !== (profile.phone ?? '') ||
+      formData.location !== (profile.location ?? '') ||
       formData.bio !== (profile.bio ?? '') ||
       formData.profile_picture_url !== (profile.profile_picture_url ?? '') ||
       formData.linkedin_url !== (profile.linkedin_url ?? '') ||
@@ -285,6 +297,46 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
           </div>
           {errors.username && <p className='text-xs text-destructive'>{errors.username}</p>}
           <p className='text-xs text-muted-foreground'>Letters, numbers, underscores, and hyphens only</p>
+        </div>
+
+        <div className='space-y-1.5'>
+          <Label htmlFor='display_name'>Display name</Label>
+          <Input
+            id='display_name'
+            value={formData.display_name}
+            onChange={(e) => handleChange('display_name', e.target.value)}
+            placeholder='Your name as it should appear on resumes'
+            maxLength={255}
+            aria-invalid={!!errors.display_name}
+          />
+          {errors.display_name && <p className='text-xs text-destructive'>{errors.display_name}</p>}
+        </div>
+
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
+          <div className='space-y-1.5'>
+            <Label htmlFor='phone'>Phone</Label>
+            <Input
+              id='phone'
+              value={formData.phone}
+              onChange={(e) => handleChange('phone', e.target.value)}
+              placeholder='+20 100 000 0000'
+              maxLength={50}
+              aria-invalid={!!errors.phone}
+            />
+            {errors.phone && <p className='text-xs text-destructive'>{errors.phone}</p>}
+          </div>
+          <div className='space-y-1.5'>
+            <Label htmlFor='location'>Location</Label>
+            <Input
+              id='location'
+              value={formData.location}
+              onChange={(e) => handleChange('location', e.target.value)}
+              placeholder='Cairo, Egypt'
+              maxLength={255}
+              aria-invalid={!!errors.location}
+            />
+            {errors.location && <p className='text-xs text-destructive'>{errors.location}</p>}
+          </div>
         </div>
 
         {/* Bio */}

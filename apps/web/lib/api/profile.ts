@@ -78,6 +78,9 @@ export function createProfileApi(client: ApiClient) {
      */
     async createProfile(data: {
       username: string;
+      display_name?: string;
+      phone?: string;
+      location?: string;
       bio?: string;
       profile_picture_url?: string;
       linkedin_url?: string;

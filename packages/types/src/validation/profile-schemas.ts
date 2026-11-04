@@ -33,6 +33,7 @@ export const RESERVED_USERNAMES = [
   'favicon',
   'robots',
   'sitemap',
+  'resumes',
 ] as const;
 
 export function isReservedUsername(username: string): boolean {
@@ -47,8 +48,18 @@ export const usernameSchema = z
   .refine((val) => !isReservedUsername(val), 'This username is reserved');
 
 // Base profile data validation
+const optionalTrimmedText = (max: number, label: string) =>
+  z
+    .string()
+    .max(max, `${label} must be less than ${max} characters`)
+    .transform((val) => val.trim() || undefined)
+    .optional();
+
 export const profileDataSchema = z.object({
   username: usernameSchema,
+  display_name: z.string().max(255, 'Display name must be less than 255 characters').optional(),
+  phone: z.string().max(50, 'Phone must be less than 50 characters').optional(),
+  location: z.string().max(255, 'Location must be less than 255 characters').optional(),
   bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
   profile_picture_url: z.string().url('Invalid profile picture URL').optional(),
   linkedin_url: z.string().url('Invalid LinkedIn URL').optional(),
@@ -70,6 +81,9 @@ export const profileSchemas = {
   // For frontend forms - with better UX (empty strings transformed to undefined)
   createForm: profileDataSchema
     .extend({
+      display_name: optionalTrimmedText(255, 'Display name'),
+      phone: optionalTrimmedText(50, 'Phone'),
+      location: optionalTrimmedText(255, 'Location'),
       bio: z
         .string()
         .transform((val) => val.trim() || undefined)
@@ -97,6 +111,9 @@ export const profileSchemas = {
 
   updateForm: profileDataSchema
     .extend({
+      display_name: optionalTrimmedText(255, 'Display name'),
+      phone: optionalTrimmedText(50, 'Phone'),
+      location: optionalTrimmedText(255, 'Location'),
       bio: z
         .string()
         .transform((val) => val.trim() || undefined)
@@ -130,6 +147,8 @@ export const profileSchemas = {
   // Public profile (subset of fields)
   public: profileDataSchema.pick({
     username: true,
+    display_name: true,
+    location: true,
     bio: true,
     portfolio_url: true,
   }),

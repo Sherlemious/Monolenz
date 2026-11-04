@@ -18,8 +18,11 @@ coverage
 # Turbo
 .turbo
 
-# Vercel
-.vercel
+# Cloudflare / OpenNext
+.open-next
+.wrangler
+.dev.vars*
+!.dev.vars.example
 
 # Build Outputs
 .next/

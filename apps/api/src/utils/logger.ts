@@ -8,8 +8,6 @@ interface LogContext {
   [key: string]: unknown;
 }
 
-const isServerless = Boolean(process.env.VERCEL);
-
 export class Logger {
   private logger: winston.Logger;
 
@@ -37,20 +35,6 @@ export class Logger {
         }),
       ],
     });
-
-    if (process.env.NODE_ENV === 'production' && !isServerless) {
-      this.logger.add(
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-        })
-      );
-      this.logger.add(
-        new winston.transports.File({
-          filename: 'logs/combined.log',
-        })
-      );
-    }
   }
 
   info(message: string, context?: LogContext) {

@@ -42,6 +42,7 @@ export type ApiClient = {
   put<T, B = unknown>(path: string, body?: B, init?: RequestInit): Promise<T>;
   patch<T, B = unknown>(path: string, body?: B, init?: RequestInit): Promise<T>;
   delete<T>(path: string, init?: RequestInit): Promise<T>;
+  getBlob(path: string, init?: RequestInit): Promise<{ blob: Blob; filename?: string }>;
 };
 
 function toJsonBody(body: unknown): BodyInit | undefined {
@@ -63,13 +64,13 @@ export function resolveApiBaseUrl() {
   const explicit = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (explicit) return explicit.replace(/\/$/, '');
   if (typeof window !== 'undefined') return '';
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
 }
 
 export function createApiClientWithTokenProvider(
   getAccessToken: () => Promise<string | undefined>,
-  baseInit?: RequestInit
+  baseInit?: RequestInit,
+  fetchImpl: typeof fetch = (...args) => fetch(...args)
 ): ApiClient {
   const baseUrl = resolveApiBaseUrl();
 
@@ -82,7 +83,7 @@ export function createApiClientWithTokenProvider(
       ...(init?.headers ?? {}),
     };
 
-    const res = await fetch(`${baseUrl}${path}`, {
+    const res = await fetchImpl(`${baseUrl}${path}`, {
       ...baseInit,
       ...init,
       method,
@@ -103,5 +104,22 @@ export function createApiClientWithTokenProvider(
     put: (path, body, init) => request('PUT', path, { ...init, body: toJsonBody(body) }),
     patch: (path, body, init) => request('PATCH', path, { ...init, body: toJsonBody(body) }),
     delete: (path, init) => request('DELETE', path, init),
+    getBlob: async (path, init) => {
+      const accessToken = await getAccessToken();
+      const headers: HeadersInit = {
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        ...(baseInit?.headers ?? {}),
+        ...(init?.headers ?? {}),
+      };
+      const res = await fetchImpl(`${baseUrl}${path}`, { ...baseInit, ...init, method: 'GET', headers });
+      if (!res.ok) {
+        const errorBody = await parseJsonSafe<unknown>(res);
+        const message = `API GET ${path} failed: ${res.status} ${res.statusText} — ${typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody)}`;
+        throw new ApiError(message, res.status, res.statusText, 'GET', path, errorBody);
+      }
+      const disposition = res.headers.get('content-disposition') ?? '';
+      const match = /filename="([^"]+)"/i.exec(disposition);
+      return { blob: await res.blob(), filename: match?.[1] };
+    },
   };
 }

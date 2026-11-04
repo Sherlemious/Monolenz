@@ -1,18 +1,16 @@
+// Single default-output client: OpenNext (Cloudflare Workers) patches the generated
+// client in node_modules and cannot do that for a custom `output` path.
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
-}
-
-// Next.js file tracing on Vercel only packs engines that live next to app source.
-generator web {
-  provider      = "prisma-client-js"
-  output        = "../../web/generated/prisma"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  binaryTargets   = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Pooled URL for app traffic; direct URL for Prisma Migrate (PgBouncer breaks migrations).
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model users {
@@ -54,11 +52,15 @@ model blocks {
   block_work_experiences                                  block_work_experiences?
   version_blocks_version_blocks_block_idToblocks          version_blocks[]        @relation("version_blocks_block_idToblocks")
   version_blocks_version_blocks_previous_block_idToblocks version_blocks[]        @relation("version_blocks_previous_block_idToblocks")
+  resume_blocks                                           resume_blocks[]
 }
 
 model profiles {
   id                  String          @id @db.Uuid
   username            String          @unique @db.VarChar(50)
+  display_name        String?         @db.VarChar(255)
+  phone               String?         @db.VarChar(50)
+  location            String?         @db.VarChar(255)
   bio                 String?
   profile_picture_url String?         @db.VarChar(500)
   linkedin_url        String?         @db.VarChar(500)
@@ -71,6 +73,7 @@ model profiles {
   users               users           @relation(fields: [id], references: [id], onDelete: Cascade)
   profile_links       profile_links[]
   versions            versions[]
+  resumes             resumes[]
 }
 
 model link_platforms {
@@ -134,6 +137,35 @@ model versions {
   versions                                                    versions?        @relation("versionsToversions", fields: [parent_version_id], references: [id])
   other_versions                                              versions[]       @relation("versionsToversions")
   profiles                                                    profiles?        @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  resumes                                                     resumes[]
+}
+
+model resumes {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profile_id        String          @db.Uuid
+  name              String          @db.VarChar(255)
+  template_id       String          @db.VarChar(50)
+  source_version_id Int?
+  created_at        DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?       @default(now()) @db.Timestamptz(6)
+  profiles          profiles        @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  versions          versions?       @relation(fields: [source_version_id], references: [id], onDelete: SetNull)
+  resume_blocks     resume_blocks[]
+
+  @@index([profile_id, created_at], map: "idx_resumes_profile")
+}
+
+model resume_blocks {
+  resume_id    String    @db.Uuid
+  block_id     Int
+  sort_order   Int       @default(0)
+  section_name String?   @db.VarChar(255)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  resumes      resumes   @relation(fields: [resume_id], references: [id], onDelete: Cascade)
+  blocks       blocks    @relation(fields: [block_id], references: [id], onDelete: Cascade)
+
+  @@id([resume_id, block_id])
+  @@index([resume_id, sort_order], map: "idx_resume_blocks_order")
 }
 
 model block_awards {

@@ -16,11 +16,11 @@ const outputs = [
   },
   {
     id: 'resume',
-    title: 'Printable Resume',
+    title: 'Resume PDF',
     icon: FileText,
     accent: 'var(--accent-color)',
-    description: 'Save as PDF from the browser',
-    stats: 'One profile, one print view',
+    description: 'Named variants, two templates',
+    stats: 'Download a real PDF',
   },
   {
     id: 'versions',
@@ -128,7 +128,7 @@ const HeroSection = () => {
 
           <p className='mx-auto max-w-2xl text-center text-fg-muted text-lg leading-relaxed'>
             Build one professional profile with experience, education, skills, and more. Share it at a public URL, hide
-            what you don&apos;t want shown, and print a resume when you need a PDF.
+            what you don&apos;t want shown, and export a tailored resume PDF.
           </p>
         </div>
 

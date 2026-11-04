@@ -1,0 +1,39 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "monolenz",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // Production hostname (Workers Custom Domain; Cloudflare manages its DNS record + cert).
+  "routes": [{ "pattern": "monolenz.sherlemious.com", "custom_domain": true }],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  // Neon Postgres via Hyperdrive (pooled + cached at the edge, points at the direct Neon endpoint).
+  // Local dev/preview: set CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE (see .dev.vars.example).
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "e7a3c91fefd541bbac9013e3cb6851fc"
+    }
+  ],
+  "services": [
+    {
+      // OpenNext uses this for self-references (revalidation, image optimisation).
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "monolenz"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://monolenz.sherlemious.com"
+  },
+  // Secrets (set with `wrangler secret put`): AUTH_SECRET, plus optional
+  // RESEND_API_KEY, AUTH_FROM_EMAIL, AI_API_KEY, AI_BASE_URL, AI_MODEL.
+  "observability": {
+    "enabled": true
+  }
+}

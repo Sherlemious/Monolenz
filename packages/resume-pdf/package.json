@@ -1,0 +1,37 @@
+{
+  "name": "@monolenz/resume-pdf",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "check-types": "tsc --noEmit",
+    "lint": "echo 'No linting configured for resume-pdf package'"
+  },
+  "dependencies": {
+    "@monolenz/types": "workspace:*",
+    "@react-pdf/renderer": "^4.3.0",
+    "react": "^19.1.0"
+  },
+  "devDependencies": {
+    "@monolenz/typescript-config": "workspace:*",
+    "@types/react": "19.1.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.8.3"
+  }
+}

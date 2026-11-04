@@ -1,10 +1,12 @@
-export { prisma } from './config/prisma';
+export { prisma, createPrismaClient, runWithPrisma } from './config/prisma';
 export { signAuthToken, verifyAuthToken, type AuthUser } from './config/auth';
 export * as authService from './services/domain/auth.service';
 export { AuthError } from './services/domain/auth.service';
 export { ProfileService } from './services/domain/profile.service';
 export { ProfileRepository } from './repositories/profile/profile';
 export { ProfileBlockService } from './services/domain/profile-block.service';
+export { ResumeService } from './services/domain/resume.service';
+export { ResumeRepository } from './repositories/profile/resume.repository';
 export { BlocksRepository } from './repositories/blocks/blocks.repository';
 export { VersionsRepository } from './repositories/profile/versions.repository';
 export { VersionBlocksRepository } from './repositories/profile/version-blocks.repository';

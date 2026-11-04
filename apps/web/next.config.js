@@ -1,15 +1,11 @@
 /** @type {import('next').NextConfig} */
 import path from 'node:path';
+import { PHASE_DEVELOPMENT_SERVER } from 'next/constants.js';
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 
 const nextConfig = {
-  // Enable standalone output for Docker/Cloud Run deployment
-  // Disabled on Windows due to symlink permission issues - re-enable in CI/CD
-  output: process.env.VERCEL ? undefined : process.env.CI ? 'standalone' : undefined,
+  // Deployed to Cloudflare Workers via @opennextjs/cloudflare (it sets standalone output itself).
   outputFileTracingRoot: path.join(process.cwd(), '../..'),
-  outputFileTracingIncludes: {
-    '/api/v1/[...path]': ['./generated/prisma/**/*'],
-    '/api/v1/[...path]/route': ['./generated/prisma/**/*'],
-  },
 
   // Optimize for production
   poweredByHeader: false,
@@ -71,10 +67,29 @@ const nextConfig = {
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
   },
 
-  transpilePackages: ['api'],
+  transpilePackages: ['api', '@monolenz/resume-pdf'],
 
   // External packages that should not be bundled for server components
-  serverExternalPackages: ['jose', '@prisma/client', 'prisma', 'bcryptjs', 'winston'],
+  serverExternalPackages: [
+    'jose',
+    '@prisma/client',
+    '.prisma/client',
+    'bcryptjs',
+    'winston',
+    '@react-pdf/renderer',
+    'openai',
+  ],
+
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
+    config.resolve.alias.encoding = false;
+    return config;
+  },
 };
 
-export default nextConfig;
+// Exposes Cloudflare bindings (getCloudflareContext) during `next dev` only; during
+// `next build` it would try to emulate Hyperdrive locally.
+export default function config(phase) {
+  if (phase === PHASE_DEVELOPMENT_SERVER) initOpenNextCloudflareForDev();
+  return nextConfig;
+}

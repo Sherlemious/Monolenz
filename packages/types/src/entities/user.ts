@@ -39,6 +39,9 @@ export interface ProfileLink {
 export interface Profile {
   id: string;
   username: string;
+  display_name?: string | null;
+  phone?: string | null;
+  location?: string | null;
   bio?: string;
   profile_picture_url?: string;
   linkedin_url?: string;
@@ -53,6 +56,8 @@ export interface Profile {
 
 export interface PublicProfile {
   username: string;
+  display_name?: string | null;
+  location?: string | null;
   bio?: string;
   portfolio_url?: string;
   profile_picture_url?: string;

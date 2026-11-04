@@ -31,6 +31,15 @@
       "types": "./dist/validation/block-schemas.d.ts",
       "import": "./dist/validation/block-schemas.js"
     },
+    "./validation/resume-schemas": {
+      "types": "./dist/validation/resume-schemas.d.ts",
+      "import": "./dist/validation/resume-schemas.js"
+    },
+    "./entities/resume": {
+      "types": "./dist/entities/resume.d.ts",
+      "import": "./dist/entities/resume.js"
+    },
+
     "./enums": {
       "types": "./dist/enums/index.d.ts",
       "import": "./dist/enums/index.js"
