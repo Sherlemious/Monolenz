@@ -2,105 +2,124 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu, Moon, Sun, X } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { MonolenzLockup } from '@/components/brand/Logo';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+const navLinks = [
+  { href: '/#how-it-works', label: 'How it works' },
+  { href: '/#features', label: 'Features' },
+  { href: '/#pricing', label: 'Pricing' },
+  { href: '/#faq', label: 'FAQ' },
+];
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === 'dark';
+
+  return (
+    <button
+      type='button'
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      className='inline-flex size-9 items-center justify-center rounded-md text-fg-muted hover:text-foreground hover:bg-secondary transition-colors'
+    >
+      {mounted ? isDark ? <Sun className='size-4' /> : <Moon className='size-4' /> : <span className='size-4' />}
+    </button>
+  );
+}
 
 const LandingHeader: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setMobileOpen(false);
-      }
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onResize = () => window.innerWidth >= 768 && setMobileOpen(false);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
-    <header className='fixed top-0 left-0 right-0 z-50 backdrop-blur-[14px] bg-background/80 border-b border-border'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='flex items-center justify-between h-16'>
-          {/* Logo */}
-          <div className='flex-shrink-0'>
-            <Link href='/' className='text-foreground hover:opacity-80 transition-opacity'>
-              <MonolenzLockup height={24} />
-            </Link>
-          </div>
+    <header
+      className={cn(
+        'fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-200',
+        scrolled || mobileOpen
+          ? 'bg-background/80 backdrop-blur-[14px] border-b border-border'
+          : 'bg-transparent border-b border-transparent'
+      )}
+    >
+      <div className='mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6'>
+        <Link href='/' className='hover:opacity-80 transition-opacity' aria-label='Monolenz home'>
+          <MonolenzLockup height={24} />
+        </Link>
 
-          {/* Desktop Navigation */}
-          <nav className='hidden md:flex items-center gap-8'>
-            <Link href='/' className='text-sm font-medium text-foreground'>
-              Overview
-            </Link>
-            <Link href='/#features' className='text-sm font-medium text-foreground'>
-              Features
-            </Link>
-            <Link href='/#pricing' className='text-sm font-medium text-muted-foreground'>
-              Pricing
-            </Link>
-          </nav>
-
-          {/* Mobile menu toggle */}
-          <div className='md:hidden flex items-center'>
-            <button
-              className='inline-flex items-center justify-center p-2 rounded-md text-foreground bg-transparent border border-border'
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={mobileOpen}
-              onClick={() => setMobileOpen((v) => !v)}
-            >
-              {mobileOpen ? <X className='block h-6 w-6' /> : <Menu className='block h-6 w-6' />}
-            </button>
-          </div>
-
-          {/* Sign-in and Sign-up buttons */}
-          <div className='hidden md:flex items-center gap-3'>
+        <nav className='hidden md:flex items-center gap-1' aria-label='Main'>
+          {navLinks.map((l) => (
             <Link
-              href='/login'
-              className='bg-transparent text-foreground border border-border py-2 px-4 rounded-md text-sm font-medium'
+              key={l.href}
+              href={l.href}
+              className='rounded-md px-3 py-2 text-sm font-medium text-fg-muted hover:text-foreground transition-colors'
             >
-              Sign in
+              {l.label}
             </Link>
-            <Link
-              href='/signup'
-              className='bg-primary text-primary-foreground py-2 px-4 rounded-md text-sm font-medium'
-            >
-              Sign up
-            </Link>
-          </div>
+          ))}
+        </nav>
+
+        <div className='hidden md:flex items-center gap-2'>
+          <ThemeToggle />
+          <Button variant='ghost' asChild>
+            <Link href='/login'>Sign in</Link>
+          </Button>
+          <Button asChild>
+            <Link href='/signup'>Get started</Link>
+          </Button>
+        </div>
+
+        <div className='flex md:hidden items-center gap-1'>
+          <ThemeToggle />
+          <button
+            type='button'
+            className='inline-flex size-9 items-center justify-center rounded-md border border-border text-foreground'
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            {mobileOpen ? <X className='size-5' /> : <Menu className='size-5' />}
+          </button>
         </div>
       </div>
 
-      {/* Mobile sheet */}
       {mobileOpen && (
-        <div className='md:hidden'>
-          <div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
-            <Link href='/' className='block px-3 py-2 rounded-md text-base font-medium text-foreground'>
-              Overview
-            </Link>
-            <Link href='/#features' className='block px-3 py-2 rounded-md text-base font-medium text-foreground'>
-              Features
-            </Link>
-            <Link href='/#pricing' className='block px-3 py-2 rounded-md text-base font-medium text-muted-foreground'>
-              Pricing
-            </Link>
-            <div className='border-t border-border pt-4 mt-4'>
-              <div className='flex items-center justify-center gap-3'>
-                <Link
-                  href='/login'
-                  className='w-full text-center bg-transparent text-foreground border border-border py-2 px-4 rounded-md text-sm font-medium'
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href='/signup'
-                  className='w-full text-center bg-primary text-primary-foreground py-2 px-4 rounded-md text-sm font-medium'
-                >
-                  Sign up
-                </Link>
-              </div>
-            </div>
+        <div className='md:hidden border-t border-border px-4 pb-5 pt-3'>
+          <nav className='flex flex-col' aria-label='Mobile'>
+            {navLinks.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setMobileOpen(false)}
+                className='rounded-md px-3 py-2.5 text-base font-medium text-foreground hover:bg-secondary'
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+          <div className='mt-4 grid grid-cols-2 gap-3'>
+            <Button variant='outline' asChild>
+              <Link href='/login'>Sign in</Link>
+            </Button>
+            <Button asChild>
+              <Link href='/signup'>Get started</Link>
+            </Button>
           </div>
         </div>
       )}

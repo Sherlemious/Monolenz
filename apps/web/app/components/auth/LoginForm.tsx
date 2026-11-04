@@ -23,25 +23,25 @@ export default function LoginForm() {
   const [state, formAction] = useActionState(login, initialState);
 
   return (
-    <Card className='w-full max-w-xs sm:max-w-sm md:max-w-md rounded-lg md:rounded-xl shadow-sm md:shadow-md py-0 gap-0'>
-      <CardHeader className='text-center border-b px-6 sm:px-8 md:px-10 py-5 sm:py-6'>
-        <CardTitle className='text-lg sm:text-xl md:text-2xl tracking-tight leading-tight'>Sign in</CardTitle>
+    <Card className='w-full max-w-sm bg-transparent border-0 shadow-none rounded-none py-0 gap-0'>
+      <CardHeader className='px-0 pt-0 pb-7 gap-1.5'>
+        <CardTitle className='font-serif text-[36px] font-normal leading-[1.05] tracking-[-0.01em]'>Sign in</CardTitle>
         <CardDescription>Welcome back</CardDescription>
       </CardHeader>
-      <CardContent className='px-6 sm:px-8 md:px-10 pt-5 sm:pt-6 pb-6 sm:pb-8'>
+      <CardContent className='px-0 pb-0'>
         {state?.error && (
           <div
             role='alert'
-            className='mb-3 rounded-md border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive'
+            className='mb-4 rounded-md border border-danger-border bg-danger-soft px-3 py-2 text-[13px] text-destructive'
           >
             {state.error}
           </div>
         )}
 
-        <form action={formAction} className='grid gap-4 sm:gap-6'>
+        <form action={formAction} className='grid gap-4'>
           <div className='grid gap-2'>
             <Label htmlFor='email'>Email</Label>
-            <Input id='email' name='email' type='email' required className='h-10 sm:h-11 rounded-lg' />
+            <Input id='email' name='email' type='email' required className='h-10' />
           </div>
 
           <div className='grid gap-2'>
@@ -51,12 +51,12 @@ export default function LoginForm() {
                 Forgot password?
               </Link>
             </div>
-            <Input id='password' name='password' type='password' required className='h-10 sm:h-11 rounded-lg' />
+            <Input id='password' name='password' type='password' required className='h-10' />
           </div>
 
           <SubmitButton label='Sign in' />
 
-          <div className='mt-2 text-center text-xs text-muted-foreground'>
+          <div className='mt-3 text-[13px] text-muted-foreground'>
             Don&apos;t have an account?{' '}
             <Link href='/signup' className='text-foreground underline'>
               Sign up

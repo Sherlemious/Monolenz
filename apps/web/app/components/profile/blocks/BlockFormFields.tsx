@@ -125,6 +125,12 @@ function TextAreaField({ label, value, onChange, placeholder, rows = 3, hint }: 
   );
 }
 
+function toDateInputValue(value: unknown): string {
+  if (typeof value !== 'string' || !value) return '';
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(value);
+  return match?.[1] ?? '';
+}
+
 interface DateFieldProps {
   label: string;
   value: string;
@@ -142,7 +148,8 @@ function DateField({ label, value, onChange, required, error }: DateFieldProps) 
       </Label>
       <Input
         type='date'
-        value={value ?? ''}
+        // API returns full ISO timestamps; <input type=date> only accepts YYYY-MM-DD
+        value={toDateInputValue(value)}
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={!!error}
         className={cn(error && 'border-destructive focus-visible:ring-destructive/50')}

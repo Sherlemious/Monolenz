@@ -1,6 +1,10 @@
 import { HTTP_STATUS_CODES } from '@monolenz/types/api';
 import { profileSchemas, usernameSchema } from '@monolenz/types/validation';
-import { batchVersionUpdateSchema, listBlocksQuerySchema } from '@monolenz/types/validation/block-schemas';
+import {
+  batchVersionUpdateSchema,
+  listBlocksQuerySchema,
+  listVersionsQuerySchema,
+} from '@monolenz/types/validation/block-schemas';
 import {
   resumeCreateSchema,
   resumeIdParamsSchema,
@@ -240,6 +244,21 @@ async function handleProfiles(request: Request, method: string, segments: string
       const links = syncLinksSchema.parse(await readJson(request));
       const result = await profileLinkService.syncProfileLinks(user.id, links);
       return jsonSuccess(result, 'Profile links updated successfully');
+    }
+
+    if (method === 'GET' && segments.length === 2 && segments[1] === 'versions') {
+      const { page, limit } = listVersionsQuerySchema.parse({
+        page: url.searchParams.get('page') || undefined,
+        limit: url.searchParams.get('limit') || undefined,
+      });
+      const result = await blockService.listVersions(user.id, { page, limit });
+      return jsonSuccess(result, 'Versions retrieved successfully');
+    }
+
+    if (method === 'POST' && segments.length === 4 && segments[1] === 'versions' && segments[3] === 'restore') {
+      const versionId = z.coerce.number().int().positive().parse(segments[2]);
+      const result = await blockService.restoreVersion(user.id, versionId, context);
+      return jsonSuccess(result, 'Version restored successfully');
     }
 
     if (method === 'POST' && segments.length === 2 && segments[1] === 'versions') {

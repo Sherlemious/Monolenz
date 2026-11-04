@@ -245,10 +245,12 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
   // ========================================================================
 
   return (
-    <form className='max-w-[600px] p-6' onSubmit={handleSubmit}>
-      <div className='mb-6'>
-        <h2 className='text-xl font-semibold'>Profile Information</h2>
-        <p className='text-sm text-muted-foreground mt-1'>Update your basic profile details</p>
+    <form className='max-w-2xl px-6 md:px-10 py-8' onSubmit={handleSubmit}>
+      <div className='mb-8'>
+        <h2 className='text-[19px] font-semibold tracking-tight'>About you</h2>
+        <p className='text-[13px] text-muted-foreground mt-0.5'>
+          Your username, bio and photo appear at the top of your public page.
+        </p>
       </div>
 
       {/* Save message */}
