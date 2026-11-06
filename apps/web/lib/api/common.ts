@@ -36,6 +36,46 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Turn any thrown error into something a person can read, plus per-field
+ * messages when the API reported validation errors ("field: message").
+ */
+export function describeApiError(
+  err: unknown,
+  fallback = 'Something went wrong. Please try again.'
+): { message: string; fieldErrors: Record<string, string> } {
+  const fieldErrors: Record<string, string> = {};
+
+  if (err instanceof ApiError) {
+    const body = (err.body && typeof err.body === 'object' ? err.body : {}) as {
+      message?: unknown;
+      errors?: unknown;
+    };
+    if (Array.isArray(body.errors)) {
+      for (const entry of body.errors) {
+        if (typeof entry !== 'string') continue;
+        const idx = entry.indexOf(': ');
+        if (idx > 0) fieldErrors[entry.slice(0, idx)] ??= entry.slice(idx + 2);
+      }
+    }
+    const firstFieldError = Object.values(fieldErrors)[0];
+    if (err.status === 401) return { message: 'Your session has expired. Please sign in again.', fieldErrors };
+    if (err.status === 429) return { message: 'Too many attempts. Wait a moment and try again.', fieldErrors };
+    if (err.isServerError() || err.status === 0) return { message: fallback, fieldErrors };
+    if (firstFieldError) return { message: firstFieldError, fieldErrors };
+    if (typeof body.message === 'string' && body.message) return { message: body.message, fieldErrors };
+    return { message: fallback, fieldErrors };
+  }
+
+  if (err instanceof TypeError) {
+    return { message: 'Could not reach the server. Check your connection and try again.', fieldErrors };
+  }
+  if (err instanceof Error && err.message && !err.message.startsWith('API ')) {
+    return { message: err.message, fieldErrors };
+  }
+  return { message: fallback, fieldErrors };
+}
+
 export type ApiClient = {
   get<T>(path: string, init?: RequestInit): Promise<T>;
   post<T, B = unknown>(path: string, body?: B, init?: RequestInit): Promise<T>;

@@ -7,7 +7,17 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Profile } from '@monolenz/types/entities';
+import {
+  extractSocialHandle,
+  isSocialKind,
+  isValidProfileUrl,
+  normalizeProfileUrl,
+  type ProfileUrlKind,
+  type SocialKind,
+} from '@monolenz/types/validation';
 import type { ProfileApi } from '@/lib/api/profile';
+import { describeApiError } from '@/lib/api/common';
+import { SocialHandleInput, socialHandleError } from '@/app/components/profile/SocialHandleInput';
 import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -37,6 +47,33 @@ interface FormData {
   portfolio_url: string;
 }
 
+const URL_FIELDS: [keyof FormData & `${string}_url`, ProfileUrlKind][] = [
+  ['profile_picture_url', 'image'],
+  ['linkedin_url', 'linkedin'],
+  ['github_url', 'github'],
+  ['portfolio_url', 'portfolio'],
+];
+
+/** Stored URL → what the username-only field shows (falls back to the raw value if it isn't a profile link). */
+function handleFromUrl(url: string | null | undefined, kind: SocialKind): string {
+  if (!url) return '';
+  return extractSocialHandle(url, kind) ?? url;
+}
+
+function profileToForm(profile: Profile): FormData {
+  return {
+    username: profile.username ?? '',
+    display_name: profile.display_name ?? '',
+    phone: profile.phone ?? '',
+    location: profile.location ?? '',
+    bio: profile.bio ?? '',
+    profile_picture_url: profile.profile_picture_url ?? '',
+    linkedin_url: handleFromUrl(profile.linkedin_url, 'linkedin'),
+    github_url: handleFromUrl(profile.github_url, 'github'),
+    portfolio_url: profile.portfolio_url ?? '',
+  };
+}
+
 interface FormErrors {
   username?: string;
   display_name?: string;
@@ -54,17 +91,7 @@ interface FormErrors {
 // ============================================================================
 
 export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: ProfileInfoFormProps) {
-  const [formData, setFormData] = useState<FormData>({
-    username: profile.username ?? '',
-    display_name: profile.display_name ?? '',
-    phone: profile.phone ?? '',
-    location: profile.location ?? '',
-    bio: profile.bio ?? '',
-    profile_picture_url: profile.profile_picture_url ?? '',
-    linkedin_url: profile.linkedin_url ?? '',
-    github_url: profile.github_url ?? '',
-    portfolio_url: profile.portfolio_url ?? '',
-  });
+  const [formData, setFormData] = useState<FormData>(() => profileToForm(profile));
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -120,16 +147,8 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
 
   // Check if form is dirty
   useEffect(() => {
-    const isFormDirty =
-      formData.username !== (profile.username ?? '') ||
-      formData.display_name !== (profile.display_name ?? '') ||
-      formData.phone !== (profile.phone ?? '') ||
-      formData.location !== (profile.location ?? '') ||
-      formData.bio !== (profile.bio ?? '') ||
-      formData.profile_picture_url !== (profile.profile_picture_url ?? '') ||
-      formData.linkedin_url !== (profile.linkedin_url ?? '') ||
-      formData.github_url !== (profile.github_url ?? '') ||
-      formData.portfolio_url !== (profile.portfolio_url ?? '');
+    const initial = profileToForm(profile);
+    const isFormDirty = (Object.keys(initial) as (keyof FormData)[]).some((k) => formData[k] !== initial[k]);
 
     onDirtyChange?.(isFormDirty);
   }, [formData, profile, onDirtyChange]);
@@ -150,15 +169,14 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
       errs.bio = 'Bio must be less than 500 characters';
     }
 
-    const urlFields: (keyof FormData)[] = ['profile_picture_url', 'linkedin_url', 'github_url', 'portfolio_url'];
-    for (const field of urlFields) {
+    for (const [field, kind] of URL_FIELDS) {
       const val = data[field];
-      if (val && val.trim()) {
-        try {
-          new URL(val);
-        } catch {
-          errs[field] = 'Invalid URL';
-        }
+      if (!val || !val.trim()) continue;
+      if (isSocialKind(kind)) {
+        const err = socialHandleError(val, kind);
+        if (err) errs[field] = err;
+      } else if (!isValidProfileUrl(normalizeProfileUrl(val, kind), kind)) {
+        errs[field] = 'That doesn’t look like a valid link';
       }
     }
 
@@ -218,10 +236,17 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
     setSaveMessage(null);
 
     try {
-      const payload: Record<string, string | undefined> = {};
+      // Send '' for emptied fields so the API clears them (undefined is dropped from JSON).
+      const payload: Record<string, string> = {};
       for (const [key, value] of Object.entries(formData)) {
-        payload[key] = value.trim() || undefined;
+        payload[key] = value.trim();
       }
+      const cleaned: Partial<FormData> = {};
+      for (const [field, kind] of URL_FIELDS) {
+        payload[field] = normalizeProfileUrl(payload[field] ?? '', kind);
+        cleaned[field] = isSocialKind(kind) ? handleFromUrl(payload[field], kind) : payload[field];
+      }
+      setFormData((prev) => ({ ...prev, ...payload, ...cleaned }) as FormData);
 
       const saved = await api.updateProfile(payload);
       setSaveMessage({ type: 'success', text: 'Profile updated successfully' });
@@ -233,7 +258,7 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
     } catch (err) {
       setSaveMessage({
         type: 'error',
-        text: err instanceof Error ? err.message : 'Failed to update profile',
+        text: describeApiError(err, 'Failed to update profile').message,
       });
     } finally {
       setIsSaving(false);
@@ -365,7 +390,10 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
           <Label htmlFor='profile_picture_url'>Profile Picture URL</Label>
           <Input
             id='profile_picture_url'
-            type='url'
+            type='text'
+            inputMode='url'
+            autoCapitalize='none'
+            spellCheck={false}
             value={formData.profile_picture_url}
             onChange={(e) => handleChange('profile_picture_url', e.target.value)}
             placeholder='https://example.com/photo.jpg'
@@ -381,13 +409,13 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
         {/* LinkedIn URL */}
         <div className='space-y-1.5'>
           <Label htmlFor='linkedin_url'>LinkedIn</Label>
-          <Input
+          <SocialHandleInput
             id='linkedin_url'
-            type='url'
+            kind='linkedin'
             value={formData.linkedin_url}
-            onChange={(e) => handleChange('linkedin_url', e.target.value)}
-            placeholder='https://linkedin.com/in/username'
-            aria-invalid={!!errors.linkedin_url}
+            onChange={(v) => handleChange('linkedin_url', v)}
+            placeholder='username'
+            error={errors.linkedin_url}
           />
           {errors.linkedin_url && <p className='text-xs text-destructive'>{errors.linkedin_url}</p>}
         </div>
@@ -395,13 +423,13 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
         {/* GitHub URL */}
         <div className='space-y-1.5'>
           <Label htmlFor='github_url'>GitHub</Label>
-          <Input
+          <SocialHandleInput
             id='github_url'
-            type='url'
+            kind='github'
             value={formData.github_url}
-            onChange={(e) => handleChange('github_url', e.target.value)}
-            placeholder='https://github.com/username'
-            aria-invalid={!!errors.github_url}
+            onChange={(v) => handleChange('github_url', v)}
+            placeholder='username'
+            error={errors.github_url}
           />
           {errors.github_url && <p className='text-xs text-destructive'>{errors.github_url}</p>}
         </div>
@@ -411,7 +439,10 @@ export function ProfileInfoForm({ profile, api, onSaved, onDirtyChange }: Profil
           <Label htmlFor='portfolio_url'>Portfolio</Label>
           <Input
             id='portfolio_url'
-            type='url'
+            type='text'
+            inputMode='url'
+            autoCapitalize='none'
+            spellCheck={false}
             value={formData.portfolio_url}
             onChange={(e) => handleChange('portfolio_url', e.target.value)}
             placeholder='https://your-website.com'

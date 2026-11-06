@@ -12,6 +12,7 @@ import { createProfileApi } from '@/lib/api/profile';
 import { createProfileBlocksApi } from '@/lib/api/profile-blocks';
 import { cn } from '@/lib/utils';
 import { formatRelative } from '@/app/components/profile/block-display';
+import { OnboardingWizard } from '@/app/components/onboarding/OnboardingWizard';
 
 const CATEGORIES: { type: string; label: string; hint: string }[] = [
   { type: 'work_experience', label: 'Experience', hint: 'Roles you have held' },
@@ -103,24 +104,16 @@ export default function DashboardPage() {
   if (!profile) {
     return (
       <div className='h-full overflow-y-auto'>
-        <PageHeader title='Welcome to Monolenz' description='One profile. Share it as a page, print it as a résumé.' />
-        <div className='px-6 md:px-10 max-w-5xl'>
-          <div className='rounded-xl border bg-card p-8 md:p-10'>
-            <p className='font-serif text-3xl leading-tight max-w-md'>Start by claiming your username.</p>
-            <p className='mt-3 text-sm text-muted-foreground max-w-md'>
-              It becomes your public address. You can add experience, skills and projects right after.
-            </p>
-            <Button asChild className='mt-6'>
-              <Link href='/dashboard/profile'>
-                Create your profile <ArrowRight className='size-4' />
-              </Link>
-            </Button>
-          </div>
-        </div>
+        <OnboardingWizard
+          api={profileApi}
+          onCreated={(p) => {
+            setProfile(p);
+            setBlocks([]);
+          }}
+        />
       </div>
     );
   }
-
   return (
     <div className='h-full overflow-y-auto'>
       <PageHeader

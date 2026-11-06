@@ -49,9 +49,9 @@ There are no automated tests currently.
 
 ## Branch Policy
 
-- Use `stage` as the integration branch and `main` as production.
-- `dev` is being phased out and should not be used for new PR targets.
-- CI quality checks are expected on `stage` and `main`.
+- `main` is the only long-lived branch (production). Work lands on `main` directly.
+- `stage` and `dev` are retired — do not target them.
+- CI quality checks run on `main`.
 
 ## Architecture
 

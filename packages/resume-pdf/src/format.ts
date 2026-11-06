@@ -12,7 +12,7 @@ export const SECTION_LABELS: Record<string, string> = {
 };
 
 export function dataOf(block: VersionBlockDetail): Record<string, unknown> {
-  return (block.data ?? {}) as Record<string, unknown>;
+  return (block.data ?? {}) as unknown as Record<string, unknown>;
 }
 
 export function asString(value: unknown): string {
