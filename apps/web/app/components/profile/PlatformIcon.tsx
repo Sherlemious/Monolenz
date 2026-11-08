@@ -68,13 +68,7 @@ function normalizeIconKey(value?: string | null): string {
   return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-export function PlatformIcon({
-  name,
-  className,
-}: {
-  name?: string | null;
-  className?: string;
-}) {
+export function PlatformIcon({ name, className }: { name?: string | null; className?: string }) {
   const key = ALIASES[normalizeIconKey(name)] ?? normalizeIconKey(name);
 
   if (key === 'email' || key === 'mail') {

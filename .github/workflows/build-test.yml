@@ -6,9 +6,9 @@ permissions:
 
 on:
   pull_request:
-    branches: [stage, main]
+    branches: [main]
   push:
-    branches: [stage]
+    branches: [main]
   workflow_dispatch:
 
 env:

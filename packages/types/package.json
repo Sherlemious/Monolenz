@@ -39,7 +39,6 @@
       "types": "./dist/entities/resume.d.ts",
       "import": "./dist/entities/resume.js"
     },
-
     "./enums": {
       "types": "./dist/enums/index.d.ts",
       "import": "./dist/enums/index.js"

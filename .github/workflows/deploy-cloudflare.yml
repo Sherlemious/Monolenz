@@ -1,10 +1,9 @@
 name: Deploy to Cloudflare
 
-# main  -> migrate Neon production branch, then deploy the Worker (serves 100% of traffic)
-# stage -> upload a new Worker version with a preview URL (does not take production traffic)
+# main -> migrate Neon production branch, then deploy the Worker (serves 100% of traffic)
 on:
   push:
-    branches: [main, stage]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -18,7 +17,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -37,9 +36,8 @@ jobs:
       - name: Build shared packages
         run: pnpm --filter @monolenz/types --filter @monolenz/resume-pdf build
 
-      # Only production runs migrations; they go over the direct (non-pooler) Neon URL.
+      # Migrations go over the direct (non-pooler) Neon URL.
       - name: Apply database migrations
-        if: github.ref == 'refs/heads/main'
         working-directory: apps/api
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -59,9 +57,4 @@ jobs:
           NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID }}
           # OpenNext's deploy starts wrangler's local binding proxy, which requires a value; never used remotely.
           CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE: postgresql://placeholder@localhost:5432/unused
-        run: |
-          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
-            pnpm run deploy
-          else
-            pnpm run upload
-          fi
+        run: pnpm run deploy

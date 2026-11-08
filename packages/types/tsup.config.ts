@@ -11,7 +11,6 @@ export default defineConfig({
     'validation/resume-schemas': 'src/validation/resume-schemas.ts',
     'entities/resume': 'src/entities/resume.ts',
     'enums/index': 'src/enums/index.ts',
-
   },
   format: ['esm'],
   dts: true,

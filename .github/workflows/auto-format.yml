@@ -2,9 +2,9 @@ name: Format Check
 
 on:
   push:
-    branches: [main, stage]
+    branches: [main]
   pull_request:
-    branches: [main, stage]
+    branches: [main]
 
 jobs:
   format-check:

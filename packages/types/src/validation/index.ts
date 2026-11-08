@@ -11,7 +11,6 @@ export * from './profile-block-schemas';
 export * from './block-schemas';
 export * from './resume-schemas';
 
-
 // Type helpers for extracting types from schemas
 export type ProfileCreateData = z.infer<typeof profileSchemas.create>;
 export type ProfileUpdateData = z.infer<typeof profileSchemas.update>;
